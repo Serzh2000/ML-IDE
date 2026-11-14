@@ -74,13 +74,13 @@
 
 ### Вариант 1. Готовый `.exe` (Windows)
 
-Скачайте архив `ML-IDE-windows.zip` со страницы **Releases**, распакуйте **всю папку** и запустите `ML IDE.exe`.
+Скачайте архив `ML-IDE-windows.zip` со страницы [Releases](https://github.com/Serzh2000/ML-IDE/releases/latest), распакуйте **всю папку** и запустите `ML IDE.exe`.
 Python не нужен. *(Windows SmartScreen может показать предупреждение для неподписанной программы — «Подробнее → Выполнить в любом случае».)*
 
 ### Вариант 2. Из исходников
 
 ```bash
-git clone <адрес-репозитория>
+git clone https://github.com/Serzh2000/ML-IDE.git
 cd ML-IDE
 pip install -r requirements.txt
 python -m mlide
