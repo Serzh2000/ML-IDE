@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# Сборка exe
+build/
+dist/
+*.spec
+
+# Локальные эксперименты, датасеты и результаты обучения (не для репозитория)
+demo/
+demo2/
+runs/
+*.pt
+*.onnx
+*.mlide.json
+!examples/**/*.mlide.json
+
+# Служебное
+.shot*.png
+.t*.png
+.res.png
+*.tmp
+.idea/
+.vscode/
+.claude/
+Thumbs.db
