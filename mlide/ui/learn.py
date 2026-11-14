@@ -17,6 +17,24 @@ from PySide6.QtWidgets import (QDialog, QDialogButtonBox, QFileDialog, QFormLayo
 
 from .. import knowledge as K
 
+def find_python() -> str:
+    """Default interpreter for training. A path under WindowsApps is usually the Microsoft Store stub
+    (it opens the Store instead of running anything), so any other interpreter is preferred over it."""
+    fallback = ""
+    for name in ("python", "python3", "py"):
+        p = shutil.which(name)
+        if p and "windowsapps" not in p.lower():
+            return p
+        fallback = fallback or p or ""
+    return fallback
+
+
+PROC_ERRORS = {
+    QProcess.FailedToStart: "не удалось запустить - проверьте путь к Python (файл не найден или это не программа)",
+    QProcess.Crashed: "процесс аварийно завершился",
+}
+
+
 ICON = {"ok": "✅", "warn": "⚠️", "info": "ℹ️"}
 COLOR = {"ok": "#3fb950", "warn": "#f0a030", "info": "#58a6ff"}
 
@@ -212,14 +230,15 @@ class TrainDialog(QDialog):
         lay.addWidget(intro)
         f = QFormLayout()
         row = QHBoxLayout()
-        self.folder = QLineEdit(project.export.get("out_dir", ""))
+        self._synced_dir = project.export.get("out_dir", "")
+        self.folder = QLineEdit(self._synced_dir)
         b = QPushButton("Обзор…")
         b.clicked.connect(self._browse)
         row.addWidget(self.folder, 1)
         row.addWidget(b)
         f.addRow("Папка экспорта (с train.py)", row)
         row = QHBoxLayout()
-        self.py = QLineEdit(shutil.which("python") or shutil.which("py") or "")
+        self.py = QLineEdit(find_python())
         b = QPushButton("Проверить")
         b.clicked.connect(self.check_env)
         b2 = QPushButton("Установить ultralytics")
@@ -284,6 +303,15 @@ class TrainDialog(QDialog):
         self._first_load()
 
     # ---- helpers
+    def set_project(self, project):
+        """Called every time the dialog is shown: follow the project's latest export folder (unless busy)."""
+        self.project = project
+        d = project.export.get("out_dir", "")
+        if not self.running and d and d != self._synced_dir:
+            self._synced_dir = d
+            self.folder.setText(d)
+            self._first_load()
+
     def _dir(self) -> Path:
         return Path(self.folder.text().strip())
 
@@ -326,9 +354,18 @@ class TrainDialog(QDialog):
             QMessageBox.warning(self, title, "Укажите путь к Python (python.exe).")
             return
         pr = QProcess(self)
+        env = QProcessEnvironment.systemEnvironment()
+        env.insert("PYTHONIOENCODING", "utf-8")
+        pr.setProcessEnvironment(env)
         pr.setProcessChannelMode(QProcess.MergedChannels)
         pr.finished.connect(lambda *_: (self._append(bytes(pr.readAllStandardOutput()).decode("utf-8", "replace")),
                                         self.status.setText("")))
+
+        def failed(err):
+            if err == QProcess.FailedToStart:       # `finished` is never emitted in this case
+                self._append(f"--- {title}: {PROC_ERRORS[err]}: {py} ---")
+                self.status.setText("")
+        pr.errorOccurred.connect(failed)
         self.status.setText(f"{title}…")
         pr.start(py, args)
         return pr
@@ -351,6 +388,11 @@ class TrainDialog(QDialog):
 
     # ---- start / stop
     def start(self):
+        if self.running:
+            return
+        if not self.folder.text().strip():
+            QMessageBox.warning(self, "Обучение", "Укажите папку экспорта (в ней лежит train.py).")
+            return
         d = self._dir()
         if not (d / "train.py").exists():
             QMessageBox.warning(self, "Обучение", "В папке нет train.py. Сначала сделайте экспорт в формате "
@@ -370,21 +412,45 @@ class TrainDialog(QDialog):
         self.proc.setProcessChannelMode(QProcess.MergedChannels)
         self.proc.readyReadStandardOutput.connect(self._on_out)
         self.proc.finished.connect(self._on_finished)
+        self.proc.errorOccurred.connect(self._on_error)
         import time
         self.started_mtime = time.time()
         self.log.clear()
         self.c_loss.set_data([], {})
         self.c_map.set_data([], {})
-        self.proc.start(py, ["-u", "train.py"])
         self.start_btn.setEnabled(False)
         self.stop_btn.setEnabled(True)
         self.status.setText("идёт обучение…")
         self.explain.setHtml(cards_html(K.explain_training(K.parse_rows([]), self.total_epochs)))
+        # last: a failed start reports through errorOccurred synchronously, from inside start()
+        self.proc.start(py, ["-u", "train.py"])
 
-    def stop(self):
-        if self.running:
-            self.proc.kill()
-            self._append("--- остановлено пользователем (лучшая версия уже сохранена в weights/best.pt) ---")
+    def stop(self, wait=False):
+        if not self.running:
+            return
+        pid = self.proc.processId()
+        if sys.platform == "win32" and pid:
+            # kill() ends only the main python.exe; DataLoader workers would live on and keep the GPU busy
+            import subprocess
+            try:
+                subprocess.run(["taskkill", "/PID", str(pid), "/T", "/F"], capture_output=True, timeout=10,
+                               creationflags=subprocess.CREATE_NO_WINDOW)
+            except Exception:
+                pass
+        self.proc.kill()
+        self._append("--- остановлено пользователем (лучшая версия уже сохранена в weights/best.pt) ---")
+        if wait:
+            self.proc.waitForFinished(5000)
+
+    def _on_error(self, err):
+        if err != QProcess.FailedToStart:           # other errors are followed by `finished`
+            return
+        self.start_btn.setEnabled(True)
+        self.stop_btn.setEnabled(False)
+        self.status.setText("не запущено")
+        msg = f"{PROC_ERRORS[err]}: {self.py.text().strip()}"
+        self._append(f"--- {msg} ---")
+        self.explain.setHtml(cards_html([("warn", "Обучение не запустилось", html.escape(msg))]))
 
     def _on_out(self):
         text = bytes(self.proc.readAllStandardOutput()).decode("utf-8", "replace")

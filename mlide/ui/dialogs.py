@@ -430,8 +430,9 @@ class ExportDialog(QDialog):
             return
         out = Path(self.out.text().strip())
         if out.exists() and any(out.iterdir()):
-            r = QMessageBox.question(self, "Экспорт", f"Папка '{out}' не пуста. Файлы с такими же именами будут "
-                                     "перезаписаны. Продолжить?")
+            r = QMessageBox.question(self, "Экспорт", f"Папка '{out}' не пуста. Прежний экспорт в ней (папки с "
+                                     "изображениями и метками) будет удалён и заменён новым; результаты обучения "
+                                     "в runs/ сохранятся. Продолжить?")
             if r != QMessageBox.Yes:
                 return
         presets = get_all_presets(self.project.presets)

@@ -5,7 +5,7 @@ import os
 import sys
 from pathlib import Path
 
-from PySide6.QtCore import QSettings, QSize, Qt, QTimer
+from PySide6.QtCore import QSettings, QSize, QStandardPaths, Qt, QTimer
 from PySide6.QtGui import (QAction, QActionGroup, QColor, QIcon, QImage, QImageReader, QKeySequence,
                            QPixmap, QShortcut)
 from PySide6.QtWidgets import (QApplication, QColorDialog, QComboBox, QDockWidget, QFileDialog, QHBoxLayout,
@@ -694,20 +694,59 @@ class MainWindow(QMainWindow):
         paths = [u.toLocalFile() for u in e.mimeData().urls() if u.isLocalFile()]
         if paths:
             if len(paths) == 1 and paths[0].lower().endswith(".mlide.json"):
-                self._open_path(paths[0])
+                if self._maybe_save():
+                    self._open_path(paths[0])
             else:
                 self._add_paths(paths)
 
     # ================================================================ project files
     def _maybe_save(self) -> bool:
-        if not self.project.dirty:
-            return True
-        r = QMessageBox.question(self, "Несохранённые изменения", "Сохранить изменения в проекте?",
-                                 QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
-        if r == QMessageBox.Cancel:
+        """True = the current project may be replaced / closed."""
+        if self.project.dirty:
+            r = QMessageBox.question(self, "Несохранённые изменения", "Сохранить изменения в проекте?",
+                                     QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
+            if r == QMessageBox.Cancel:
+                return False
+            if r == QMessageBox.Save and not self.save_project():
+                return False
+        self._clear_recovery()          # saved or deliberately discarded: nothing left to recover
+        return True
+
+    # ---- crash recovery for projects that were never saved to a file
+    @staticmethod
+    def _recovery_path() -> Path:
+        return Path(QStandardPaths.writableLocation(QStandardPaths.AppDataLocation)) / "recovery.mlide.json"
+
+    def _clear_recovery(self):
+        try:
+            self._recovery_path().unlink()
+        except OSError:
+            pass
+
+    def offer_recovery(self) -> bool:
+        """At start-up: restore an unsaved project left behind by a crash. True if restored."""
+        rp = self._recovery_path()
+        if not rp.exists():
             return False
-        if r == QMessageBox.Save:
-            return self.save_project()
+        r = QMessageBox.question(self, "Восстановление", "Найдена автосохранённая копия несохранённого проекта "
+                                 "(программа была закрыта некорректно). Восстановить её?")
+        if r != QMessageBox.Yes:
+            self._clear_recovery()
+            return False
+        try:
+            pr = Project.load(rp)
+        except Exception as ex:  # noqa
+            QMessageBox.critical(self, "Восстановление", f"Не удалось прочитать копию:\n{type(ex).__name__}: {ex}")
+            return False
+        pr.path = None                  # still unsaved: the user picks a real location on Ctrl+S
+        pr.dirty = True
+        self.project = pr
+        self.idx = -1
+        self.undo_stack.clear()
+        self.redo_stack.clear()
+        self.refresh_all()
+        if self.project.images:
+            self.load_image(0)
         return True
 
     def open_examples(self):
@@ -754,7 +793,11 @@ class MainWindow(QMainWindow):
     def save_project(self) -> bool:
         if not self.project.path:
             return self.save_project_as()
-        self.project.save()
+        try:
+            self.project.save()
+        except Exception as ex:  # noqa - disk full, file locked, read-only folder...
+            self._save_failed(self.project.path, ex)
+            return False
         self._title()
         self.statusBar().showMessage(f"Сохранено: {self.project.path}", 3000)
         return True
@@ -766,30 +809,45 @@ class MainWindow(QMainWindow):
             return False
         if not p.lower().endswith(".mlide.json"):
             p += ".mlide.json"
+        try:
+            self.project.save(p)
+        except Exception as ex:  # noqa
+            self._save_failed(p, ex)
+            return False
         self.project.name = Path(p).name[:-len(".mlide.json")]
-        self.project.save(p)
+        self._clear_recovery()
         self._title()
         return True
 
+    def _save_failed(self, path, ex):
+        QMessageBox.critical(self, "Сохранение", f"Не удалось сохранить проект в\n{path}\n\n"
+                             f"{type(ex).__name__}: {ex}\n\nИзменения остаются несохранёнными. Освободите место "
+                             "или сохраните проект в другое место («Сохранить как»).")
+
     def _autosave(self):
-        if self.project.path and self.project.dirty:
-            try:
+        if not self.project.dirty:
+            return
+        try:
+            if self.project.path:
                 self.project.save()
                 self._title()
-            except Exception:
-                pass
+            elif self.project.images:           # never saved: keep a recovery copy in the app data folder
+                rp = self._recovery_path()
+                rp.parent.mkdir(parents=True, exist_ok=True)
+                self.project.write_to(rp)
+        except Exception as ex:  # noqa
+            self.statusBar().showMessage(f"Автосохранение не удалось: {type(ex).__name__}: {ex}", 15000)
 
     def closeEvent(self, e):
+        e.ignore()                      # stays ignored if anything below raises
+        if not self._maybe_save():
+            return
         td = getattr(self, "train_dlg", None)
         if td is not None and td.running:
             if QMessageBox.question(self, "Идёт обучение", "Обучение ещё идёт. Остановить его и выйти?") != QMessageBox.Yes:
-                e.ignore()
                 return
-            td.stop()
-        if self._maybe_save():
-            e.accept()
-        else:
-            e.ignore()
+            td.stop(wait=True)
+        e.accept()
 
     # ================================================================ dialogs
     def export(self):
@@ -896,8 +954,10 @@ class MainWindow(QMainWindow):
         AdvisorDialog(self.project, self, can_apply=False).exec()
 
     def train(self):
-        if getattr(self, "train_dlg", None) is None or self.train_dlg.project is not self.project:
+        if getattr(self, "train_dlg", None) is None:
             self.train_dlg = TrainDialog(self.project, self)
+        else:                           # one dialog for the whole session: a running training is never orphaned
+            self.train_dlg.set_project(self.project)
         self.train_dlg.show()
         self.train_dlg.raise_()
 
@@ -931,6 +991,7 @@ def run(argv):
         pass
     elif not QSettings("MLIDE", "MLIDE").value("tour_done", False, type=bool):
         QTimer.singleShot(800, w.start_tour)
-    if argv and Path(argv[0]).exists() and argv[0].endswith(".mlide.json"):
+    restored = w.offer_recovery()
+    if not restored and argv and Path(argv[0]).exists() and argv[0].lower().endswith(".mlide.json"):
         w._open_path(argv[0])
     return app.exec()

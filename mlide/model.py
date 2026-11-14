@@ -123,11 +123,10 @@ class Project:
         return added
 
     # ---- persistence
-    def save(self, path=None):
-        if path:
-            self.path = Path(path)
-        assert self.path, "no path"
-        base = self.path.parent
+    def write_to(self, target):
+        """Write the project to `target` atomically without touching path / dirty (used for recovery copies)."""
+        target = Path(target)
+        base = target.parent
         data = {
             "version": 1,
             "name": self.name,
@@ -139,9 +138,22 @@ class Project:
                 "reviewed": i.reviewed, "anns": [a.to_dict() for a in i.anns],
             } for i in self.images],
         }
-        tmp = self.path.with_suffix(".tmp")
-        tmp.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
-        os.replace(tmp, self.path)
+        tmp = target.with_suffix(".tmp")
+        try:
+            tmp.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
+            os.replace(tmp, target)
+        except BaseException:
+            try:
+                tmp.unlink()
+            except OSError:
+                pass
+            raise
+
+    def save(self, path=None):
+        target = Path(path) if path else self.path
+        assert target, "no path"
+        self.write_to(target)
+        self.path = target          # only after a successful write
         self.dirty = False
 
     @staticmethod
