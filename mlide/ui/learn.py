@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (QDialog, QDialogButtonBox, QFileDialog, QFormLayo
 
 from .. import knowledge as K
 from ..i18n import T
+from . import icons, style
 
 def find_python() -> str:
     """Default interpreter for training. A path under WindowsApps is usually the Microsoft Store stub
@@ -36,7 +37,6 @@ PROC_ERRORS = {
 }
 
 
-ICON = {"ok": "✅", "warn": "⚠️", "info": "ℹ️"}
 COLOR = {"ok": "#3fb950", "warn": "#f0a030", "info": "#58a6ff"}
 
 
@@ -46,7 +46,7 @@ def cards_html(items):
     for lvl, title, text in items:
         out.append(f"<table width='100%' cellpadding='6' style='margin-bottom:6px'><tr>"
                    f"<td width='4' bgcolor='{COLOR[lvl]}'></td><td>"
-                   f"<b>{ICON[lvl]} {title}</b><br>{text}</td></tr></table>")
+                   f"<b>{icons.status_img(lvl)}&nbsp;{title}</b><br>{text}</td></tr></table>")
     return "".join(out)
 
 
@@ -146,6 +146,16 @@ class AdvisorDialog(QDialog):
 
 
 # =============================================================================== графики
+def fill_quality_chart(chart, S):
+    """Детекция: mAP50, precision, recall. Классификация (нет mAP, есть accuracy): точность top-1."""
+    if S.get("acc") and not any(v for v in S["map50"] if v is not None):
+        chart.series = [("acc", "точность top-1 (accuracy)", "#2ecc71")]
+        chart.set_data(S["epoch"], {"acc": S["acc"]})
+    else:
+        chart.series = [("map50", "mAP50", "#2ecc71"), ("p", "precision", "#a29bfe"), ("r", "recall", "#fd79a8")]
+        chart.set_data(S["epoch"], {"map50": S["map50"], "p": S["p"], "r": S["r"]})
+
+
 class LineChart(QWidget):
     def __init__(self, title, hint, series, parent=None):
         super().__init__(parent)
@@ -161,8 +171,8 @@ class LineChart(QWidget):
     def paintEvent(self, _):
         p = QPainter(self)
         p.setRenderHint(QPainter.Antialiasing)
-        p.fillRect(self.rect(), QColor(28, 29, 33))
-        p.setPen(QColor(225, 227, 232))
+        p.fillRect(self.rect(), QColor(style.CHART))
+        p.setPen(QColor(style.TEXT))
         p.setFont(QFont("Segoe UI", 9, QFont.Bold))
         p.drawText(10, 16, self.title)
         # легенда
@@ -171,13 +181,13 @@ class LineChart(QWidget):
         for key, label, col in self.series:
             p.setPen(QPen(QColor(col), 3))
             p.drawLine(x, 30, x + 14, 30)
-            p.setPen(QColor(190, 193, 200))
+            p.setPen(QColor(style.MUTED))
             p.drawText(x + 18, 34, label)
             x += 24 + p.fontMetrics().horizontalAdvance(T(label)) + 8
         r = QRectF(44, 42, self.width() - 56, self.height() - 62)
         vals = [v for k, _l, _c in self.series for v in self.data.get(k, []) if v is not None and np.isfinite(v)]
         if not vals or len(self.xs) < 1:
-            p.setPen(QColor(130, 134, 142))
+            p.setPen(QColor(style.MUTED))
             p.drawText(r, Qt.AlignCenter, "ждём данные первой эпохи…")
             return
         lo, hi = min(vals), max(vals)
@@ -188,14 +198,14 @@ class LineChart(QWidget):
         x0, x1 = min(self.xs), max(self.xs)
         if x1 == x0:
             x1 = x0 + 1
-        p.setPen(QPen(QColor(60, 62, 70), 1))
+        p.setPen(QPen(QColor(style.BORDER), 1))
         for i in range(5):
             y = r.top() + r.height() * i / 4
             p.drawLine(r.left(), y, r.right(), y)
-            p.setPen(QColor(150, 153, 160))
+            p.setPen(QColor(style.MUTED))
             p.drawText(2, int(y + 4), f"{hi - (hi - lo) * i / 4:.2f}")
-            p.setPen(QPen(QColor(60, 62, 70), 1))
-        p.setPen(QColor(150, 153, 160))
+            p.setPen(QPen(QColor(style.BORDER), 1))
+        p.setPen(QColor(style.MUTED))
         p.drawText(int(r.left()), int(r.bottom() + 14), f"эпоха {x0:.0f}")
         p.drawText(int(r.right() - 60), int(r.bottom() + 14), f"эпоха {x1:.0f}")
         for key, _l, col in self.series:
@@ -255,9 +265,11 @@ class TrainDialog(QDialog):
         lay.addLayout(f)
 
         row = QHBoxLayout()
-        self.start_btn = QPushButton("▶ Начать обучение")
+        self.start_btn = QPushButton("Начать обучение")
+        self.start_btn.setIcon(icons.icon("start"))
         self.start_btn.clicked.connect(self.start)
-        self.stop_btn = QPushButton("■ Остановить")
+        self.stop_btn = QPushButton("Остановить")
+        self.stop_btn.setIcon(icons.icon("stop"))
         self.stop_btn.clicked.connect(self.stop)
         self.stop_btn.setEnabled(False)
         ob = QPushButton("Открыть папку результатов")
@@ -495,7 +507,7 @@ class TrainDialog(QDialog):
             return
         S = K.parse_rows(rows)
         self.c_loss.set_data(S["epoch"], {"tbox": S["tbox"], "vbox": S["vbox"]})
-        self.c_map.set_data(S["epoch"], {"map50": S["map50"], "p": S["p"], "r": S["r"]})
+        fill_quality_chart(self.c_map, S)
         self.explain.setHtml(cards_html(K.explain_training(S, self.total_epochs, finished=finished)))
 
     def open_results(self):

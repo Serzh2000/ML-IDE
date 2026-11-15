@@ -20,11 +20,13 @@ PALETTE = [
 @dataclass
 class Annotation:
     cls: int
-    kind: str                      # "box" -> pts=[[x1,y1],[x2,y2]];  "poly" -> pts=[[x,y],...]
+    kind: str                      # "box" -> pts=[[x1,y1],[x2,y2]];  "poly" -> pts=[[x,y],...];
+                                   # "obb" -> 4 угла повёрнутого прямоугольника по кругу;  "pose" -> рамка (как box) + kps
     pts: list
     id: str = field(default_factory=lambda: uuid.uuid4().hex[:8])
     suggested: bool = False        # produced by auto-annotation, awaiting review
     conf: float | None = None
+    kps: list | None = None        # pose: [[x, y, v], ...]  v: 0 нет, 1 закрыта, 2 видна
 
     def bbox(self):
         xs = [p[0] for p in self.pts]
@@ -32,7 +34,7 @@ class Annotation:
         return min(xs), min(ys), max(xs), max(ys)
 
     def polygon(self):
-        if self.kind == "box":
+        if self.kind in ("box", "pose"):
             x1, y1, x2, y2 = self.bbox()
             return [[x1, y1], [x2, y1], [x2, y2], [x1, y2]]
         return [list(p) for p in self.pts]
@@ -44,12 +46,15 @@ class Annotation:
             d["suggested"] = True
         if self.conf is not None:
             d["conf"] = round(float(self.conf), 4)
+        if self.kps is not None:
+            d["kps"] = [[round(float(x), 2), round(float(y), 2), int(v)] for x, y, v in self.kps]
         return d
 
     @staticmethod
     def from_dict(d):
         return Annotation(cls=int(d["cls"]), kind=d["kind"], pts=[list(p) for p in d["pts"]],
-                          suggested=bool(d.get("suggested", False)), conf=d.get("conf"))
+                          suggested=bool(d.get("suggested", False)), conf=d.get("conf"),
+                          kps=[list(k) for k in d["kps"]] if d.get("kps") is not None else None)
 
 
 @dataclass
@@ -59,16 +64,21 @@ class ImageEntry:
     h: int
     anns: list = field(default_factory=list)
     reviewed: bool = False
+    tag: int | None = None         # класс изображения целиком (задача классификации)
 
     @property
     def name(self):
         return Path(self.path).name
 
     def snapshot(self):
-        return copy.deepcopy([a.to_dict() for a in self.anns])
+        return copy.deepcopy({"anns": [a.to_dict() for a in self.anns], "tag": self.tag})
 
     def restore(self, snap):
-        self.anns = [Annotation.from_dict(d) for d in snap]
+        if isinstance(snap, dict):
+            self.anns = [Annotation.from_dict(d) for d in snap["anns"]]
+            self.tag = snap.get("tag")
+        else:                                   # старый формат: только список объектов
+            self.anns = [Annotation.from_dict(d) for d in snap]
 
 
 class Project:
@@ -79,6 +89,9 @@ class Project:
         self.images: list[ImageEntry] = []
         self.presets: dict[str, dict] = {}      # user augmentation presets
         self.export: dict = {}                  # last export settings
+        self.keypoints: list[str] = []          # имена ключевых точек (задача pose)
+        self.skeleton: list[list[int]] = []     # пары индексов точек, соединяемых линиями
+        self.flip_pairs: list[list[int]] = []   # пары «левая-правая» точки для отражения
         self.dirty = False
         self.recovered_from_backup = False
 
@@ -121,6 +134,8 @@ class Project:
     def remove_class(self, idx):
         self.classes.pop(idx)
         for im in self.images:
+            if im.tag is not None:
+                im.tag = None if im.tag == idx else (im.tag - 1 if im.tag > idx else im.tag)
             im.anns = [a for a in im.anns if a.cls != idx]
             for a in im.anns:
                 if a.cls > idx:
@@ -158,9 +173,11 @@ class Project:
             "classes": self.classes,
             "presets": self.presets,
             "export": self.export,
+            "keypoints": self.keypoints, "skeleton": self.skeleton, "flip_pairs": self.flip_pairs,
             "images": [{
                 "path": imgio.rel_or_abs(Path(i.path), base), "w": i.w, "h": i.h,
                 "reviewed": i.reviewed, "anns": [a.to_dict() for a in i.anns],
+                **({"tag": i.tag} if i.tag is not None else {}),
             } for i in self.images],
         }
         tmp = target.with_suffix(".tmp")
@@ -204,12 +221,15 @@ class Project:
         pr.classes = data.get("classes", [])
         pr.presets = data.get("presets", {})
         pr.export = data.get("export", {})
+        pr.keypoints = data.get("keypoints", [])
+        pr.skeleton = data.get("skeleton", [])
+        pr.flip_pairs = data.get("flip_pairs", [])
         for d in data.get("images", []):
             p = Path(d["path"])
             if not p.is_absolute():
                 p = (path.parent / p).resolve()
             pr.images.append(ImageEntry(str(p), d["w"], d["h"],
                                         [Annotation.from_dict(a) for a in d.get("anns", [])],
-                                        d.get("reviewed", False)))
+                                        d.get("reviewed", False), d.get("tag")))
         pr.dirty = False
         return pr

@@ -77,6 +77,14 @@ GLOSSARY = [
     ("Detect / Segment / OBB", "Три вида задач: рамки / точные контуры / повёрнутые рамки.",
      "Detect - прямоугольник вокруг объекта, самый простой и быстрый. Segment - маска-контур, нужна, если важна "
      "форма/площадь. OBB - наклонный прямоугольник для объектов под углом (корабли на аэроснимках, текст)."),
+    ("Ключевые точки (pose)", "Модель находит не только объект, но и характерные точки на нём: суставы, глаза, углы.",
+     "Для каждого объекта задаётся один и тот же список точек в одном порядке (например, нос, глаза, плечи…). Точка может быть "
+     "видна, закрыта (спрятана за чем-то) или отсутствовать. Нужна для поз людей, жестов, положения головы, контрольных точек "
+     "деталей. Список точек и скелет настраиваются в Правка → Настроить ключевые точки."),
+    ("Классификация изображений", "Один класс на всю картинку, без рамок: «кошка», «собака», «брак», «норма».",
+     "Подходит, когда важно, ЧТО на кадре, а не ГДЕ. Размечается проще всего: инструмент «Класс кадра» (T), клавиши 1-9. "
+     "Метрика - точность (accuracy): доля картинок, где класс угадан. Нужно ровно столько же примеров в каждом классе - иначе "
+     "модель привыкает отвечать самым частым классом."),
     ("ONNX", "Универсальный формат модели, работает без Python и torch.",
      "train.py в конце сам делает export в ONNX. Файл .onnx можно загрузить в «Авторазметка» этой IDE или "
      "запускать в C++/C#/на телефоне."),
@@ -183,7 +191,9 @@ Espressif приведены свои настройки квантования 
 <li><b>Ultralytics Detection</b> - выбор по умолчанию для YOLOv5/v8/v9/v10/v11/v12/26: обычные рамки.
 Формат метки у всех этих версий одинаковый, отличаются только веса модели.</li>
 <li><b>Ultralytics Segmentation</b> - если нужны контуры (площадь, форма). Размечайте полигонами или «Умным контуром».</li>
-<li><b>OBB</b> - объекты лежат под произвольным углом (аэросъёмка, корабли, текст).</li>
+<li><b>OBB</b> - объекты лежат под произвольным углом (аэросъёмка, корабли, текст). Размечайте инструментом «Повёрнутая рамка» (O).</li>
+<li><b>Pose</b> - нужны ключевые точки (суставы, углы). Сначала задайте точки: Правка → Настроить ключевые точки.</li>
+<li><b>Classify</b> - один класс на всю картинку: инструмент «Класс кадра» (T), экспорт создаёт папки train/val/класс.</li>
 <li><b>YOLOv7 / Darknet</b> - только если работаете со старыми репозиториями.</li>
 <li><b>COCO JSON</b> - для YOLOX, RT-DETR, Detectron2, MMDetection и большинства научных проектов.</li>
 <li><b>Pascal VOC</b> - старые инструменты и туториалы.</li>
@@ -205,7 +215,7 @@ class Advice:
 
 
 def _labeled(project):
-    return [e for e in project.images if [a for a in e.anns if not a.suggested]]
+    return [e for e in project.images if [a for a in e.anns if not a.suggested] or e.tag is not None]
 
 
 def analyze(project):
@@ -227,6 +237,9 @@ def analyze(project):
             sides.append(math.sqrt(max(1e-9, (x2 - x1) * (y2 - y1))) * 640 / max(e.w, e.h))
             n_poly += a.kind == "poly"
             n_box += a.kind == "box"
+    for e in lab:                      # классификация: класс кадра считается за один пример
+        if e.tag is not None and 0 <= e.tag < len(counts):
+            counts[e.tag] += 1
     total = sum(counts)
     gpu = shutil.which("nvidia-smi") is not None
     med = float(np.median(sides)) if sides else 100.0
@@ -349,20 +362,21 @@ def _col(row, *keys):
 
 def parse_rows(rows):
     """rows: list[dict] из results.csv -> dict серий."""
-    S = {k: [] for k in ("epoch", "tbox", "tcls", "vbox", "vcls", "p", "r", "map50", "map")}
+    S = {k: [] for k in ("epoch", "tbox", "tcls", "vbox", "vcls", "p", "r", "map50", "map", "acc")}
     for r in rows:
         ep = _col(r, "epoch")
         if ep is None:
             continue
         S["epoch"].append(ep)
-        S["tbox"].append(_col(r, "train/box_loss"))
+        S["tbox"].append(_col(r, "train/box_loss", "train/loss"))          # train/loss - классификация
         S["tcls"].append(_col(r, "train/cls_loss"))
-        S["vbox"].append(_col(r, "val/box_loss"))
+        S["vbox"].append(_col(r, "val/box_loss", "val/loss"))
         S["vcls"].append(_col(r, "val/cls_loss"))
         S["p"].append(_col(r, "metrics/precision(B)", "metrics/precision(M)"))
         S["r"].append(_col(r, "metrics/recall(B)", "metrics/recall(M)"))
         S["map50"].append(_col(r, "metrics/mAP50(B)", "metrics/mAP50(M)"))
         S["map"].append(_col(r, "metrics/mAP50-95(B)", "metrics/mAP50-95(M)"))
+        S["acc"].append(_col(r, "metrics/accuracy_top1"))
     return S
 
 
@@ -393,6 +407,14 @@ def explain_training(S, total_epochs, finished=False):
                 "Каждая эпоха - один проход по всем обучающим картинкам. После каждой модель проверяется на "
                 "проверочных (val) данных - по ним строятся метрики справа."))
 
+    acc = _clean(S.get("acc", []))
+    if acc and not _clean(S["map50"]):                       # классификация изображений
+        v = acc[-1]
+        band = "слабо" if v < 0.5 else "средне" if v < 0.8 else "хорошо" if v < 0.95 else "отлично"
+        out.append(("ok" if v >= 0.8 else "warn" if v < 0.5 and ep > 10 else "info", "Качество сейчас",
+                    f"Точность (top-1) = {v:.2f} - это «{band}»: модель правильно называет класс примерно у {100 * v:.0f}% проверочных "
+                    f"картинок. Лучшая за обучение: {max(acc):.2f}. Если классы мало отличаются друг от друга, проверьте, что картинки "
+                    "разложены по классам правильно и что в каждом классе достаточно примеров."))
     m50 = _clean(S["map50"])
     p, r = _clean(S["p"]), _clean(S["r"])
     if ep < 4:

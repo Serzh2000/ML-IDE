@@ -1,6 +1,6 @@
 name: Release (Windows exe + installer)
 
-# Запуск: создайте тег вида v0.4.0 -> на GitHub появится релиз с ML-IDE-windows.zip и установщиком
+# Запуск: создайте тег вида v0.5.0 -> на GitHub появится релиз с ML-IDE-windows.zip и установщиком
 on:
   push:
     tags: ["v*"]

@@ -13,6 +13,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 os.environ["ML_IDE_NO_TOUR"] = "1"
+os.environ.setdefault("MLIDE_SETTINGS_FILE", os.path.join(__import__("tempfile").gettempdir(), "mlide_shots_settings.ini"))
 
 from PySide6.QtCore import QEventLoop, QTimer
 from PySide6.QtWidgets import QApplication
@@ -25,7 +26,7 @@ from mlide.ui.help_dialogs import CodeSnippetsDialog
 from mlide.ui.live_test import LiveTestDialog
 from mlide.ui.main_window import MainWindow, install_translations
 from mlide.ui.review_dialog import ReviewDialog
-from mlide.ui.style import apply_dark
+from mlide.ui.style import apply_theme, detect_theme
 from mlide.ui.video_dialog import VideoDialog
 
 
@@ -45,7 +46,7 @@ def main():
     app = QApplication([])
     if i18n.lang() == "ru":
         install_translations(app)
-    apply_dark(app)
+    apply_theme(app, detect_theme())
 
     def settle(ms=500):
         loop = QEventLoop()

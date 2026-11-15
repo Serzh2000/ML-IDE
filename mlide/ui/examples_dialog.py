@@ -50,7 +50,7 @@ class ExamplesDialog(QDialog):
         for e in EX.EXAMPLES:
             ready = (paths.examples_dir() / e["id"] / f"{e['id']}.mlide.json").exists()
             it = QListWidgetItem(f"{e['title']}\n{e['kind']} · {len(e['names']) if not e.get('keep_top') else e['keep_top']} кл. · "
-                                 f"~{e['size_mb']} МБ{'  ✔ скачан' if ready else ''}")
+                                 f"~{e['size_mb']} МБ{'  · скачан' if ready else ''}")
             it.setData(Qt.UserRole, e["id"])
             self.lst.addItem(it)
         self.lst.currentRowChanged.connect(self._show)

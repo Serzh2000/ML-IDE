@@ -19,7 +19,9 @@ LICENSE_NOTE = "MobileSAM (Apache-2.0), экспорт в ONNX: Acly/MobileSAM �
 
 
 def models_dir() -> Path:
-    return paths.examples_dir().parent / "models"
+    import os
+    env = os.environ.get("MLIDE_MODELS")        # для тестов: не трогать домашнюю папку пользователя
+    return Path(env) if env else paths.examples_dir().parent / "models"
 
 
 def models_ready() -> bool:

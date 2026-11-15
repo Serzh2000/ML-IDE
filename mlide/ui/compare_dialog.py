@@ -178,6 +178,6 @@ class CompareDialog(QDialog):
             small = min(sizes, key=lambda r: r.size_mb)
             if small is not best and (best.val("map") or 0) - (small.val("map") or 0) < 0.03:
                 out.append(("info", "Компромисс размера и качества",
-                            f"{small.name} в {best.size_mb / max(small.size_mb, 0.1):.1f} раза меньше и почти не уступает по качеству - "
+                            f"{small.name} (файл меньше ×{best.size_mb / max(small.size_mb, 0.1):.1f}) почти не уступает по качеству - "
                             "для слабого устройства, возможно, лучший выбор."))
         return out

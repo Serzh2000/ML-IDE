@@ -114,13 +114,18 @@ def _color_jitter(img, p: AugParams, rng):
     return img
 
 
-def augment_sample(img, anns, p: AugParams, rng: np.random.Generator):
-    """img: BGR uint8. anns: list of (cls, kind, pts[[x,y],...]). Returns (img, anns)."""
+def augment_sample(img, anns, p: AugParams, rng: np.random.Generator, flip_idx=None):
+    """img: BGR uint8. anns: list of (cls, kind, pts) или (cls, "pose", box_pts, kps[[x,y,v],...]). Returns (img, anns).
+
+    Для pose отражение по горизонтали возможно только при заданном flip_idx (перестановка левых/правых точек);
+    по вертикали поза не отражается.
+    """
     h, w = img.shape[:2]
+    has_pose = any(len(a) > 3 and a[1] == "pose" for a in anns)
 
     # --- geometric: one combined affine matrix (about image centre)
-    flip_x = -1.0 if rng.random() < p.fliplr else 1.0
-    flip_y = -1.0 if rng.random() < p.flipud else 1.0
+    flip_x = -1.0 if rng.random() < p.fliplr and (not has_pose or flip_idx) else 1.0
+    flip_y = -1.0 if rng.random() < p.flipud and not has_pose else 1.0
     ang = math.radians(rng.uniform(-p.degrees, p.degrees))
     s = rng.uniform(1 - p.scale, 1 + p.scale) if p.scale else 1.0
     shx = math.tan(math.radians(rng.uniform(-p.shear, p.shear))) if p.shear else 0.0
@@ -141,9 +146,11 @@ def augment_sample(img, anns, p: AugParams, rng: np.random.Generator):
                                               borderValue=(114, 114, 114))
 
     new_anns = []
-    for cls, kind, pts in anns:
+    for item in anns:
+        cls, kind, pts = item[:3]
+        kps = item[3] if len(item) > 3 else None
         P = np.asarray(pts, dtype=np.float64)
-        if kind == "box":
+        if kind in ("box", "pose"):
             x1, y1 = P.min(0)
             x2, y2 = P.max(0)
             P = np.array([[x1, y1], [x2, y1], [x2, y2], [x1, y2]])
@@ -154,8 +161,21 @@ def augment_sample(img, anns, p: AugParams, rng: np.random.Generator):
         bw, bh = np.ptp(Q[:, 0]), np.ptp(Q[:, 1])
         if bw < 2 or bh < 2 or bw * bh < 0.25 * area_before:
             continue
-        if kind == "box":
+        if kind == "pose":
+            K = np.asarray(kps, dtype=np.float64).reshape(-1, 3)
+            XY = (np.c_[K[:, :2], np.ones(len(K))] @ M.T)[:, :2]
+            V = K[:, 2].copy()
+            if flip_x < 0 and flip_idx:
+                XY, V = XY[list(flip_idx)], V[list(flip_idx)]
+            inside = (XY[:, 0] >= 0) & (XY[:, 0] <= w) & (XY[:, 1] >= 0) & (XY[:, 1] <= h)
+            V = np.where(inside, V, 0)
+            XY = np.where(V[:, None] > 0, XY, 0)
+            new_anns.append((cls, "pose", [[Q[:, 0].min(), Q[:, 1].min()], [Q[:, 0].max(), Q[:, 1].max()]],
+                             [[float(x), float(y), int(v)] for (x, y), v in zip(XY, V)]))
+        elif kind == "box":
             new_anns.append((cls, "box", [[Q[:, 0].min(), Q[:, 1].min()], [Q[:, 0].max(), Q[:, 1].max()]]))
+        elif kind == "obb":
+            new_anns.append((cls, "obb", Q.tolist()))
         else:
             new_anns.append((cls, "poly", Q.tolist()))
 

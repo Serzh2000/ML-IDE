@@ -221,7 +221,7 @@ class ReviewDialog(QDialog):
             self.table.setItem(r, 2, QTableWidgetItem(txt))
         self.go.setEnabled(True)
         self.bar.setVisible(False)
-        self.status.setText(f"Найдено кадров для просмотра: {len(rows)}." if rows else "Подозрительных кадров не найдено ✔")
+        self.status.setText(f"Найдено кадров для просмотра: {len(rows)}." if rows else "Подозрительных кадров не найдено")
 
     def _open(self, row, _c):
         i = self.table.item(row, 0).data(Qt.UserRole)

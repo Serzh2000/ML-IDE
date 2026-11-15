@@ -10,6 +10,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 os.environ["ML_IDE_NO_TOUR"] = "1"
+os.environ.setdefault("MLIDE_SETTINGS_FILE", os.path.join(__import__("tempfile").gettempdir(), "mlide_shots_settings.ini"))
 
 from PySide6.QtCore import QEventLoop, QTimer
 from PySide6.QtWidgets import QApplication, QFileDialog
@@ -20,13 +21,16 @@ from mlide.ui.examples_dialog import ExamplesDialog
 from mlide.ui.learn import AdvisorDialog, HelpDialog, TrainDialog
 from mlide.ui.main_window import SHORTCUTS_HTML, MainWindow, install_translations
 from mlide.ui.results import ResultsDialog
-from mlide.ui.style import apply_dark
+from mlide.ui.style import apply_theme, detect_theme
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--project", required=True)
     ap.add_argument("--seg-project")
+    ap.add_argument("--obb-project")
+    ap.add_argument("--pose-project")
+    ap.add_argument("--cls-project")
     ap.add_argument("--train-folder", required=True)
     ap.add_argument("--test-image")
     ap.add_argument("--out", default="docs/screenshots")
@@ -42,7 +46,7 @@ def main():
     app.setWindowIcon(QIcon(str(paths.resource("assets/icon.ico"))))
     if i18n.lang() == "ru":
         install_translations(app)
-    apply_dark(app)
+    apply_theme(app, detect_theme())
 
     def settle(ms=350):
         # QEventLoop, а не app.quit(): quit() закрывает все окна
@@ -79,6 +83,21 @@ def main():
         shot(w, "segmentation.png")
         w._open_path(a.project)
         pick(w)
+
+    for arg, name, pick_fn in ((a.obb_project, "obb.png", pick), (a.pose_project, "pose.png", pick), (a.cls_project, "classify.png", None)):
+        if not arg:
+            continue
+        w._open_path(arg)
+        if pick_fn:
+            pick_fn(w)
+            if w.entry and w.entry.anns:
+                w.canvas.select(w.entry.anns[0].id)
+        else:
+            w.set_tool("tag")
+            w.load_image(3)
+        shot(w, name)
+    w._open_path(a.project)
+    pick(w)
 
     w.project.export["out_dir"] = a.train_folder
     for name, dlg in (("advisor.png", AdvisorDialog(w.project, w)),

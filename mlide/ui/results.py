@@ -17,7 +17,7 @@ from .. import autolabel, imgio
 from .. import knowledge as K
 from ..model import PALETTE
 from .dialogs import bgr_to_qpixmap, hex_to_bgr
-from .learn import LineChart, cards_html
+from .learn import LineChart, cards_html, fill_quality_chart
 
 EXPLAIN_IMG = {
     "results.png": ("Все графики обучения", "Кривые ошибок (loss) по эпохам и метрик качества. Loss должны снижаться, метрики - расти и выходить на плато."),
@@ -195,7 +195,7 @@ class ResultsDialog(QDialog):
         except Exception:
             pass
         self.c_loss.set_data(S["epoch"], {"tbox": S["tbox"], "vbox": S["vbox"]})
-        self.c_map.set_data(S["epoch"], {"map50": S["map50"], "p": S["p"], "r": S["r"]})
+        fill_quality_chart(self.c_map, S)
         self.explain.setHtml(cards_html(K.explain_training(S, total or len(S["epoch"]), finished=True)))
         self.summary.setText(self._summary_html(S, total))
         self._fill_files()

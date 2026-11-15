@@ -117,7 +117,7 @@ class DedupeDialog(QDialog):
             top.setExpanded(len(groups) <= 20)
             extra += len(g) - 1
         self.keep.setEnabled(bool(groups))
-        self.status.setText(f"Найдено групп: {len(groups)}, лишних копий: {extra}." if groups else "Дублей не найдено ✔")
+        self.status.setText(f"Найдено групп: {len(groups)}, лишних копий: {extra}." if groups else "Дублей не найдено")
 
     def _open(self, item, _c):
         p = item.data(0, Qt.UserRole)

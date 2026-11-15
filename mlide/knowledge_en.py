@@ -48,7 +48,7 @@ GLOSSARY = [
      "imprecise: check labeling accuracy (boxes tight around the object) and raise imgsz."),
     ("Confidence", "A number 0..1: how sure the model is about a specific detection.",
      "The confidence threshold cuts off weak detections. A high threshold - fewer false ones, but more misses. "
-     "For auto-labeling it is convenient to set 0.25 and review the result."),
+     "For auto-annotation it is convenient to set 0.25 and review the result."),
     ("NMS", "Duplicate removal: if the model output several boxes for one object, the best one is kept.",
      "The IoU parameter in NMS: the lower it is, the more aggressively neighboring boxes are merged. For densely "
      "packed objects raise it (0.6-0.7)."),
@@ -78,8 +78,16 @@ GLOSSARY = [
     ("Detect / Segment / OBB", "Three kinds of tasks: boxes / precise outlines / rotated boxes.",
      "Detect - a rectangle around the object, the simplest and fastest. Segment - an outline mask, needed when "
      "shape/area matters. OBB - a tilted rectangle for objects at an angle (ships in aerial images, text)."),
+    ("Keypoints (pose)", "The model finds not only the object but also characteristic points on it: joints, eyes, corners.",
+     "Every object gets the same list of points in the same order (for example nose, eyes, shoulders…). A point can be visible, "
+     "occluded (hidden behind something) or absent. Used for human poses, gestures, head orientation, control points of parts. "
+     "Configure the point list and skeleton in Edit → Configure keypoints."),
+    ("Image classification", "One class for the whole picture, no boxes: \"cat\", \"dog\", \"defect\", \"OK\".",
+     "Fits when WHAT is in the frame matters, not WHERE. It is the easiest to label: the Image class tool (T), keys 1-9. The metric is "
+     "accuracy: the share of images where the class is guessed right. Keep a similar number of examples per class - otherwise the model "
+     "learns to answer with the most frequent class."),
     ("ONNX", "A universal model format that works without Python and torch.",
-     "At the end train.py exports to ONNX by itself. The .onnx file can be loaded into \"Auto-label\" in this IDE "
+     "At the end train.py exports to ONNX by itself. The .onnx file can be loaded into \"Auto-annotate\" in this IDE "
      "or run in C++/C#/on a phone."),
     ("Early stopping (patience)", "Training stops by itself if quality has not improved for N epochs in a row.",
      "In Ultralytics patience=100 by default. For short experiments set 20-30."),
@@ -102,11 +110,11 @@ GUIDES = [
 <li><b>Define the task.</b> What exactly should the model find, and in what conditions (light, angle, camera)? Shoot
 images in exactly the conditions where the model will work.</li>
 <li><b>Create classes</b> (on the right). Name them briefly and unambiguously; do not create extra ones "just in case".</li>
-<li><b>Import photos</b> and label the first 50-100. Do not wait for perfection - auto-labeling will help later.</li>
-<li><b>Check the dataset:</b> <i>Tools → Statistics and check</i> and <i>Settings advisor</i>.</li>
+<li><b>Import photos</b> and label the first 50-100. Do not wait for perfection - auto-annotation will help later.</li>
+<li><b>Check the dataset:</b> <i>Tools → Statistics and check</i> and <i>Advisor</i>.</li>
 <li><b>Export</b> in the format you need; in the dialog click "Pick settings" - the IDE will suggest a model, epochs and a preset.</li>
-<li><b>Training:</b> <i>Tools → Model training</i> - charts and explanations right in the window.</li>
-<li><b>Improvement loop:</b> load the resulting best.onnx into "Auto-label", label the remaining photos with the machine,
+<li><b>Training:</b> <i>Tools → Training</i> - charts and explanations right in the window.</li>
+<li><b>Improvement loop:</b> load the resulting best.onnx into "Auto-annotate", label the remaining photos with the model,
 fix the mistakes, retrain. Each round saves hours of manual work.</li>
 </ol>"""),
     ("How to label correctly", """
@@ -118,7 +126,7 @@ fix the mistakes, retrain. Each round saves hours of manual work.</li>
 <li><b>Common rules</b> for disputed cases (glare, distant objects, objects cut off by the frame edge). Write them down.</li>
 <li><b>Very small objects</b> (under ~8 px) are better not labeled, or increase imgsz during training.</li>
 <li>Use <b>"Mark as reviewed" (R)</b> to see what has already been looked at by a human.</li>
-<li><b>Always review</b> auto-label suggestions - unreviewed ones are not included in the export.</li>
+<li><b>Always review</b> auto-annotate suggestions - unreviewed ones are not included in the export.</li>
 </ul>"""),
     ("How much data is needed", """
 <table border=1 cellpadding=4 cellspacing=0>
@@ -184,8 +192,10 @@ current page.</p>"""),
 <ul>
 <li><b>Ultralytics Detection</b> - the default for YOLOv5/v8/v9/v10/v11/v12/26: ordinary boxes.
 The label format is the same in all these versions; only the model weights differ.</li>
-<li><b>Ultralytics Segmentation</b> - if you need outlines (area, shape). Label with polygons or "Smart contour".</li>
-<li><b>OBB</b> - objects lie at an arbitrary angle (aerial imagery, ships, text).</li>
+<li><b>Ultralytics Segmentation</b> - if you need outlines (area, shape). Label with polygons or "Smart outline".</li>
+<li><b>OBB</b> - objects lie at an arbitrary angle (aerial imagery, ships, text). Label them with the Rotated box tool (O).</li>
+<li><b>Pose</b> - you need keypoints (joints, corners). Define the points first: Edit → Configure keypoints.</li>
+<li><b>Classify</b> - one class for the whole picture: the Image class tool (T); the export creates train/val/class folders.</li>
 <li><b>YOLOv7 / Darknet</b> - only if you work with old repositories.</li>
 <li><b>COCO JSON</b> - for YOLOX, RT-DETR, Detectron2, MMDetection and most research projects.</li>
 <li><b>Pascal VOC</b> - old tools and tutorials.</li>
@@ -207,7 +217,7 @@ class Advice:
 
 
 def _labeled(project):
-    return [e for e in project.images if [a for a in e.anns if not a.suggested]]
+    return [e for e in project.images if [a for a in e.anns if not a.suggested] or e.tag is not None]
 
 
 def analyze(project):
@@ -229,20 +239,23 @@ def analyze(project):
             sides.append(math.sqrt(max(1e-9, (x2 - x1) * (y2 - y1))) * 640 / max(e.w, e.h))
             n_poly += a.kind == "poly"
             n_box += a.kind == "box"
+    for e in lab:                      # классификация: класс кадра считается за один пример
+        if e.tag is not None and 0 <= e.tag < len(counts):
+            counts[e.tag] += 1
     total = sum(counts)
     gpu = shutil.which("nvidia-smi") is not None
     med = float(np.median(sides)) if sides else 100.0
     small_frac = float(np.mean(np.array(sides) < 16)) if sides else 0.0
 
     if n == 0:
-        adv.append(Advice("warn", "No labeled images", "Label at least 30-50 images and the advisor will be able to "
+        adv.append(Advice("warn", "No labeled images", "Label at least 30-50 images and the Advisor will be able to "
                           "give recommendations."))
         return {}, adv
 
     # --- amount of data
     if n < 30:
         adv.append(Advice("warn", f"Very little data ({n} images)",
-                          "This is only enough to test an idea. Label 100+ images. Auto-labeling will help next: "
+                          "This is only enough to test an idea. Label 100+ images. Auto-annotate will help next: "
                           "train a first model on what you have and let it label the rest."))
     elif n < 200:
         adv.append(Advice("info", f"Small dataset ({n} images)",
@@ -294,7 +307,7 @@ def analyze(project):
     if n_poly and n_box:
         adv.append(Advice("info", "Boxes and polygons are mixed",
                           "In the Detection format polygons become enclosing boxes; in Segmentation boxes "
-                          "become rectangular masks. For segmentation, label everything with polygons / \"Smart contour\"."))
+                          "become rectangular masks. For segmentation, label everything with polygons / \"Smart outline\"."))
     elif n_poly and not n_box:
         adv.append(Advice("info", "All labels are polygons", "For outlines choose the Segmentation format (-seg models)."))
 
@@ -356,20 +369,21 @@ def _col(row, *keys):
 
 def parse_rows(rows):
     """rows: list[dict] from results.csv -> dict of series."""
-    S = {k: [] for k in ("epoch", "tbox", "tcls", "vbox", "vcls", "p", "r", "map50", "map")}
+    S = {k: [] for k in ("epoch", "tbox", "tcls", "vbox", "vcls", "p", "r", "map50", "map", "acc")}
     for r in rows:
         ep = _col(r, "epoch")
         if ep is None:
             continue
         S["epoch"].append(ep)
-        S["tbox"].append(_col(r, "train/box_loss"))
+        S["tbox"].append(_col(r, "train/box_loss", "train/loss"))          # train/loss - классификация
         S["tcls"].append(_col(r, "train/cls_loss"))
-        S["vbox"].append(_col(r, "val/box_loss"))
+        S["vbox"].append(_col(r, "val/box_loss", "val/loss"))
         S["vcls"].append(_col(r, "val/cls_loss"))
         S["p"].append(_col(r, "metrics/precision(B)", "metrics/precision(M)"))
         S["r"].append(_col(r, "metrics/recall(B)", "metrics/recall(M)"))
         S["map50"].append(_col(r, "metrics/mAP50(B)", "metrics/mAP50(M)"))
         S["map"].append(_col(r, "metrics/mAP50-95(B)", "metrics/mAP50-95(M)"))
+        S["acc"].append(_col(r, "metrics/accuracy_top1"))
     return S
 
 
@@ -400,6 +414,14 @@ def explain_training(S, total_epochs, finished=False):
                 "Each epoch is one pass over all training images. After each one the model is checked on the "
                 "validation (val) data - the metrics on the right are built from it."))
 
+    acc = _clean(S.get("acc", []))
+    if acc and not _clean(S["map50"]):                       # image classification
+        v = acc[-1]
+        band = "weak" if v < 0.5 else "medium" if v < 0.8 else "good" if v < 0.95 else "excellent"
+        out.append(("ok" if v >= 0.8 else "warn" if v < 0.5 and ep > 10 else "info", "Quality right now",
+                    f"Accuracy (top-1) = {v:.2f} - that is \"{band}\": the model names the correct class for about {100 * v:.0f}% of the validation "
+                    f"images. Best during training: {max(acc):.2f}. If classes look alike, check that the images are sorted into the right "
+                    "classes and that each class has enough examples."))
     m50 = _clean(S["map50"])
     p, r = _clean(S["p"]), _clean(S["r"])
     if ep < 4:
@@ -470,5 +492,5 @@ def explain_training(S, total_epochs, finished=False):
         out.append(("ok", "Training finished",
                     "Results are in the runs/… folder: weights/best.pt (the best model), results.png (charts), "
                     "confusion_matrix.png (which classes get mixed up). train.py has also made best.onnx - load it into "
-                    "\"Auto-label\" so the model labels the remaining images, fix the mistakes and retrain."))
+                    "\"Auto-annotate\" so the model labels the remaining images, fix the mistakes and retrain."))
     return out

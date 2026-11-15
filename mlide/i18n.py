@@ -30,16 +30,16 @@ def detect_language() -> str:
     if env in ("ru", "en"):
         return env
     try:
-        from PySide6.QtCore import QSettings
-        v = QSettings("MLIDE", "MLIDE").value("lang", "ru")
+        from . import settings
+        v = settings.get().value("lang", "ru")
         return v if v in ("ru", "en") else "ru"
     except Exception:
         return "ru"
 
 
 def save_language(code: str):
-    from PySide6.QtCore import QSettings
-    QSettings("MLIDE", "MLIDE").setValue("lang", code)
+    from . import settings
+    settings.get().setValue("lang", code)
 
 
 def load_table(path=None) -> dict[str, str]:

@@ -20,22 +20,26 @@ FORMATS = {
     "ultra_det": "YOLO Детекция - Ultralytics (v5 / v8 / v9 / v10 / v11 / v12 / 26)",
     "ultra_seg": "YOLO Сегментация - Ultralytics (модели -seg)",
     "ultra_obb": "YOLO Повёрнутые рамки - Ultralytics (модели -obb)",
+    "ultra_pose": "YOLO Ключевые точки (Pose) - Ultralytics (модели -pose)",
+    "ultra_cls": "YOLO Классификация изображений - Ultralytics (модели -cls)",
     "yolov7": "YOLOv7 / YOLOR / структура Roboflow (train/images, train/labels)",
     "darknet": "Darknet YOLOv3 / v4 / Scaled-YOLOv4 (obj.names, obj.data, train.txt)",
     "coco": "COCO JSON (YOLOX, RT-DETR, Detectron2, MMDetection...)",
     "voc": "Pascal VOC XML",
 }
 
-TASK_OF = {"ultra_det": "detect", "ultra_seg": "segment", "ultra_obb": "obb"}
+TASK_OF = {"ultra_det": "detect", "ultra_seg": "segment", "ultra_obb": "obb", "ultra_pose": "pose", "ultra_cls": "classify"}
+_ULTRA_BOXED = ("ultra_det", "ultra_seg", "ultra_obb", "ultra_pose")     # images/<split>, labels/<split>, data.yaml
 
 MODEL_FAMILIES = {
-    "YOLO26": ("yolo26{s}", "yolo26{s}-seg", "yolo26{s}-obb"),
-    "YOLO12": ("yolo12{s}", "yolo12{s}-seg", "yolo12{s}-obb"),
-    "YOLO11": ("yolo11{s}", "yolo11{s}-seg", "yolo11{s}-obb"),
-    "YOLOv10": ("yolov10{s}", None, None),
-    "YOLOv9": ("yolov9{s}", "yolov9{s}-seg", None),
-    "YOLOv8": ("yolov8{s}", "yolov8{s}-seg", "yolov8{s}-obb"),
-    "YOLOv5 (u)": ("yolov5{s}u", "yolov5{s}-seg", None),
+    # детекция, сегментация, повёрнутые рамки, ключевые точки, классификация
+    "YOLO26": ("yolo26{s}", "yolo26{s}-seg", "yolo26{s}-obb", "yolo26{s}-pose", "yolo26{s}-cls"),
+    "YOLO12": ("yolo12{s}", "yolo12{s}-seg", "yolo12{s}-obb", None, None),
+    "YOLO11": ("yolo11{s}", "yolo11{s}-seg", "yolo11{s}-obb", "yolo11{s}-pose", "yolo11{s}-cls"),
+    "YOLOv10": ("yolov10{s}", None, None, None, None),
+    "YOLOv9": ("yolov9{s}", "yolov9{s}-seg", None, None, None),
+    "YOLOv8": ("yolov8{s}", "yolov8{s}-seg", "yolov8{s}-obb", "yolov8{s}-pose", "yolov8{s}-cls"),
+    "YOLOv5 (u)": ("yolov5{s}u", "yolov5{s}-seg", None, None, "yolov5{s}-cls"),
 }
 
 
@@ -77,6 +81,8 @@ def _items(entry: ImageEntry, skip_suggested):
 
 
 def _obb_points(a: Annotation):
+    if a.kind == "obb" and len(a.pts) == 4:           # размечено вручную: углы уже точные
+        return np.asarray(a.pts, dtype=np.float32)
     pts = np.asarray(a.polygon(), dtype=np.float32)
     rect = cv2.minAreaRect(pts)
     return cv2.boxPoints(rect)
@@ -96,8 +102,10 @@ def _clip_box(a: Annotation, w, h):
 def _owned_dirs(out: Path, fmt):
     """Folders a format fully owns inside the export folder; emptied before every export so that files of
     a previous export (another split / seed / filter) cannot leak into the new dataset."""
-    if fmt in ("ultra_det", "ultra_seg", "ultra_obb"):
+    if fmt in _ULTRA_BOXED:
         return [out / "images", out / "labels"]
+    if fmt == "ultra_cls":
+        return [out / "train", out / "val", out / "test"]
     if fmt == "yolov7":
         return [out / s / d for s in ("train", "val", "test") for d in ("images", "labels")]
     if fmt == "darknet":
@@ -124,9 +132,25 @@ def _clean_previous(project: Project, out: Path, fmt):
             (out / n).unlink(missing_ok=True)
 
 
-def yolo_lines(fmt, anns, w, h):
+def yolo_lines(fmt, anns, w, h, nkpt=0):
     out = []
     for a in anns:
+        if fmt == "ultra_pose":
+            if a.kind != "pose" or not a.kps:
+                continue
+            box = _clip_box(a, w, h)
+            if box is None:
+                continue
+            x1, y1, x2, y2 = box
+            kp = [list(k) for k in a.kps][:nkpt] + [[0, 0, 0]] * max(0, nkpt - len(a.kps))
+            flat = []
+            for kx, ky, kv in kp:
+                if kv > 0 and 0 <= kx <= w and 0 <= ky <= h:
+                    flat += [f"{kx / w:.6f}", f"{ky / h:.6f}", str(int(kv))]
+                else:
+                    flat += ["0.000000", "0.000000", "0"]
+            out.append(f"{a.cls} {(x1 + x2) / 2 / w:.6f} {(y1 + y2) / 2 / h:.6f} {(x2 - x1) / w:.6f} {(y2 - y1) / h:.6f} " + " ".join(flat))
+            continue
         if fmt in ("ultra_det", "yolov7", "darknet"):
             box = _clip_box(a, w, h)
             if box is None:
@@ -169,6 +193,29 @@ def _split(items, o: ExportOptions, progress=None):
     return {k: v for k, v in splits.items() if v}
 
 
+def _split_stratified(items, o: ExportOptions, key):
+    """Классификация: каждая часть выборки получает свою долю КАЖДОГО класса (иначе класс может целиком попасть в train)."""
+    by: dict = {}
+    for it in items:
+        by.setdefault(key(it), []).append(it)
+    res = {"train": [], "val": [], "test": []}
+    tot = max(1e-9, o.train + o.val + o.test)
+    for k in sorted(by, key=str):
+        grp = by[k]
+        random.Random(f"{o.seed}-{k}").shuffle(grp)
+        n = len(grp)
+        n_val = int(round(n * o.val / tot))
+        n_test = int(round(n * o.test / tot))
+        if o.val > 0 and n >= 2 and n_val == 0:
+            n_val = 1
+        n_val = min(n_val, n - 1) if n > 1 else 0
+        n_test = min(n_test, n - 1 - n_val) if n - n_val > 1 else 0
+        res["val"] += grp[:n_val]
+        res["test"] += grp[n_val:n_val + n_test]
+        res["train"] += grp[n_val + n_test:]
+    return {k: v for k, v in res.items() if v}
+
+
 def _unique(name, used):
     """Unique by stem, not by full name: cat.jpg and cat.png would otherwise share one cat.txt label file."""
     stem, ext = Path(name).stem, Path(name).suffix
@@ -178,6 +225,22 @@ def _unique(name, used):
         i += 1
     used.add(cand.lower())
     return cand + ext
+
+
+def _safe_dir(name: str) -> str:
+    return "".join(c if c not in '<>:"/\\|?*' else "_" for c in str(name)).strip() or "class"
+
+
+def _flip_idx(project: Project):
+    """Перестановка точек при отражении: пары «левая-правая» меняются местами, остальные остаются."""
+    n = len(project.keypoints)
+    if not project.flip_pairs or n == 0:
+        return None
+    idx = list(range(n))
+    for a, b in project.flip_pairs:
+        if 0 <= a < n and 0 <= b < n:
+            idx[a], idx[b] = b, a
+    return idx
 
 
 def _copy_image(src: str, dst: Path):
@@ -196,31 +259,48 @@ def export_dataset(project: Project, o: ExportOptions, progress=lambda i, n, m: 
     if not names:
         raise ValueError("В проекте нет классов.")
 
+    if o.fmt == "ultra_pose" and not project.keypoints:
+        raise ValueError("Не заданы ключевые точки: Правка → Настроить ключевые точки…")
     entries = []
     for e in project.images:
         if o.only_reviewed and not e.reviewed:
             continue
-        if not _items(e, o.skip_suggested) and not o.include_unlabeled:
+        if o.fmt == "ultra_cls":
+            if e.tag is None or not (0 <= e.tag < len(names)):
+                continue
+        elif o.fmt == "ultra_pose":
+            if not any(a.kind == "pose" and a.kps for a in _items(e, o.skip_suggested)) and not o.include_unlabeled:
+                continue
+        elif not _items(e, o.skip_suggested) and not o.include_unlabeled:
             continue
         entries.append(e)
     if not entries:
-        raise ValueError("Нечего экспортировать: нет размеченных изображений, подходящих под фильтры.")
+        raise ValueError("Нечего экспортировать: нет размеченных изображений, подходящих под фильтры." if o.fmt != "ultra_cls" else
+                         "Нечего экспортировать: ни одному изображению не присвоен класс (инструмент «Класс кадра»).")
 
     _clean_previous(project, out, o.fmt)
-    splits = _split(entries, o, progress)
+    splits = _split_stratified(entries, o, lambda e: e.tag) if o.fmt == "ultra_cls" else _split(entries, o, progress)
     total = sum(len(v) for v in splits.values())
     done = 0
     rng = np.random.default_rng(o.seed)
     used: dict[str, set] = {}       # per image folder: VOC and Darknet put every split into one folder
     stats = {"images": 0, "labels": 0, "aug": 0}
-    coco = {s: {"images": [], "annotations": [], "categories": [
-        {"id": i, "name": n} for i, n in enumerate(names)]} for s in splits}
+    def _cat(i, n):
+        c = {"id": i, "name": n}
+        if project.keypoints:
+            c["keypoints"] = list(project.keypoints)
+            c["skeleton"] = [[a + 1, b + 1] for a, b in project.skeleton]
+        return c
+
+    coco = {s: {"images": [], "annotations": [], "categories": [_cat(i, n) for i, n in enumerate(names)]} for s in splits}
     coco_ann_id = 1
     darknet_lists = {s: [] for s in splits}
 
     def dirs(split):
-        if o.fmt in ("ultra_det", "ultra_seg", "ultra_obb"):
+        if o.fmt in _ULTRA_BOXED:
             return out / "images" / split, out / "labels" / split
+        if o.fmt == "ultra_cls":
+            return out / split, None
         if o.fmt == "yolov7":
             return out / split / "images", out / split / "labels"
         if o.fmt == "darknet":
@@ -234,6 +314,8 @@ def export_dataset(project: Project, o: ExportOptions, progress=lambda i, n, m: 
     def emit(split, entry, img_name, anns_triplets, image_src=None, image_arr=None, w=None, h=None):
         nonlocal coco_ann_id
         idir, ldir = dirs(split)
+        if o.fmt == "ultra_cls":
+            idir = idir / _safe_dir(names[entry.tag])
         idir.mkdir(parents=True, exist_ok=True)
         if ldir:
             ldir.mkdir(parents=True, exist_ok=True)
@@ -241,12 +323,15 @@ def export_dataset(project: Project, o: ExportOptions, progress=lambda i, n, m: 
             imgio.imwrite(idir / img_name, image_arr)
         else:
             _copy_image(image_src, idir / img_name)
-        anns = [Annotation(c, k, [list(p) for p in pts]) for c, k, pts in anns_triplets]
+        anns = [Annotation(t[0], t[1], [list(p) for p in t[2]], kps=([list(k) for k in t[3]] if len(t) > 3 and t[3] is not None else None))
+                for t in anns_triplets]
         stem = Path(img_name).stem
         stats["images"] += 1
         stats["labels"] += len(anns)
-        if o.fmt in ("ultra_det", "ultra_seg", "ultra_obb", "yolov7", "darknet"):
-            (ldir / f"{stem}.txt").write_text(yolo_lines(o.fmt, anns, w, h), encoding="utf-8")
+        if o.fmt == "ultra_cls":
+            stats["labels"] = stats["labels"] - len(anns) + 1
+        elif o.fmt in ("ultra_det", "ultra_seg", "ultra_obb", "ultra_pose", "yolov7", "darknet"):
+            (ldir / f"{stem}.txt").write_text(yolo_lines(o.fmt, anns, w, h, len(project.keypoints)), encoding="utf-8")
             if o.fmt == "darknet":
                 darknet_lists[split].append(f"data/obj/{img_name}")
         elif o.fmt == "coco":
@@ -259,11 +344,15 @@ def export_dataset(project: Project, o: ExportOptions, progress=lambda i, n, m: 
                 x1, y1, x2, y2 = box
                 poly = [[min(max(float(x), 0), w), min(max(float(y), 0), h)] for x, y in a.polygon()]
                 area = (x2 - x1) * (y2 - y1) if a.kind == "box" else cv2.contourArea(np.float32(poly))
-                coco[split]["annotations"].append({
+                rec = {
                     "id": coco_ann_id, "image_id": iid, "category_id": a.cls,
                     "bbox": [round(x1, 2), round(y1, 2), round(x2 - x1, 2), round(y2 - y1, 2)],
                     "area": round(float(area), 2), "iscrowd": 0,
-                    "segmentation": [[round(v, 2) for p in poly for v in p]]})
+                    "segmentation": [[round(v, 2) for p in poly for v in p]]}
+                if a.kind == "pose" and a.kps:
+                    rec["keypoints"] = [round(float(c), 2) if i % 3 != 2 else int(c) for k in a.kps for i, c in enumerate(k)]
+                    rec["num_keypoints"] = sum(1 for k in a.kps if k[2] > 0)
+                coco[split]["annotations"].append(rec)
                 coco_ann_id += 1
         elif o.fmt == "voc":
             objs = []
@@ -291,28 +380,41 @@ def export_dataset(project: Project, o: ExportOptions, progress=lambda i, n, m: 
             if not progress(done, total, e.name):
                 raise Cancelled()
             done += 1
-            anns = [(a.cls, a.kind, a.pts) for a in _items(e, o.skip_suggested)]
-            names_used = used.setdefault(str(dirs(split)[0]), set())
+            anns = [(a.cls, a.kind, a.pts, a.kps) if a.kind == "pose" else (a.cls, a.kind, a.pts) for a in _items(e, o.skip_suggested)]
+            if o.fmt == "ultra_cls":
+                anns = []
+            names_used = used.setdefault(str(dirs(split)[0] / (_safe_dir(names[e.tag]) if o.fmt == "ultra_cls" else "")), set())
             name = _unique(e.name, names_used)
             emit(split, e, name, anns, image_src=e.path, w=e.w, h=e.h)
-            if o.bake_aug and split == "train" and o.aug.copies > 0 and anns:
+            if o.bake_aug and split == "train" and o.aug.copies > 0 and (anns or o.fmt == "ultra_cls"):
                 img = imgio.imread(e.path)
+                flip_idx = _flip_idx(project) if o.fmt == "ultra_pose" else None
                 for k in range(o.aug.copies):
-                    aimg, aanns = augment_sample(img, anns, o.aug, rng)
-                    if not aanns:
+                    aimg, aanns = augment_sample(img, anns, o.aug, rng, flip_idx=flip_idx)
+                    if not aanns and o.fmt != "ultra_cls":
                         continue
                     aname = _unique(f"{Path(name).stem}_aug{k}.jpg", names_used)
                     emit(split, e, aname, aanns, image_arr=aimg, w=e.w, h=e.h)
                     stats["aug"] += 1
 
     # ---- dataset descriptor files
-    if o.fmt in ("ultra_det", "ultra_seg", "ultra_obb", "yolov7"):
+    if o.fmt == "ultra_cls":
+        for s in splits:                     # у каждой части выборки есть папки всех классов (одинаковая нумерация классов)
+            for n in names:
+                (out / s / _safe_dir(n)).mkdir(parents=True, exist_ok=True)
+        (out / "classes.txt").write_text("\n".join(names) + "\n", encoding="utf-8")
+    elif o.fmt in ("ultra_det", "ultra_seg", "ultra_obb", "ultra_pose", "yolov7"):
         # no absolute "path": it is resolved relative to data.yaml, so the folder can be moved / uploaded
         cfg = {}
         for s in splits:
             cfg[s] = f"images/{s}" if o.fmt != "yolov7" else f"{s}/images"
         cfg["nc"] = len(names)
         cfg["names"] = {i: n for i, n in enumerate(names)}
+        if o.fmt == "ultra_pose":
+            cfg["kpt_shape"] = [len(project.keypoints), 3]
+            fi = _flip_idx(project)
+            if fi:
+                cfg["flip_idx"] = fi
         (out / "data.yaml").write_text(yaml.safe_dump(cfg, sort_keys=False, allow_unicode=True), encoding="utf-8")
     elif o.fmt == "darknet":
         (out / "obj.names").write_text("\n".join(names) + "\n", encoding="utf-8")
@@ -341,14 +443,16 @@ def export_dataset(project: Project, o: ExportOptions, progress=lambda i, n, m: 
 # ----------------------------------------------------------------------------- training script
 def write_train_script(out: Path, o: ExportOptions):
     task = TASK_OF[o.fmt]
-    idx = {"detect": 0, "segment": 1, "obb": 2}[task]
+    idx = {"detect": 0, "segment": 1, "obb": 2, "pose": 3, "classify": 4}[task]
     tmpl = MODEL_FAMILIES.get(o.family, MODEL_FAMILIES["YOLO11"])[idx]
     if tmpl is None:
         tmpl = MODEL_FAMILIES[o.family][0]
-        note = f"# NOTE: {o.family} has no official '{task}' weights - falling back to detection weights.\n"
+        note = f"# NOTE: {o.family} has no official '{task}' weights - falling back to detection weights (YOLO11 recommended).\n"
     else:
         note = ""
     weights = tmpl.format(s=o.size) + ".pt"
+    data_arg = 'str(HERE)' if task == "classify" else 'str(HERE / "data.yaml")'
+    imgsz = 224 if (task == "classify" and o.imgsz == 640) else o.imgsz
     hyp = o.aug.ultralytics_hyp()
     if not o.online_aug:            # omitting the keys would silently enable the trainer's own defaults
         hyp = {k: 0.0 for k in hyp}
@@ -372,9 +476,9 @@ from ultralytics import YOLO
 def main():
     model = YOLO("{weights}")   # pretrained weights are downloaded automatically
     model.train(
-        data=str(HERE / "data.yaml"),
+        data={data_arg},
         epochs={o.epochs},
-        imgsz={o.imgsz},
+        imgsz={imgsz},
         batch={o.batch},
         project=str(HERE / "runs"),
 {extra_lines}
@@ -413,7 +517,7 @@ def find_label_file(img_path: str):
     return next((c for c in cands if c.exists()), None)
 
 
-def import_yolo_labels(entry: ImageEntry, n_classes: int) -> int:
+def import_yolo_labels(entry: ImageEntry, n_classes: int, n_kpts: int = 0, kpt_dim: int = 3, obb: bool = False) -> int:
     lf = find_label_file(entry.path)
     if not lf:
         return 0
@@ -426,13 +530,19 @@ def import_yolo_labels(entry: ImageEntry, n_classes: int) -> int:
             continue
         if cls >= n_classes:
             continue
-        if len(v) == 4:
+        if n_kpts and len(v) == 4 + kpt_dim * n_kpts:     # pose: рамка + (x, y[, видимость]) для каждой точки
+            cx, cy, bw, bh = v[:4]
+            kp = [[v[4 + kpt_dim * i] * entry.w, v[5 + kpt_dim * i] * entry.h, int(v[6 + kpt_dim * i]) if kpt_dim == 3 else 2]
+                  for i in range(n_kpts)]
+            entry.anns.append(Annotation(cls, "pose", [[(cx - bw / 2) * entry.w, (cy - bh / 2) * entry.h],
+                                                      [(cx + bw / 2) * entry.w, (cy + bh / 2) * entry.h]], kps=kp))
+        elif len(v) == 4:
             cx, cy, bw, bh = v
             entry.anns.append(Annotation(cls, "box", [[(cx - bw / 2) * entry.w, (cy - bh / 2) * entry.h],
                                                      [(cx + bw / 2) * entry.w, (cy + bh / 2) * entry.h]]))
         elif len(v) >= 6 and len(v) % 2 == 0:
             pts = [[v[i] * entry.w, v[i + 1] * entry.h] for i in range(0, len(v), 2)]
-            entry.anns.append(Annotation(cls, "poly", pts))
+            entry.anns.append(Annotation(cls, "obb" if (obb and len(pts) == 4) else "poly", pts))
         else:
             continue
         n += 1

@@ -5,14 +5,14 @@ import os
 import sys
 from pathlib import Path
 
-from PySide6.QtCore import QSettings, QSize, QStandardPaths, Qt, QTimer
+from PySide6.QtCore import QSize, QStandardPaths, Qt, QTimer
 from PySide6.QtGui import (QAction, QActionGroup, QColor, QIcon, QImage, QImageReader, QKeySequence,
                            QPixmap, QShortcut)
 from PySide6.QtWidgets import (QApplication, QColorDialog, QComboBox, QDockWidget, QFileDialog, QHBoxLayout,
                                QInputDialog, QLabel, QListView, QListWidget, QListWidgetItem, QMainWindow, QMessageBox, QStackedWidget,
                                QPushButton, QToolBar, QVBoxLayout, QWidget)
 
-from .. import __version__, autolabel, classtools, formats, imgio, importers, sam as sam_mod
+from .. import __version__, settings, autolabel, classtools, formats, imgio, importers, sam as sam_mod
 from ..augment import get_all_presets
 from ..model import Annotation, ImageEntry, Project
 from .canvas import Canvas
@@ -26,11 +26,13 @@ from .examples_dialog import ExamplesDialog
 from .sam_download import ensure_sam
 from .compare_dialog import CompareDialog
 from .dedupe_dialog import DedupeDialog
-from .help_dialogs import CodeSnippetsDialog, GpuHelpDialog
+from .help_dialogs import CodeSnippetsDialog, GpuHelpDialog, UpdateDialog
 from .live_test import LiveTestDialog
 from .review_dialog import ReviewDialog
 from .video_dialog import VideoDialog
+from .keypoints_dialog import KeypointsDialog
 from .welcome import WelcomePage
+from . import icons
 from .imagelist import FILTERS, ImageListModel
 from .. import paths
 from .style import apply_dark
@@ -89,6 +91,7 @@ class MainWindow(QMainWindow):
         self.canvas.selectionChanged.connect(self.on_canvas_selection)
         self.canvas.smartBox.connect(self.on_smart_box)
         self.canvas.samPoints.connect(self.on_sam_points)
+        self.canvas.hint.connect(lambda t: self.statusBar().showMessage(t, 15000))
         self._sam = None
         self.canvas.cursorMoved.connect(lambda x, y: self.pos_label.setText(f"x {x:.0f}  y {y:.0f}"))
         self.canvas.zoomChanged.connect(lambda s: self.zoom_label.setText(f"{s * 100:.0f}%"))
@@ -120,6 +123,7 @@ class MainWindow(QMainWindow):
         self.img_model = ImageListModel(lambda: self.project)
         self.img_list.setModel(self.img_model)
         self.img_list.setUniformItemSizes(True)
+        self.img_list.setIconSize(QSize(16, 16))
         self.img_list.setSelectionMode(QListView.SingleSelection)
         self.img_filter = QComboBox()
         self.img_filter.addItems(FILTERS)
@@ -144,6 +148,7 @@ class MainWindow(QMainWindow):
         self.cls_list = QListWidget()
         self.cls_list.currentRowChanged.connect(self._on_class_row)
         self.cls_list.itemDoubleClicked.connect(lambda _: self.rename_class())
+        self.cls_list.itemClicked.connect(self._class_clicked)
         self.cls_list.setContextMenuPolicy(Qt.CustomContextMenu)
         self.cls_list.customContextMenuRequested.connect(self._class_menu)
         w = QWidget()
@@ -151,9 +156,12 @@ class MainWindow(QMainWindow):
         v.setContentsMargins(4, 4, 4, 4)
         v.addWidget(self.cls_list, 1)
         row = QHBoxLayout()
-        for t, fn in (("＋ Класс", self.add_class), ("Имя", self.rename_class), ("Цвет", self.recolor_class),
-                      ("－", self.remove_class)):
+        for t, ico, fn in (("Класс", "plus", self.add_class), ("Имя", "pencil", self.rename_class), ("Цвет", "palette", self.recolor_class),
+                           ("", "trash", self.remove_class)):
             b = QPushButton(t)
+            b.setIcon(icons.icon(ico))
+            if not t:
+                b.setObjectName("removeClass")
             b.clicked.connect(fn)
             row.addWidget(b)
         v.addLayout(row)
@@ -166,17 +174,19 @@ class MainWindow(QMainWindow):
         d.setObjectName("classes")
         self.addDockWidget(Qt.RightDockWidgetArea, d)
         self.dock_classes = d
-        tips = {"＋ Класс": "Добавить новый класс (то, что должна искать модель)",
+        tips = {"Класс": "Добавить новый класс (то, что должна искать модель)",
                 "Имя": "Переименовать выбранный класс", "Цвет": "Изменить цвет выбранного класса",
-                "－": "Удалить выбранный класс вместе с его разметкой",
                 "Импорт изображений…": "Добавить файлы изображений в проект",
                 "Импорт папки…": "Добавить все изображения из папки (включая вложенные)"}
         for b in w.findChildren(QPushButton):
             if b.text() in tips:
                 b.setToolTip(tips[b.text()])
+            elif b.objectName() == "removeClass":
+                b.setToolTip("Удалить выбранный класс вместе с его разметкой")
 
         # annotations
         self.ann_list = QListWidget()
+        self.ann_list.setIconSize(QSize(16, 16))
         self.ann_list.currentRowChanged.connect(self._on_ann_row)
         w = QWidget()
         v = QVBoxLayout(w)
@@ -221,8 +231,8 @@ class MainWindow(QMainWindow):
         self.a_copyprev = A("Копировать разметку с предыдущего изображения", self.copy_prev, "Ctrl+D")
         self.a_accept = A("Принять подсказки на этом изображении", self.accept_suggestions, "Y")
         self.a_review = A("Отметить проверенным и дальше", self.mark_reviewed_next, "R")
-        self.a_prev = A("◀ Назад", lambda: self.step(-1), "A")
-        self.a_next = A("Вперёд ▶", lambda: self.step(1), "D")
+        self.a_prev = A("Назад", lambda: self.step(-1), "A")
+        self.a_next = A("Вперёд", lambda: self.step(1), "D")
         QShortcut(QKeySequence("PgUp"), self, activated=lambda: self.step(-1))
         QShortcut(QKeySequence("PgDown"), self, activated=lambda: self.step(1))
         self.a_fit = A("Вписать в окно", lambda: self.canvas.fit(), "F")
@@ -250,11 +260,13 @@ class MainWindow(QMainWindow):
         self.a_live = A("Тест модели на видео и камере…", self.live_test)
         self.a_gpu = A("Видеокарта и ускорение (CUDA)…", self.gpu_help)
         self.a_code = A("Примеры кода для запуска модели…", self.code_examples)
+        self.a_update = A("Проверить обновления…", self.check_updates)
+        self.a_kpts = A("Настроить ключевые точки…", self.configure_keypoints)
         self.a_tour = A("Тур по приложению", self.start_tour)
         self.a_exit = A("Выход", self.close, "Ctrl+Q")
 
         # короткие подписи для кнопок панели (в меню остаются полные названия)
-        for a, t in ((self.a_prev, "◀ Назад"), (self.a_next, "Вперёд ▶"), (self.a_review, "✔ Проверено"),
+        for a, t in ((self.a_prev, "Назад"), (self.a_next, "Вперёд"), (self.a_review, "Проверено"),
                      (self.a_auto, "Авторазметка"), (self.a_accept, "Принять (Y)"), (self.a_presets, "Аугментации"),
                      (self.a_stats, "Статистика"), (self.a_adv, "Советник"), (self.a_export, "Экспорт"),
                      (self.a_train, "Обучение"), (self.a_results, "Результаты"), (self.a_ref, "Справка (F1)")):
@@ -273,14 +285,26 @@ class MainWindow(QMainWindow):
                      (self.a_ref, "Справочник: руководства и словарь терминов (F1)")):
             a.setToolTip(t)
 
+        for a, ico in ((self.a_prev, "prev"), (self.a_next, "next"), (self.a_review, "reviewed"), (self.a_auto, "auto"),
+                       (self.a_accept, "accept"), (self.a_presets, "augment"), (self.a_stats, "stats"), (self.a_adv, "advisor"),
+                       (self.a_export, "export"), (self.a_train, "train"), (self.a_results, "results"), (self.a_ref, "help"),
+                       (self.a_open, "open"), (self.a_examples, "examples"), (self.a_imp, "images"), (self.a_impf, "folder"),
+                       (self.a_video, "video"), (self.a_live, "camera"), (self.a_viewer, "model"), (self.a_compare, "stats"),
+                       (self.a_tour, "tour"), (self.a_update, "refresh"), (self.a_gpu, "info"), (self.a_dups, "copy")):
+            a.setIcon(icons.icon(ico))
         grp = QActionGroup(self)
         self.tool_actions = {}
         for key, text, sc, tip in (("select", "Выбор", "V", "Выбор / перемещение / изменение размера (V)"),
                                    ("box", "Рамка", "W", "Рисовать рамки (W)"),
                                    ("poly", "Полигон", "P", "Рисовать полигоны для сегментации (P)"),
                                    ("smart", "Умный контур", "S", "Обведите объект грубой рамкой - контур найдётся сам (S)"),
-                                   ("sam", "Клик (SAM)", "G", "Кликните по объекту - нейросеть найдёт точный контур. Ctrl+клик - исключить область, Enter - принять (G)")):
+                                   ("sam", "Клик (SAM)", "G", "Кликните по объекту - нейросеть найдёт точный контур. Ctrl+клик - исключить область, Enter - принять (G)"),
+                                   ("obb", "Повёрнутая рамка", "O", "Протяните линию вдоль объекта, затем щёлкните, задав ширину. [ и ] - повернуть (O)"),
+                                   ("pose", "Ключевые точки", "K", "Нарисуйте рамку, затем ставьте точки по очереди (K). Список точек: Правка → Настроить ключевые точки"),
+                                   ("tag", "Класс кадра", "T", "Классификация: присвоить класс изображению целиком клавишами 1-9 или щелчком по классу (T)")):
             a = A(text, lambda _=False, k=key: self.set_tool(k), sc, checkable=True, tip=tip)
+            a.setIcon(icons.icon(key))
+            a.setToolTip(f"<b>{text}</b> ({sc})<br>{tip}")
             grp.addAction(a)
             self.tool_actions[key] = a
 
@@ -297,7 +321,7 @@ class MainWindow(QMainWindow):
             m.addSeparator() if a is None else m.addAction(a)
         self._fill_recent()
         m = mb.addMenu("&Правка")
-        for a in (self.a_undo, self.a_redo, None, self.a_del, self.a_copyprev, self.a_accept, self.a_review):
+        for a in (self.a_undo, self.a_redo, None, self.a_del, self.a_copyprev, self.a_accept, self.a_review, None, self.a_kpts):
             m.addSeparator() if a is None else m.addAction(a)
         m = mb.addMenu("&Инструменты")
         for a in (self.a_auto, self.a_review_model, self.a_dups, self.a_presets, self.a_stats, self.a_adv, None,
@@ -309,38 +333,51 @@ class MainWindow(QMainWindow):
         m.addSeparator()
         for d in (self.dock_images, self.dock_classes, self.dock_objects):
             m.addAction(d.toggleViewAction())
+        tm = m.addMenu("Тема оформления")
+        for code, label in (("dark", "Тёмная"), ("light", "Светлая")):
+            tm.addAction(label, lambda c=code: self.change_theme(c))
         lm = m.addMenu("Язык / Language")
         for code, label in (("ru", "Русский"), ("en", "English")):
             lm.addAction(label, lambda c=code: self.change_language(c))
         hm = mb.addMenu("&Справка")
         hm.addAction(self.a_tour)
+        hm.addAction(self.a_update)
         hm.addAction(self.a_ref)
         hm.addAction(self.a_help)
 
-        tb = QToolBar("Инструменты")
+        # слева - палитра инструментов разметки (только значки, название и клавиша в подсказке), сверху - одна строка действий
+        pal = QToolBar("Инструменты разметки")
+        pal.setObjectName("toolPalette")
+        pal.setOrientation(Qt.Vertical)
+        pal.setMovable(False)
+        pal.setIconSize(QSize(22, 22))
+        pal.setToolButtonStyle(Qt.ToolButtonIconOnly)
+        self.addToolBar(Qt.LeftToolBarArea, pal)
+        for k in self.tool_actions:
+            pal.addAction(self.tool_actions[k])
+        self.tools_bar = pal
+
+        tb = QToolBar("Действия")
         self.toolbar = tb
         tb.setMovable(False)
         tb.setIconSize(QSize(18, 18))
-        self.addToolBar(tb)
-        for k in ("select", "box", "poly", "smart"):
-            tb.addAction(self.tool_actions[k])
-        tb.addSeparator()
+        tb.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        self.addToolBar(Qt.TopToolBarArea, tb)
         for a in (self.a_prev, self.a_next, self.a_review):
             tb.addAction(a)
         tb.addSeparator()
-        self.addToolBarBreak()
-        tb2 = QToolBar("Действия")
-        tb2.setMovable(False)
-        self.toolbar2 = tb2
-        self.addToolBar(tb2)
         for a in (self.a_auto, self.a_accept, self.a_presets, self.a_stats, self.a_adv):
-            tb2.addAction(a)
-        tb2.addSeparator()
-        tb2.addAction(self.a_export)
-        tb2.addAction(self.a_train)
-        tb2.addAction(self.a_results)
-        tb2.addSeparator()
-        tb2.addAction(self.a_ref)
+            tb.addAction(a)
+        tb.addSeparator()
+        for a in (self.a_export, self.a_train, self.a_results):
+            tb.addAction(a)
+        tb.addSeparator()
+        tb.addAction(self.a_ref)
+        for a in (self.a_prev, self.a_next, self.a_review, self.a_ref):  # навигация и справка - только значки: экономит место
+            btn = tb.widgetForAction(a)
+            if btn is not None:
+                btn.setToolButtonStyle(Qt.ToolButtonIconOnly)
+        self.toolbar2 = tb                                           # совместимость: раньше было две строки
 
     # ================================================================ state refresh
     @property
@@ -357,13 +394,6 @@ class MainWindow(QMainWindow):
     def _title(self):
         name = self.project.name + ("*" if self.project.dirty else "")
         self.setWindowTitle(f"{name} - ML IDE {__version__}")
-
-    @staticmethod
-    def _img_text(e: ImageEntry):
-        real = [a for a in e.anns if not a.suggested]
-        sug = len(e.anns) - len(real)
-        mark = "✔" if e.reviewed else ("●" if real else ("◐" if sug else "○"))
-        return f"{mark} {e.name}   [{len(real)}{'+' + str(sug) + '?' if sug else ''}]"
 
     def refresh_images(self):
         sm = self.img_list.selectionModel()
@@ -384,6 +414,7 @@ class MainWindow(QMainWindow):
         self.cls_list.clear()
         from collections import Counter
         cnt = Counter(a.cls for e in self.project.images for a in e.anns if not a.suggested)
+        cnt.update(e.tag for e in self.project.images if e.tag is not None)          # классификация: класс кадра
         for i, c in enumerate(self.project.classes):
             counts = cnt.get(i, 0)
             it = QListWidgetItem(color_icon(c["color"]), f"{i + 1 if i < 9 else '·'}  {c['name']}   ({counts})")
@@ -402,8 +433,9 @@ class MainWindow(QMainWindow):
             for r, a in enumerate(e.anns):
                 nm = self.project.classes[a.cls]["name"] if a.cls < len(self.project.classes) else f"#{a.cls}"
                 col = self.project.classes[a.cls]["color"] if a.cls < len(self.project.classes) else "#888"
-                it = QListWidgetItem(color_icon(col), f"{nm}  {'▭' if a.kind == 'box' else '⬠'}"
-                                     f"{'  ? ' + format(a.conf, '.2f') if a.suggested and a.conf is not None else ''}")
+                kind_icon = {"box": "box", "poly": "polygon", "obb": "obb", "pose": "pose"}.get(a.kind, "box")
+                it = QListWidgetItem(icons.tinted(kind_icon, col, 16), f"{nm}"
+                                     f"{'   ? ' + format(a.conf, '.2f') if a.suggested and a.conf is not None else ''}")
                 self.ann_list.addItem(it)
                 if a.id == self.canvas.selected:
                     sel_row = r
@@ -477,6 +509,9 @@ class MainWindow(QMainWindow):
     def pick_class(self, i):
         if i >= len(self.project.classes):
             return
+        if self.canvas.tool == "tag":
+            self.set_image_tag(i)
+            return
         self.cls_list.setCurrentRow(i)
         a = self.canvas.selected_ann()
         if a and a.cls != i:
@@ -484,6 +519,28 @@ class MainWindow(QMainWindow):
             a.cls = i
             a.suggested = False
             self.on_changed()
+
+    def set_image_tag(self, cls):
+        """Классификация: класс изображения целиком; после назначения - следующий кадр."""
+        e = self.entry
+        if not e:
+            return
+        self.push_undo()
+        e.tag = cls
+        self.project.dirty = True
+        self.on_changed()
+        if self.idx < len(self.project.images) - 1:
+            self.step(1)
+
+    def _class_clicked(self, item):
+        if self.canvas.tool == "tag":
+            self.set_image_tag(self.cls_list.row(item))
+
+    def configure_keypoints(self):
+        if KeypointsDialog(self.project, self).exec():
+            self.refresh_anns()
+            self.canvas.update()
+            self._title()
 
     def add_class(self):
         name, ok = QInputDialog.getText(self, "Новый класс", "Название класса:")
@@ -744,7 +801,7 @@ class MainWindow(QMainWindow):
                 names = formats.read_class_names(p) if p else []
             for n in names:
                 self.project.add_class(str(n))
-        total = sum(formats.import_yolo_labels(e, len(self.project.classes)) for e in with_labels)
+        total = sum(formats.import_yolo_labels(e, len(self.project.classes), len(self.project.keypoints)) for e in with_labels)
         self.project.dirty = True
         self.statusBar().showMessage(f"Импортировано объектов: {total}", 4000)
 
@@ -953,17 +1010,17 @@ class MainWindow(QMainWindow):
 
     # ================================================================ тур
     def _tb(self, *actions):
-        return rect_of(self, *[(self.toolbar.widgetForAction(a) or self.toolbar2.widgetForAction(a)) for a in actions])
+        return rect_of(self, *[(self.tools_bar.widgetForAction(a) or self.toolbar.widgetForAction(a)) for a in actions])
 
     def tour_steps(self):
         S = [
-            (None, "Добро пожаловать в ML IDE 👋",
+            (None, "Добро пожаловать в ML IDE",
              "Это программа для подготовки данных и обучения нейросетей, которые <b>находят объекты на фото</b> "
              "(YOLO). Весь путь в одном окне:<br><b>импорт → разметка → проверка → экспорт → обучение → результаты</b>."
              "<br><br>Тур займёт минуту. Стрелки ← → или Enter - переключение, Esc - выход."),
             (lambda: rect_of(self, self.dock_images), "1. Ваши изображения",
              "Сюда добавляются фото: кнопки внизу, меню <i>Файл</i> или просто перетащите файлы/папку в окно. "
-             "Значок перед именем: ○ без разметки, ● размечено, ✔ проверено. Фильтр сверху поможет найти "
+             "Значок перед именем: пустой круг - без разметки, точка - размечено, галочка - проверено. Фильтр сверху поможет найти "
              "неразмеченные картинки или те, где есть подсказки модели."),
             (lambda: rect_of(self, self.dock_classes), "2. Классы",
              "Классы - это то, что должна искать модель (например «зебра», «слон»). Добавьте их здесь. "
@@ -972,7 +1029,8 @@ class MainWindow(QMainWindow):
              "<b>Выбор (V)</b> - двигать и менять размер.<br><b>Рамка (W)</b> - прямоугольник вокруг объекта.<br>"
              "<b>Полигон (P)</b> - точный контур для сегментации.<br><b>Умный контур (S)</b> - обведите объект "
              "грубой рамкой, программа найдёт границу сама.<br><b>Клик (SAM, G)</b> - кликните по объекту, нейросеть найдёт "
-             "точный контур; Ctrl+клик исключает область, Enter принимает."),
+             "точный контур; Ctrl+клик исключает область, Enter принимает.<br><b>Повёрнутая рамка (O)</b>, <b>Ключевые точки (K)</b> и "
+             "<b>Класс кадра (T)</b> - для наклонных объектов, поз и классификации целых изображений."),
             (lambda: rect_of(self, self.stack), "4. Рабочая область",
              "Рисуйте прямо на картинке. <b>Колесо мыши</b> - масштаб, <b>пробел + перетаскивание</b> или средняя кнопка - "
              "сдвиг. Размечайте <b>все</b> нужные объекты на кадре: пропущенный объект учит модель его игнорировать."),
@@ -1002,7 +1060,7 @@ class MainWindow(QMainWindow):
             (lambda: self._tb(self.a_ref), "12. Справочник всегда под рукой",
              "<b>F1</b> - руководства («с чего начать», «как читать графики», «что делать, если качество низкое») и "
              "словарь терминов: mAP, epoch, batch, переобучение… Горячие клавиши - Shift+F1."),
-            (None, "Готово! 🎉",
+            (None, "Готово!",
              "Чтобы попробовать без своих данных, откройте готовый набор: <i>Файл → Примеры</i> - он скачается и "
              "откроется с разметкой. Затем пройдите путь: <i>Советник → Экспорт → Обучение → Результаты</i>."
              "<br><br>Повторить тур можно в любой момент: <i>Справка → Тур по приложению</i>."),
@@ -1018,7 +1076,7 @@ class MainWindow(QMainWindow):
 
         def done():
             self._tour = None
-            QSettings("MLIDE", "MLIDE").setValue("tour_done", True)
+            settings.get().setValue("tour_done", True)
 
         self._tour = TourOverlay(self, self.tour_steps(), on_finish=done)
 
@@ -1103,6 +1161,9 @@ class MainWindow(QMainWindow):
     def live_test(self):
         LiveTestDialog(self.project, self).exec()
 
+    def check_updates(self):
+        UpdateDialog(self).exec()
+
     def gpu_help(self):
         GpuHelpDialog(self).exec()
 
@@ -1179,14 +1240,15 @@ class MainWindow(QMainWindow):
 
     # ---- недавние проекты
     def _recent(self) -> list:
-        v = QSettings("MLIDE", "MLIDE").value("recent", [])
+        v = settings.get().value("recent", [])
         v = [v] if isinstance(v, str) else list(v or [])
         return [p for p in v if Path(p).exists()][:8]
 
     def _remember(self, path):
-        s = QSettings("MLIDE", "MLIDE")
-        lst = [p for p in self._recent() if os.path.normcase(p) != os.path.normcase(str(path))]
-        s.setValue("recent", [str(path)] + lst[:7])
+        s = settings.get()
+        path = str(Path(path).resolve())
+        lst = [p for p in self._recent() if os.path.normcase(p) != os.path.normcase(path)]
+        s.setValue("recent", [path] + lst[:7])
         self._fill_recent()
 
     def _fill_recent(self):
@@ -1203,6 +1265,23 @@ class MainWindow(QMainWindow):
         if self._maybe_save():
             self._open_path(p)
 
+    def _restart_app(self):
+        if self._maybe_save():
+            import subprocess
+            args = [sys.executable] if getattr(sys, "frozen", False) else [sys.executable, "-m", "mlide"]
+            if self.project.path:
+                args.append(str(self.project.path))
+            subprocess.Popen(args)
+            QApplication.quit()
+
+    def change_theme(self, name):
+        from . import style
+        if name == style.current_theme():
+            return
+        style.save_theme(name)
+        if QMessageBox.question(self, "Тема оформления", "Тема изменится после перезапуска. Перезапустить сейчас?") == QMessageBox.Yes:
+            self._restart_app()
+
     def change_language(self, code):
         from .. import i18n
         if code == i18n.lang():
@@ -1210,11 +1289,8 @@ class MainWindow(QMainWindow):
         i18n.save_language(code)
         r = QMessageBox.question(self, "Язык / Language", "Язык интерфейса изменится после перезапуска. Перезапустить сейчас?\n"
                                  "The interface language changes after a restart. Restart now?")
-        if r == QMessageBox.Yes and self._maybe_save():
-            import subprocess
-            args = [sys.executable] if getattr(sys, "frozen", False) else [sys.executable, "-m", "mlide"]
-            subprocess.Popen(args)
-            QApplication.quit()
+        if r == QMessageBox.Yes:
+            self._restart_app()
 
     def show_reference(self, start=None):
         HelpDialog(SHORTCUTS_HTML, self, start if isinstance(start, str) else None).exec()
@@ -1269,7 +1345,44 @@ def selftest(out_path):
     return 0 if all("FAIL" not in ln for ln in lines) else 1
 
 
+def selftest_sam(out_path):
+    """Проверка «Клика (SAM)» в собранном приложении: скачивание моделей, кодировщик, декодер, маска.
+    Запуск: ML IDE.exe --selftest-sam файл.txt   (модели кладутся в папку из MLIDE_MODELS, если она задана)."""
+    import time
+
+    import cv2
+    import numpy as np
+    lines = []
+    ok = True
+    try:
+        from .. import sam
+        lines.append(f"models dir: {sam.models_dir()}")
+        t = time.time()
+        sam.download_models(lambda n, d, tot: True)
+        lines.append(f"download: OK ({time.time() - t:.0f} s), ready={sam.models_ready()}")
+        m = sam.SamModel()
+        img = np.zeros((300, 400, 3), np.uint8)
+        cv2.circle(img, (200, 150), 70, (255, 255, 255), -1)
+        t = time.time()
+        m.set_image(img)
+        mask, iou = m.predict([(200, 150, 1)])
+        area = float((mask > 0).mean())
+        expected = np.pi * 70 * 70 / (300 * 400)
+        good = abs(area - expected) < 0.04
+        ok = good
+        poly = sam.mask_to_polygon(mask)
+        lines.append(f"predict: {time.time() - t:.1f} s, iou={iou:.2f}, mask area={area:.3f} (expected {expected:.3f}), polygon points={len(poly or [])}"
+                     + ("" if good else " FAIL: mask does not match the disk"))
+    except Exception as e:  # noqa
+        ok = False
+        lines.append(f"SAM FAIL {type(e).__name__}: {e}")
+    Path(out_path).write_text("\n".join(lines), encoding="utf-8")
+    return 0 if ok else 1
+
+
 def run(argv):
+    if argv and argv[0] == "--selftest-sam":
+        return selftest_sam(argv[1] if len(argv) > 1 else "selftest_sam.txt")
     if argv and argv[0] == "--selftest":
         return selftest(argv[1] if len(argv) > 1 else "selftest.txt")
     from .. import i18n
@@ -1278,7 +1391,8 @@ def run(argv):
     app.setApplicationName("ML IDE")
     if i18n.lang() == "ru":
         install_translations(app)
-    apply_dark(app)
+    from .style import apply_theme, detect_theme
+    apply_theme(app, detect_theme())
     from PySide6.QtGui import QIcon
     ico = paths.resource("assets/icon.ico")
     if ico.exists():
@@ -1287,7 +1401,7 @@ def run(argv):
     w.show()
     if os.environ.get("ML_IDE_NO_TOUR"):
         pass
-    elif not QSettings("MLIDE", "MLIDE").value("tour_done", False, type=bool):
+    elif not settings.get().value("tour_done", False, type=bool):
         QTimer.singleShot(800, w.start_tour)
     restored = w.offer_recovery()
     if not restored and argv and Path(argv[0]).exists() and argv[0].lower().endswith(".mlide.json"):

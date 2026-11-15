@@ -254,3 +254,39 @@ def import_voc(project: Project, root_dir, progress=None) -> ImportReport:
     if rep.images_added or rep.classes_added:
         project.dirty = True
     return rep
+
+
+# ----------------------------------------------------------------------------- классификация: папки = классы
+def import_class_folders(project: Project, root_dir, progress=None) -> ImportReport:
+    """Изображения лежат в папках, имя папки - класс (train/cat/1.jpg, val/dog/2.jpg или cat/1.jpg).
+    Каждому изображению присваивается класс кадра (tag). Папки train/val/test в названия классов не попадают."""
+    from . import imgio
+    rep = ImportReport()
+    root = Path(root_dir)
+    split_names = {"train", "val", "valid", "validation", "test", "training"}
+    files = sorted(p for p in root.rglob("*") if p.is_file() and imgio.is_image(p))
+    classes_found = sorted({p.parent.name for p in files if p.parent.name.lower() not in split_names and p.parent != root},
+                           key=lambda s: (len(s), s) if s.isdigit() else (0, s.lower()))
+    if not classes_found:
+        rep.warnings.append("Не найдено подпапок с изображениями: ожидается структура класс/изображение.")
+        return rep
+    for i, p in enumerate(files):
+        if progress and progress(i, len(files), p.name) is False:
+            break
+        name = p.parent.name
+        if name.lower() in split_names or p.parent == root:
+            continue
+        idx = _add_class(project, name, rep)
+        e, is_new = _register_image(project, p, rep)
+        if e is None:
+            rep.missing_files += 1
+            continue
+        if is_new:
+            rep.images_added += 1
+        elif e.tag is not None:
+            rep.skipped_existing += 1
+            continue
+        e.tag = idx
+        rep.annotations_added += 1
+    project.dirty = True
+    return rep

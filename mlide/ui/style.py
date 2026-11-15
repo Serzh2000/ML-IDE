@@ -1,20 +1,51 @@
-"""Тёмная тема ML IDE: единая палитра, скругления, аккуратные скроллбары и подсказки."""
+"""Темы ML IDE (тёмная и светлая): единая палитра, скругления, аккуратные скроллбары и подсказки."""
+import os
+
 from PySide6.QtGui import QColor, QFont, QPalette
 from PySide6.QtWidgets import QApplication
 
-# палитра
-BG = "#17191e"          # фон окна / холст
-PANEL = "#1f2228"       # панели
-SURFACE = "#2a2e37"     # кнопки, поля
-SURFACE_HI = "#343945"
-BORDER = "#363b47"
-TEXT = "#e6e8ee"
-MUTED = "#8b92a1"
-ACCENT = "#5b8cff"
-ACCENT_HI = "#7aa2ff"
+THEMES = {
+    "dark": dict(BG="#17191e", PANEL="#1f2228", SURFACE="#2a2e37", SURFACE_HI="#343945", BORDER="#363b47", TEXT="#e6e8ee",
+                 MUTED="#8b92a1", ACCENT="#5b8cff", ACCENT_HI="#7aa2ff", CANVAS="#17191e", CHART="#1c1d21", DISABLED="#5d6370",
+                 CARD="#232730", CARD_PRIMARY="#2a3a66"),
+    "light": dict(BG="#ffffff", PANEL="#f1f3f7", SURFACE="#e6e9ef", SURFACE_HI="#d9dee7", BORDER="#c7cdd8", TEXT="#1c2230",
+                  MUTED="#667085", ACCENT="#2f6bff", ACCENT_HI="#2f6bff", CANVAS="#e4e8ee", CHART="#fafbfd", DISABLED="#9aa3b2",
+                  CARD="#ffffff", CARD_PRIMARY="#dce7ff"),
+}
+_current = "dark"
+# текущие цвета (заполняются apply_theme; значения по умолчанию - тёмная тема)
+globals().update(THEMES["dark"])
+
+
+def current_theme() -> str:
+    return _current
+
+
+def detect_theme() -> str:
+    env = os.environ.get("MLIDE_THEME")
+    if env in THEMES:
+        return env
+    try:
+        from .. import settings
+        v = settings.get().value("theme", "dark")
+        return v if v in THEMES else "dark"
+    except Exception:
+        return "dark"
+
+
+def save_theme(name: str):
+    from .. import settings
+    settings.get().setValue("theme", name)
 
 
 def apply_dark(app: QApplication):
+    apply_theme(app, "dark")
+
+
+def apply_theme(app: QApplication, name: str = "dark"):
+    global _current
+    _current = name if name in THEMES else "dark"
+    globals().update(THEMES[_current])
     app.setStyle("Fusion")
     app.setFont(QFont("Segoe UI", 10))
     p = QPalette()
@@ -32,9 +63,9 @@ def apply_dark(app: QApplication):
     p.setColor(QPalette.HighlightedText, c("white"))
     p.setColor(QPalette.PlaceholderText, c(MUTED))
     p.setColor(QPalette.Link, c(ACCENT_HI))
-    p.setColor(QPalette.Disabled, QPalette.Text, c("#5d6370"))
-    p.setColor(QPalette.Disabled, QPalette.ButtonText, c("#5d6370"))
-    p.setColor(QPalette.Disabled, QPalette.WindowText, c("#5d6370"))
+    p.setColor(QPalette.Disabled, QPalette.Text, c(DISABLED))
+    p.setColor(QPalette.Disabled, QPalette.ButtonText, c(DISABLED))
+    p.setColor(QPalette.Disabled, QPalette.WindowText, c(DISABLED))
     app.setPalette(p)
     app.setStyleSheet(f"""
         QMainWindow, QDialog {{ background: {PANEL}; }}
@@ -44,6 +75,8 @@ def apply_dark(app: QApplication):
         /* панели инструментов */
         QToolBar {{ spacing: 4px; padding: 5px 8px; border: none; background: {BG};
                     border-bottom: 1px solid {BORDER}; }}
+        QToolBar#toolPalette {{ border-bottom: none; border-right: 1px solid {BORDER}; padding: 8px 5px; spacing: 6px; }}
+        QToolBar#toolPalette QToolButton {{ padding: 8px; border-radius: 9px; }}
         QToolBar::separator {{ width: 1px; background: {BORDER}; margin: 4px 6px; }}
         QToolButton {{ padding: 5px 10px; border-radius: 7px; border: 1px solid transparent; }}
         QToolButton:hover {{ background: {SURFACE_HI}; }}
@@ -71,7 +104,7 @@ def apply_dark(app: QApplication):
         QPushButton:pressed {{ background: {BORDER}; }}
         QPushButton:default {{ background: {ACCENT}; border-color: {ACCENT}; color: white; font-weight: 600; }}
         QPushButton:default:hover {{ background: {ACCENT_HI}; }}
-        QPushButton:disabled {{ color: #5d6370; background: {PANEL}; }}
+        QPushButton:disabled {{ color: {DISABLED}; background: {PANEL}; }}
         QPushButton[primary="true"] {{ background: {ACCENT}; border-color: {ACCENT}; color: white; font-weight: 600; }}
         QPushButton[primary="true"]:hover {{ background: {ACCENT_HI}; }}
 

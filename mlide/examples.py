@@ -9,7 +9,9 @@ import zipfile
 from pathlib import Path
 
 from . import paths
+from . import keypoints as KP
 from .formats import import_yolo_labels
+from .importers import import_class_folders
 from .model import Project
 
 _BASE = "https://github.com/ultralytics/assets/releases/download/v0.0.0/"
@@ -49,6 +51,22 @@ EXAMPLES = [
          url=_BASE + "coco128.zip", names=COCO_NAMES, keep_top=5, subset=None, level="Урок",
          what="128 фото из COCO, оставлены 5 самых частых классов (люди, машины, чашки…). Модель получится слабой.",
          learn="Что делают малые данные с качеством, как это видно в графиках и что советует IDE."),
+]
+EXAMPLES += [
+    dict(id="obb_dota8", title="Аэроснимки: повёрнутые рамки (DOTA8)", kind="Повёрнутые рамки", size_mb=1, url=_BASE + "dota8.zip",
+         names=["plane", "ship", "storage tank", "baseball diamond", "tennis court", "basketball court", "ground track field", "harbor",
+                "bridge", "large vehicle", "small vehicle", "helicopter", "roundabout", "soccer ball field", "swimming pool"],
+         task="obb", subset=None, level="Мини",
+         what="8 аэроснимков, объекты размечены наклонными прямоугольниками (OBB): самолёты, корабли, баки, площадки.",
+         learn="Инструмент «Повёрнутая рамка» (O), поворот клавишами [ и ], экспорт в YOLO OBB (модели -obb)."),
+    dict(id="pose_coco8", title="Люди: ключевые точки (COCO8-pose)", kind="Ключевые точки", size_mb=1, url=_BASE + "coco8-pose.zip",
+         names=["person"], task="pose", kpts=KP.COCO_NAMES, skeleton=KP.COCO_SKELETON, flip=KP.COCO_FLIP, subset=None, level="Мини",
+         what="8 фото людей, у каждого размечены 17 суставов (нос, глаза, плечи, локти, запястья, бёдра, колени, лодыжки) и скелет.",
+         learn="Инструмент «Ключевые точки» (K), настройка точек и скелета, экспорт в YOLO Pose (модели -pose)."),
+    dict(id="cls_mnist160", title="Цифры: классификация изображений (MNIST160)", kind="Классификация", size_mb=1, url=_BASE + "mnist160.zip",
+         names=[str(i) for i in range(10)], task="cls", subset=None, level="Мини",
+         what="160 картинок рукописных цифр 0-9: классом помечено изображение целиком, а не объект на нём.",
+         learn="Инструмент «Класс кадра» (T): клавиши 1-9 задают класс и переходят к следующему кадру; экспорт в YOLO Classify (-cls)."),
 ]
 BY_ID = {e["id"]: e for e in EXAMPLES}
 
@@ -114,6 +132,14 @@ def build_example(ex: dict, progress=lambda stage, done, total: True) -> Path:
         zp.unlink(missing_ok=True)
 
     progress("Сборка проекта", 0, 0)
+    task = ex.get("task", "detect")
+    if task == "cls":
+        pr = Project(ex["title"])
+        import_class_folders(pr, raw)
+        for e in pr.images:
+            e.reviewed = True
+        pr.save(proj_file)
+        return proj_file
     imgs = sorted(p for p in raw.rglob("*") if p.suffix.lower() in (".jpg", ".jpeg", ".png") and "labels" not in p.parts)
     random.Random(0).shuffle(imgs)
     if ex.get("subset"):
@@ -122,8 +148,12 @@ def build_example(ex: dict, progress=lambda stage, done, total: True) -> Path:
     for n in ex["names"]:
         pr.add_class(n)
     pr.add_images(imgs)
+    if task == "pose":
+        pr.keypoints = list(ex["kpts"])
+        pr.skeleton = [list(p) for p in ex.get("skeleton", [])]
+        pr.flip_pairs = [list(p) for p in ex.get("flip", [])]
     for e in pr.images:
-        import_yolo_labels(e, len(ex["names"]))
+        import_yolo_labels(e, len(ex["names"]), len(pr.keypoints), ex.get("kpt_dim", 3), obb=(task == "obb"))
         e.reviewed = True
     keep = ex.get("keep_top")
     if keep:

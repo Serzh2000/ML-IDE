@@ -3,6 +3,8 @@ from __future__ import annotations
 
 from PySide6.QtCore import QAbstractListModel, QModelIndex, Qt
 
+from . import icons, style
+
 FILTERS = ["Все изображения", "Без разметки", "С разметкой", "С подсказками", "Не проверенные"]
 
 
@@ -24,7 +26,8 @@ class ImageListModel(QAbstractListModel):
                 n_all = len(e.anns)
                 n_sug = sum(1 for a in e.anns if a.suggested)
                 real = n_all - n_sug
-                ok = ((mode == 1 and not real) or (mode == 2 and real) or (mode == 3 and n_sug) or
+                labeled = bool(real) or e.tag is not None
+                ok = ((mode == 1 and not labeled) or (mode == 2 and labeled) or (mode == 3 and n_sug) or
                       (mode == 4 and not e.reviewed))
                 if ok or i == keep:
                     rows.append(i)
@@ -54,16 +57,40 @@ class ImageListModel(QAbstractListModel):
             return None
         i = self._rows[index.row()]
         if role == Qt.DisplayRole:
-            return self.text(self._project().images[i])
+            return self.text(self._project().images[i], self._project().class_names())
+        if role == Qt.DecorationRole:
+            return self.state_icon(self._project().images[i])
         if role == Qt.UserRole:
             return i
         if role == Qt.ToolTipRole:
             return self._project().images[i].path
         return None
 
-    @staticmethod
-    def text(e) -> str:
+    _icon_cache: dict = {}
+
+    @classmethod
+    def state_icon(cls, e):
+        """Состояние кадра значком: проверен / размечен / есть подсказки модели / пусто."""
         sug = sum(1 for a in e.anns if a.suggested)
         real = len(e.anns) - sug
-        mark = "✔" if e.reviewed else ("●" if real else ("◐" if sug else "○"))
-        return f"{mark} {e.name}   [{real}{'+' + str(sug) + '?' if sug else ''}]"
+        if e.reviewed:
+            key = ("done", "#3fb950")
+        elif real or e.tag is not None:
+            key = ("dot", style.ACCENT)
+        elif sug:
+            key = ("dashed", "#f0a030")
+        else:
+            key = ("circle", style.MUTED)
+        ic = cls._icon_cache.get((key, style.current_theme()))
+        if ic is None:
+            ic = cls._icon_cache[(key, style.current_theme())] = icons.tinted(key[0], key[1], 16)
+        return ic
+
+    @staticmethod
+    def text(e, names=None) -> str:
+        sug = sum(1 for a in e.anns if a.suggested)
+        real = len(e.anns) - sug
+        tag = ""
+        if e.tag is not None:
+            tag = f"   → {names[e.tag]}" if names and 0 <= e.tag < len(names) else f"   → #{e.tag}"
+        return f"{e.name}   [{real}{'+' + str(sug) + '?' if sug else ''}]{tag}"

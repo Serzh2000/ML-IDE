@@ -12,6 +12,7 @@ from PySide6.QtWidgets import (QDialog, QFileDialog, QGraphicsItem, QGraphicsPat
                                QTextBrowser, QVBoxLayout, QWidget)
 
 from .. import onnxparse as O
+from . import style
 
 COLORS = {"conv": "#3d6fd9", "act": "#2e9e6b", "pool": "#d98a2b", "shape": "#6b7280", "math": "#9a5bd6", "other": "#4b5563",
           "io": "#d94f6b"}
@@ -52,7 +53,7 @@ class GraphView(QGraphicsView):
         self.setRenderHints(QPainter.Antialiasing | QPainter.TextAntialiasing)
         self.setDragMode(QGraphicsView.ScrollHandDrag)
         self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
-        self.setBackgroundBrush(QBrush(QColor("#14161a")))
+        self.setBackgroundBrush(QBrush(QColor(style.CANVAS)))
         self.setViewportUpdateMode(QGraphicsView.SmartViewportUpdate)
 
     def wheelEvent(self, e):

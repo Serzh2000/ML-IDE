@@ -5,10 +5,10 @@ import re
 import shutil
 import subprocess
 
-from PySide6.QtCore import QUrl
+from PySide6.QtCore import QProcess, QProcessEnvironment, QThread, QUrl, Signal
 from PySide6.QtGui import QDesktopServices, QGuiApplication
-from PySide6.QtWidgets import (QDialog, QHBoxLayout, QLabel, QPlainTextEdit, QPushButton, QTabWidget, QTextBrowser,
-                               QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QDialog, QHBoxLayout, QLabel, QLineEdit, QMessageBox, QPlainTextEdit, QPushButton, QTabWidget,
+                               QTextBrowser, QVBoxLayout, QWidget)
 
 from .learn import cards_html
 
@@ -38,6 +38,26 @@ class GpuHelpDialog(QDialog):
         self.view = QTextBrowser()
         self.view.setOpenExternalLinks(True)
         lay.addWidget(self.view, 1)
+        pr = QHBoxLayout()
+        self.py = QLineEdit(shutil.which("python") or shutil.which("py") or "")
+        self.py.setToolTip("<p>Python, в котором установлен (или будет установлен) PyTorch. Тот же путь указан в окне «Обучение».</p>")
+        self.install_btn = QPushButton("Установить PyTorch с CUDA…")
+        self.install_btn.setProperty("primary", True)
+        self.install_btn.setToolTip("<p>Подберёт сборку под ваш драйвер, заменит версию без GPU и проверит результат. Скачивается 2-3 ГБ.</p>")
+        self.install_btn.clicked.connect(self._install)
+        pr.addWidget(QLabel("Python:"))
+        pr.addWidget(self.py, 1)
+        pr.addWidget(self.install_btn)
+        lay.addLayout(pr)
+        self.log = QPlainTextEdit()
+        self.log.setReadOnly(True)
+        self.log.setMaximumHeight(150)
+        self.log.setStyleSheet("font-family: Consolas, monospace; font-size: 11px;")
+        self.log.setVisible(False)
+        lay.addWidget(self.log)
+        self.proc = None
+        self._steps = []
+        self._raw = ""
         row = QHBoxLayout()
         row.addStretch(1)
         site = QPushButton("Открыть pytorch.org: выбор сборки")
@@ -48,6 +68,71 @@ class GpuHelpDialog(QDialog):
         row.addWidget(close)
         lay.addLayout(row)
         self._fill()
+
+    def _install(self):
+        g = detect_gpu()
+        if not g.get("found"):
+            QMessageBox.information(self, "PyTorch с CUDA", "Видеокарта Nvidia не найдена (nvidia-smi недоступен). "
+                                    "Ставить сборку с CUDA нет смысла.")
+            return
+        py = self.py.text().strip()
+        if not py:
+            QMessageBox.warning(self, "PyTorch с CUDA", "Укажите путь к Python.")
+            return
+        self.install_btn.setEnabled(False)
+        self.log.setVisible(True)
+        self.log.setPlainText("Подбираю подходящую сборку PyTorch…")
+        __import__('PySide6.QtWidgets', fromlist=['x']).QApplication.processEvents()
+        plan = torch_cuda_plan(g.get("cuda", ""))
+        if not plan["ok"]:
+            self.log.appendPlainText(plan["reason"])
+            self.install_btn.setEnabled(True)
+            return
+        cmd = f"{py} {' '.join(plan['uninstall'])}\n{py} {' '.join(plan['install'])}"
+        if QMessageBox.question(self, "PyTorch с CUDA", f"Будет установлена сборка <b>{plan['tag']}</b> (подходит к вашему драйверу, CUDA до {g['cuda']}).\n\n"
+                                f"Команды:\n{cmd}\n\nСкачивается 2-3 ГБ, версия без GPU будет заменена. Продолжить?") != QMessageBox.Yes:
+            self.install_btn.setEnabled(True)
+            self.log.setVisible(False)
+            return
+        self._steps = [(py, plan["uninstall"]), (py, plan["install"]),
+                       (py, ["-c", "import torch;print('torch', torch.__version__, '| CUDA доступна:', torch.cuda.is_available(), "
+                                   "'|', torch.cuda.get_device_name(0) if torch.cuda.is_available() else '-')"])]
+        self._next_step()
+
+    def _next_step(self):
+        if not self._steps:
+            self.install_btn.setEnabled(True)
+            ok = "CUDA доступна: True" in self._raw[-600:]
+            self.log.appendPlainText("\nГотово: видеокарта доступна для обучения." if ok else
+                                     "\nВнимание: установка завершена, но CUDA недоступна. Перезапустите компьютер или обновите драйвер Nvidia.")
+            return
+        py, args = self._steps.pop(0)
+        self.log.appendPlainText("\n$ " + py + " " + " ".join(args))
+        self.proc = QProcess(self)
+        env = QProcessEnvironment.systemEnvironment()
+        env.insert("PYTHONIOENCODING", "utf-8")
+        self.proc.setProcessEnvironment(env)
+        self.proc.setProcessChannelMode(QProcess.MergedChannels)
+        self.proc.readyReadStandardOutput.connect(self._on_out)
+        self.proc.finished.connect(lambda code, _s: self._next_step() if (code == 0 or "uninstall" in " ".join(args)) else self._failed(code))
+        self.proc.start(py, args)
+
+    def _on_out(self):
+        text = bytes(self.proc.readAllStandardOutput()).decode("utf-8", "replace")
+        self._raw += text
+        self.log.appendPlainText(text.rstrip())
+
+    def _failed(self, code):
+        self._steps = []
+        self.install_btn.setEnabled(True)
+        self.log.appendPlainText(f"\nОшибка: команда завершилась с кодом {code}. Если пакет не удалился или не скачался - повторите позже "
+                                 "или выполните команды вручную.")
+
+    def reject(self):
+        if self.proc is not None and self.proc.state() != QProcess.NotRunning:
+            self.proc.kill()
+            self.proc.waitForFinished(2000)
+        super().reject()
 
     def _fill(self):
         g = detect_gpu()
@@ -191,3 +276,95 @@ class CodeSnippetsDialog(QDialog):
                       "остаётся тем же, что в скрипте на вкладке OpenCV.</span>")
         note.setWordWrap(True)
         lay.addWidget(note)
+
+
+# --------------------------------------------------------------------------- PyTorch с CUDA
+CUDA_TAGS = [130, 129, 128, 126, 124, 121, 118]          # индексы https://download.pytorch.org/whl/cuNNN
+
+
+def parse_cuda(v: str) -> int:
+    """'12.8' -> 128, '13.0' -> 130; 0 при ошибке."""
+    m = re.match(r"(\d+)\.(\d+)", v or "")
+    return int(m.group(1)) * 10 + int(m.group(2)) if m else 0
+
+
+def probe_index(tag: int, timeout: float = 15.0) -> bool:
+    import urllib.request
+    try:
+        req = urllib.request.Request(f"https://download.pytorch.org/whl/cu{tag}/torch/", method="HEAD",
+                                     headers={"User-Agent": "mlide-cuda-helper"})
+        return urllib.request.urlopen(req, timeout=timeout).status == 200
+    except Exception:
+        return False
+
+
+def torch_cuda_plan(driver_cuda: str, probe=probe_index) -> dict:
+    """Какую сборку PyTorch ставить: самая новая из существующих, не выше версии CUDA, которую поддерживает драйвер."""
+    limit = parse_cuda(driver_cuda)
+    if not limit:
+        return {"ok": False, "reason": "Не удалось определить версию CUDA драйвера (nvidia-smi)."}
+    for tag in CUDA_TAGS:
+        if tag <= limit and probe(tag):
+            url = f"https://download.pytorch.org/whl/cu{tag}"
+            return {"ok": True, "tag": f"cu{tag}", "index": url,
+                    "uninstall": ["-m", "pip", "uninstall", "-y", "torch", "torchvision", "torchaudio"],
+                    "install": ["-m", "pip", "install", "torch", "torchvision", "--index-url", url]}
+    return {"ok": False, "reason": f"Для CUDA {driver_cuda} не нашлось подходящей сборки PyTorch. Обновите драйвер Nvidia."}
+
+
+# --------------------------------------------------------------------------- проверка обновлений
+class _UpdateWorker(QThread):
+    done = Signal(dict)
+
+    def run(self):
+        from .. import __version__, updates
+        self.done.emit(updates.check(__version__))
+
+
+class UpdateDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        from .. import __version__
+        self.setWindowTitle("Проверка обновлений")
+        self.resize(560, 360)
+        self.url = ""
+        lay = QVBoxLayout(self)
+        lay.addWidget(QLabel(f"Установленная версия: <b>{__version__}</b>. Проверка выполняется только по этой кнопке: "
+                             "программа делает один обычный запрос к GitHub и ничего о вас не отправляет."))
+        lay.itemAt(0).widget().setWordWrap(True)
+        self.view = QTextBrowser()
+        self.view.setHtml("<p>Проверяю…</p>")
+        lay.addWidget(self.view, 1)
+        row = QHBoxLayout()
+        row.addStretch(1)
+        self.open_btn = QPushButton("Открыть страницу релиза")
+        self.open_btn.setEnabled(False)
+        self.open_btn.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(self.url)))
+        close = QPushButton("Закрыть")
+        close.clicked.connect(self.accept)
+        row.addWidget(self.open_btn)
+        row.addWidget(close)
+        lay.addLayout(row)
+        self.worker = _UpdateWorker()
+        self.worker.done.connect(self._done)
+        self.worker.start()
+
+    def _done(self, r):
+        if r["status"] == "error":
+            self.view.setHtml(cards_html([("warn", "Не удалось проверить", f"Нет связи с GitHub или он не ответил.<br><code>{r['error']}</code>")]))
+            return
+        lt = r["latest"]
+        self.url = lt["url"]
+        self.open_btn.setEnabled(True)
+        notes = re.sub(r"<[^>]+>", "", lt["body"] or "").strip().replace("\n", "<br>")[:1500]
+        if r["status"] == "new":
+            assets = "<br>".join(f"{a['name']} ({a['size'] / 1048576:.0f} МБ)" for a in lt["assets"])
+            self.view.setHtml(cards_html([("ok", f"Доступна новая версия {lt['tag']}", (assets + "<br><br>" if assets else "") + notes),
+                                          ("info", "Как обновиться", "Скачайте установщик или архив на странице релиза и установите поверх: проекты и настройки сохранятся.")]))
+        else:
+            self.view.setHtml(cards_html([("ok", "У вас последняя версия", f"Последний релиз на GitHub: {lt['tag']}.")]))
+
+    def reject(self):
+        if self.worker.isRunning():
+            self.worker.wait(3000)
+        super().reject()

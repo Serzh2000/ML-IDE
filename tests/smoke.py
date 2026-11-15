@@ -1,6 +1,7 @@
 """Headless smoke test: python tests/smoke.py"""
 import os, sys, tempfile, json
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+os.environ.setdefault("MLIDE_SETTINGS_FILE", os.path.join(__import__("tempfile").gettempdir(), "mlide_test_settings.ini"))
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from pathlib import Path
 import numpy as np, cv2
@@ -28,6 +29,8 @@ pr2 = Project.load(tmp / "p.mlide.json")
 assert len(pr2.images) == 10 and len(pr2.images[0].anns) == 2
 
 for k in FORMATS:
+    if k in ("ultra_pose", "ultra_cls"):          # нужны ключевые точки / классы кадров: см. tests/test_new_tasks.py
+        continue
     out = tmp / ("out_" + k)
     o = ExportOptions(fmt=k, out_dir=str(out), bake_aug=True, aug=BUILTIN_PRESETS["Сильная"], seed=3)
     print(k, "->", export_dataset(pr2, o).splitlines()[0])

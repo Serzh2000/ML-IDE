@@ -16,6 +16,7 @@ from PySide6.QtWidgets import (QComboBox, QDialog, QDoubleSpinBox, QFileDialog, 
 from .. import autolabel, imgio
 from ..model import PALETTE
 from .dialogs import add_tips, hex_to_bgr
+from . import icons, style
 from .learn import cards_html
 
 
@@ -173,13 +174,16 @@ class LiveTestDialog(QDialog):
         row.addWidget(self.imgsz)
         lay.addLayout(row)
         row = QHBoxLayout()
-        self.start = QPushButton("▶ Запустить")
+        self.start = QPushButton("Запустить")
+        self.start.setIcon(icons.primary_icon("start"))
         self.start.setProperty("primary", True)
         self.start.clicked.connect(self._start)
-        self.stop = QPushButton("■ Остановить")
+        self.stop = QPushButton("Остановить")
+        self.stop.setIcon(icons.icon("stop"))
         self.stop.setEnabled(False)
         self.stop.clicked.connect(self._stop)
-        self.benchbtn = QPushButton("⏱ Замерить скорость")
+        self.benchbtn = QPushButton("Замерить скорость")
+        self.benchbtn.setIcon(icons.icon("timer"))
         self.benchbtn.clicked.connect(self._bench)
         self.stats = QLabel("")
         row.addWidget(self.start)
@@ -190,7 +194,7 @@ class LiveTestDialog(QDialog):
         self.view = QLabel("Выберите модель и источник, затем нажмите «Запустить»")
         self.view.setAlignment(Qt.AlignCenter)
         self.view.setMinimumSize(640, 400)
-        self.view.setStyleSheet("background:#14161a;border-radius:8px;")
+        self.view.setStyleSheet(f"background:{style.CANVAS};border-radius:8px;")
         lay.addWidget(self.view, 1)
         self.result = QTextBrowser()
         self.result.setMaximumHeight(150)

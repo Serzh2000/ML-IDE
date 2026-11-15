@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from PySide6.QtCore import QEvent, QPoint, QRect, QRectF, Qt
 from PySide6.QtGui import QColor, QPainter, QPainterPath, QPen
+from . import icons, style
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget
 
 
@@ -33,12 +34,12 @@ class TourOverlay(QWidget):
         self.card.setObjectName("tourcard")
         self.card.setFixedWidth(400)
         self.card.setStyleSheet(
-            "#tourcard{background:#25262b;border:2px solid #408cff;border-radius:10px;}"
+            f"#tourcard{{background:{style.PANEL};border:2px solid {style.ACCENT};border-radius:10px;}}"
             "QLabel{background:transparent;} QPushButton{padding:6px 14px;}")
         v = QVBoxLayout(self.card)
         v.setContentsMargins(16, 14, 16, 12)
         self.step_lbl = QLabel()
-        self.step_lbl.setStyleSheet("color:#8aa4c8;font-size:11px;")
+        self.step_lbl.setStyleSheet(f"color:{style.MUTED};font-size:11px;")
         self.title = QLabel()
         self.title.setStyleSheet("font-size:16px;font-weight:bold;")
         self.title.setWordWrap(True)
@@ -51,9 +52,12 @@ class TourOverlay(QWidget):
         row = QHBoxLayout()
         self.skip = QPushButton("Пропустить тур")
         self.skip.clicked.connect(self.finish)
-        self.back = QPushButton("← Назад")
+        self.back = QPushButton("Назад")
+        self.back.setIcon(icons.icon("prev"))
         self.back.clicked.connect(lambda: self.go(-1))
-        self.next = QPushButton("Далее →")
+        self.next = QPushButton("Далее")
+        self.next.setIcon(icons.primary_icon("next"))
+        self.next.setLayoutDirection(Qt.RightToLeft)     # значок справа от текста
         self.next.setDefault(True)
         self.next.clicked.connect(lambda: self.go(1))
         row.addWidget(self.skip)
@@ -93,7 +97,8 @@ class TourOverlay(QWidget):
         self.text.setText(text)
         self.back.setEnabled(self.i > 0)
         last = self.i == len(self.steps) - 1
-        self.next.setText("Закончить" if last else "Далее →")
+        self.next.setText("Закончить" if last else "Далее")
+        self.next.setIcon(icons.primary_icon("accept" if last else "next"))
         self.skip.setVisible(not last)
         self.card.adjustSize()
         self._place_card()
@@ -137,7 +142,7 @@ class TourOverlay(QWidget):
             path = path.subtracted(hp)
         p.fillPath(path, QColor(0, 0, 0, 165))
         if self.hole:
-            p.setPen(QPen(QColor("#408cff"), 3))
+            p.setPen(QPen(QColor(style.ACCENT), 3))
             p.setBrush(Qt.NoBrush)
             p.drawRoundedRect(QRectF(self.hole.adjusted(-6, -6, 6, 6)), 8, 8)
 

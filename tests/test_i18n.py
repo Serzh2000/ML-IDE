@@ -10,6 +10,7 @@ from pathlib import Path
 
 os.environ["MLIDE_LANG"] = "en"
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+os.environ.setdefault("MLIDE_SETTINGS_FILE", os.path.join(__import__("tempfile").gettempdir(), "mlide_test_settings.ini"))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import cv2
@@ -29,7 +30,8 @@ from mlide.ui.compare_dialog import CompareDialog
 from mlide.ui.dedupe_dialog import DedupeDialog
 from mlide.ui.dialogs import AutoLabelDialog, ExportDialog, PresetDialog, StatsDialog
 from mlide.ui.examples_dialog import ExamplesDialog
-from mlide.ui.help_dialogs import CodeSnippetsDialog, GpuHelpDialog
+from mlide.ui.help_dialogs import CodeSnippetsDialog, GpuHelpDialog, UpdateDialog
+from mlide.ui.keypoints_dialog import KeypointsDialog
 from mlide.ui.learn import AdvisorDialog, HelpDialog, TrainDialog
 from mlide.ui.live_test import LiveTestDialog
 from mlide.ui.main_window import SHORTCUTS_HTML, MainWindow
@@ -100,7 +102,7 @@ def main():
         "help": HelpDialog(SHORTCUTS_HTML, w), "train": TrainDialog(pr, w), "results": ResultsDialog(pr, w),
         "model export": ModelExportDialog(pr, w), "model viewer": ModelViewerDialog(w), "video": VideoDialog(w),
         "duplicates": DedupeDialog(pr, w), "review": ReviewDialog(pr, w), "compare": CompareDialog(pr, w),
-        "live test": LiveTestDialog(pr, w), "gpu": GpuHelpDialog(w), "code": CodeSnippetsDialog("best.onnx", ["thing"], 640, w),
+        "live test": LiveTestDialog(pr, w), "gpu": GpuHelpDialog(w), "keypoints": KeypointsDialog(pr, w), "code": CodeSnippetsDialog("best.onnx", ["thing"], 640, w),
     }
     # логика не должна зависеть от языка: пресеты ищутся по скрытому ключу, а не по отображаемому тексту
     assert wins["export"].preset.currentData() == "Средняя (по умолчанию YOLO)", wins["export"].preset.currentData()
@@ -125,7 +127,7 @@ def main():
         if hasattr(win, "toHtml") and not isinstance(win, QWidget):
             continue
         items = texts(win) if name.startswith(("main", "advisor", "export", "auto", "presets", "stats", "examples", "train", "results",
-                                              "model", "video", "duplicates", "review", "compare", "live", "gpu", "code", "tour")) else []
+                                              "model", "video", "duplicates", "review", "compare", "live", "gpu", "code", "tour", "keypoints")) else []
         if name.startswith("help topic") and hasattr(win, "toPlainText") and CYR.search(win.toPlainText()):
             items = [("html", win.toPlainText())]
         for kind, t in items:

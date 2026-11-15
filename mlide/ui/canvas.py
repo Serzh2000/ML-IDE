@@ -8,6 +8,7 @@ from PySide6.QtGui import (QBrush, QColor, QCursor, QFont, QImage, QPainter, QPe
 from PySide6.QtWidgets import QWidget
 
 from ..model import Annotation, ImageEntry
+from . import style
 
 HANDLE = 5          # px radius of handles (view space)
 
@@ -20,6 +21,7 @@ class Canvas(QWidget):
     zoomChanged = Signal(float)
     smartBox = Signal(float, float, float, float)
     samPoints = Signal(object)         # список (x, y, метка) для SAM
+    hint = Signal(str)                 # подсказка для строки состояния (следующий шаг инструмента)
 
     def __init__(self, project_getter, parent=None):
         super().__init__(parent)
@@ -44,6 +46,9 @@ class Canvas(QWidget):
         self._pending_undo = False
         self._sam_pts: list = []
         self._sam_poly: list | None = None
+        self._obb: dict | None = None        # повёрнутая рамка в процессе: stage 1 - ось, stage 2 - ширина
+        self._pose_box: tuple | None = None  # поза в процессе: рамка нарисована, ставим точки
+        self._pose_kps: list = []
         self._fitted = True
 
     # ------------------------------------------------------------------ public
@@ -52,6 +57,8 @@ class Canvas(QWidget):
         self.selected = None
         self._poly = []
         self._drag = None
+        self._obb = None
+        self._pose_box, self._pose_kps = None, []
         self.cancel_sam()
         self.fit()
         self.selectionChanged.emit(None)
@@ -98,6 +105,8 @@ class Canvas(QWidget):
 
     def cancel_poly(self):
         self._poly = []
+        self._obb = None
+        self._pose_box, self._pose_kps = None, []
         self.cancel_sam()
         self.update()
 
@@ -151,9 +160,9 @@ class Canvas(QWidget):
     # ------------------------------------------------------------------ painting
     def paintEvent(self, _):
         p = QPainter(self)
-        p.fillRect(self.rect(), QColor(24, 25, 28))
+        p.fillRect(self.rect(), QColor(style.CANVAS))
         if not self.image or not self.entry:
-            p.setPen(QColor(130, 134, 142))
+            p.setPen(QColor(style.MUTED))
             p.setFont(QFont("Segoe UI", 12))
             p.drawText(self.rect(), Qt.AlignCenter, "Импортируйте изображения, чтобы начать\n(Файл > Импорт изображений… или перетащите файлы сюда)")
             return
@@ -190,6 +199,26 @@ class Canvas(QWidget):
             p.setPen(QPen(QColor(255, 255, 255), 2))
             p.setBrush(QColor(60, 220, 110) if lb else QColor(240, 70, 70))
             p.drawEllipse(q, 6, 6)
+        # повёрнутая рамка в процессе
+        if self._obb:
+            col = self._color(self.cur_class)
+            a, b = self._obb["a"], self._obb["b"]
+            p.setPen(QPen(col, 2, Qt.DashLine))
+            if self._obb["stage"] == 1:
+                p.drawLine(self.to_view(a.x(), a.y()), self.to_view(b.x(), b.y()))
+            else:
+                cs = self._obb_corners(a, b, self._obb.get("m", b))
+                if cs:
+                    p.setBrush(QColor(col.red(), col.green(), col.blue(), 40))
+                    p.drawPolygon(QPolygonF([self.to_view(*c) for c in cs]))
+        # поза в процессе: рамка и уже поставленные точки
+        if self._pose_box:
+            col = self._color(self.cur_class)
+            x1, y1, x2, y2 = self._pose_box
+            p.setPen(QPen(col, 2, Qt.DashLine))
+            p.setBrush(QColor(col.red(), col.green(), col.blue(), 30))
+            p.drawRect(QRectF(self.to_view(x1, y1), self.to_view(x2, y2)))
+            self._paint_kps(p, self._pose_kps, col, True)
         # rubber band for box/smart
         if self._drag and self._drag["mode"] == "draw":
             a, b = self._drag["start"], self._drag["cur"]
@@ -199,8 +228,23 @@ class Canvas(QWidget):
             p.setBrush(QColor(col.red(), col.green(), col.blue(), 40))
             p.drawRect(r)
 
+        # класс кадра (классификация)
+        if self.entry is not None and (self.tool == "tag" or self.entry.tag is not None):
+            pr = self.get_project()
+            t = self.entry.tag
+            known = t is not None and 0 <= t < len(pr.classes)
+            txt = f"Класс кадра: {pr.classes[t]['name']}" if known else "Класс кадра: не задан (клавиши 1-9 или щелчок по классу справа)"
+            col = self._color(t) if known else QColor(style.MUTED)
+            p.setFont(QFont("Segoe UI", 11, QFont.Bold))
+            tw = p.fontMetrics().horizontalAdvance(txt) + 24
+            rect = QRectF(12, 12, tw, 32)
+            p.setPen(Qt.NoPen)
+            p.setBrush(col)
+            p.drawRoundedRect(rect, 8, 8)
+            p.setPen(QColor(0, 0, 0) if col.lightness() > 150 else QColor(255, 255, 255))
+            p.drawText(rect, Qt.AlignCenter, txt)
         # crosshair
-        if self.tool in ("box", "smart", "poly", "sam") and self.underMouse() and not self._pan:
+        if self.tool in ("box", "smart", "poly", "sam", "obb", "pose") and self.underMouse() and not self._pan:
             p.setPen(QPen(QColor(255, 255, 255, 90), 1, Qt.DotLine))
             p.drawLine(0, int(self._mouse.y()), self.width(), int(self._mouse.y()))
             p.drawLine(int(self._mouse.x()), 0, int(self._mouse.x()), self.height())
@@ -215,14 +259,21 @@ class Canvas(QWidget):
         fill_a = 70 if sel else (45 if self.show_fill else 0)
         p.setBrush(QColor(col.red(), col.green(), col.blue(), fill_a))
         vpts = [self.to_view(x, y) for x, y in a.polygon()]
-        if a.kind == "box":
+        if a.kind in ("box", "pose"):
             x1, y1, x2, y2 = a.bbox()
             r = QRectF(self.to_view(x1, y1), self.to_view(x2, y2))
             p.drawRect(r)
             anchor = r.topLeft()
+            if a.kind == "pose" and a.kps:
+                self._paint_kps(p, a.kps, col, sel)
         else:
             p.drawPolygon(QPolygonF(vpts))
             anchor = min(vpts, key=lambda q: (q.y(), q.x()))
+            if a.kind == "obb" and len(vpts) == 4:             # короткая черта от центра к середине первого ребра: куда «смотрит» рамка
+                cx = sum(q.x() for q in vpts) / 4
+                cy = sum(q.y() for q in vpts) / 4
+                mid = QPointF((vpts[0].x() + vpts[1].x()) / 2, (vpts[0].y() + vpts[1].y()) / 2)
+                p.drawLine(QPointF(cx, cy), mid)
         if self.show_labels:
             txt = self._cname(a.cls) + (f" {a.conf:.2f}" if a.conf is not None else "") + (" ?" if a.suggested else "")
             p.setFont(QFont("Segoe UI", 9))
@@ -238,13 +289,49 @@ class Canvas(QWidget):
             for q in self._handles(a):
                 p.drawRect(QRectF(q.x() - HANDLE, q.y() - HANDLE, HANDLE * 2, HANDLE * 2))
 
+    def _paint_kps(self, p: QPainter, kps, col: QColor, show_index: bool):
+        """Ключевые точки: линии скелета и точки (видимая - залитая, закрытая - пустая)."""
+        pr = self.get_project()
+        p.save()
+        p.setPen(QPen(col, 2))
+        for i, j in pr.skeleton:
+            if i < len(kps) and j < len(kps) and kps[i][2] > 0 and kps[j][2] > 0:
+                p.drawLine(self.to_view(kps[i][0], kps[i][1]), self.to_view(kps[j][0], kps[j][1]))
+        p.setFont(QFont("Segoe UI", 8))
+        for i, (x, y, v) in enumerate(kps):
+            if v <= 0:
+                continue
+            q = self.to_view(x, y)
+            p.setPen(QPen(QColor(255, 255, 255), 1.5))
+            p.setBrush(col if v == 2 else Qt.NoBrush)
+            p.drawEllipse(q, 5, 5)
+            if show_index:
+                p.setPen(QColor(255, 255, 255))
+                p.drawText(QPointF(q.x() + 7, q.y() - 5), str(i + 1))
+        p.restore()
+
+    def _obb_corners(self, a, b, m):
+        """Углы прямоугольника: ось a->b - его средняя линия, расстояние от оси до точки m - половина ширины."""
+        dx, dy = b.x() - a.x(), b.y() - a.y()
+        L = math.hypot(dx, dy)
+        if L < 1e-6:
+            return None
+        nx, ny = -dy / L, dx / L
+        hw = abs((m.x() - a.x()) * nx + (m.y() - a.y()) * ny)
+        return [[a.x() + nx * hw, a.y() + ny * hw], [b.x() + nx * hw, b.y() + ny * hw],
+                [b.x() - nx * hw, b.y() - ny * hw], [a.x() - nx * hw, a.y() - ny * hw]]
+
     # ------------------------------------------------------------------ geometry / hit testing
     def _handles(self, a: Annotation):
-        if a.kind == "box":
+        if a.kind in ("box", "pose"):
             x1, y1, x2, y2 = a.bbox()
             mx, my = (x1 + x2) / 2, (y1 + y2) / 2
             order = [(x1, y1), (mx, y1), (x2, y1), (x2, my), (x2, y2), (mx, y2), (x1, y2), (x1, my)]
-            return [self.to_view(x, y) for x, y in order]
+            hs = [self.to_view(x, y) for x, y in order]
+            if a.kind == "pose" and a.kps:
+                self._hmap = [i for i, k in enumerate(a.kps) if k[2] > 0]
+                hs += [self.to_view(a.kps[i][0], a.kps[i][1]) for i in self._hmap]
+            return hs
         return [self.to_view(x, y) for x, y in a.pts]
 
     def _hit_handle(self, a, pos: QPointF):
@@ -254,7 +341,7 @@ class Canvas(QWidget):
         return None
 
     def _contains(self, a: Annotation, ip: QPointF) -> bool:
-        if a.kind == "box":
+        if a.kind in ("box", "pose"):
             x1, y1, x2, y2 = a.bbox()
             return x1 <= ip.x() <= x2 and y1 <= ip.y() <= y2
         return QPolygonF([QPointF(x, y) for x, y in a.pts]).containsPoint(ip, Qt.OddEvenFill)
@@ -298,7 +385,18 @@ class Canvas(QWidget):
             self.update()
             self.samPoints.emit(list(self._sam_pts))
             return
-        if self.tool in ("box", "smart"):
+        if self.tool == "obb":
+            if self._obb and self._obb["stage"] == 2:
+                self._finish_obb(ip)
+                return
+            self._obb = {"stage": 1, "a": ip, "b": ip}
+            self._drag = {"mode": "obb_axis"}
+            self.hint.emit("Повёрнутая рамка: протяните линию вдоль объекта (через его середину от края до края)")
+            return
+        if self.tool == "pose" and self._pose_box is not None:
+            self._place_kp(ip, e.modifiers())
+            return
+        if self.tool in ("box", "smart", "pose"):
             self._drag = {"mode": "draw", "start": ip, "cur": ip}
         elif self.tool == "poly":
             if len(self._poly) >= 3:
@@ -319,6 +417,12 @@ class Canvas(QWidget):
                 if a.kind == "poly" and (mods & Qt.AltModifier) and len(a.pts) > 3:
                     self.beforeChange.emit()
                     a.pts.pop(h)
+                    self.changed.emit()
+                    return
+                if a.kind == "pose" and h >= 8 and (mods & Qt.AltModifier):          # Alt+щелчок по точке: видна <-> закрыта
+                    self.beforeChange.emit()
+                    k = a.kps[self._hmap[h - 8]]
+                    k[2] = 1 if k[2] == 2 else 2
                     self.changed.emit()
                     return
                 self._drag = {"mode": "handle", "idx": h, "undo": True}
@@ -356,11 +460,15 @@ class Canvas(QWidget):
             return
         ip = self.to_img(pos)
         self.cursorMoved.emit(ip.x(), ip.y())
+        if self._obb and self._obb["stage"] == 2:
+            self._obb["m"] = ip
         d = self._drag
         if d:
             c = self._clamp(ip)
             if d["mode"] == "draw":
                 d["cur"] = c
+            elif d["mode"] == "obb_axis":
+                self._obb["b"] = c
             elif d["mode"] == "move":
                 a = self.selected_ann()
                 if a:
@@ -375,6 +483,10 @@ class Canvas(QWidget):
                         for q in a.pts:
                             q[0] += dx
                             q[1] += dy
+                        for k in (a.kps or []):
+                            if k[2] > 0:
+                                k[0] += dx
+                                k[1] += dy
                         d["last"] = QPointF(d["last"].x() + dx, d["last"].y() + dy)
                         self.changed.emit()
             elif d["mode"] == "handle":
@@ -389,7 +501,7 @@ class Canvas(QWidget):
                 self.setCursor(Qt.CrossCursor)
             else:
                 self.setCursor(Qt.SizeAllCursor if self._pick(ip) else Qt.ArrowCursor)
-        elif self.tool in ("box", "smart", "poly", "sam"):
+        elif self.tool in ("box", "smart", "poly", "sam", "obb", "pose"):
             self.setCursor(Qt.CrossCursor)
         self.update()
 
@@ -402,6 +514,13 @@ class Canvas(QWidget):
         if a.kind == "poly":
             a.pts[idx] = [c.x(), c.y()]
             return
+        if a.kind == "obb":
+            self._move_obb_corner(a, idx, c)
+            return
+        if a.kind == "pose" and idx >= 8:
+            k = a.kps[self._hmap[idx - 8]]
+            k[0], k[1] = c.x(), c.y()
+            return
         x1, y1, x2, y2 = a.bbox()
         if idx in (0, 6, 7):
             x1 = c.x()
@@ -413,6 +532,29 @@ class Canvas(QWidget):
             y2 = c.y()
         a.pts = [[min(x1, x2), min(y1, y2)], [max(x1, x2), max(y1, y2)]]
 
+    def _move_obb_corner(self, a: Annotation, idx, c: QPointF):
+        """Тянем угол повёрнутой рамки: противоположный угол неподвижен, наклон сохраняется (остаётся прямоугольником)."""
+        P = [list(q) for q in a.pts]
+        o = P[(idx + 2) % 4]
+        ux, uy = P[1][0] - P[0][0], P[1][1] - P[0][1]
+        L = math.hypot(ux, uy) or 1e-9
+        ux, uy = ux / L, uy / L
+        vx, vy = -uy, ux
+        d = (c.x() - o[0], c.y() - o[1])
+        au, av = d[0] * ux + d[1] * uy, d[0] * vx + d[1] * vy
+        # в осях (u, v) с началом в o: тянущийся угол = (au, av), его соседи = (au, 0) и (0, av)
+        for k in range(4):
+            if k == (idx + 2) % 4:
+                continue
+            if k == idx:
+                na, nb = au, av
+            else:
+                rel = (P[k][0] - o[0], P[k][1] - o[1])
+                a_k, b_k = rel[0] * ux + rel[1] * uy, rel[0] * vx + rel[1] * vy
+                na, nb = (au, 0.0) if abs(b_k) < abs(a_k) else (0.0, av)
+            P[k] = [o[0] + na * ux + nb * vx, o[1] + na * uy + nb * vy]
+        a.pts = P
+
     def mouseReleaseEvent(self, e):
         if self._pan:
             self._pan = None
@@ -421,11 +563,21 @@ class Canvas(QWidget):
         d, self._drag = self._drag, None
         if e.button() != Qt.LeftButton or not d:
             return
-        if d["mode"] == "draw":
+        if d["mode"] == "obb_axis":
+            a, b = self._obb["a"], self._obb["b"]
+            if math.hypot(b.x() - a.x(), b.y() - a.y()) * self.scale >= 6:
+                self._obb.update(stage=2, m=b)
+                self.hint.emit("Повёрнутая рамка: подвиньте мышь, чтобы задать ширину, и щёлкните. Esc - отмена")
+            else:
+                self._obb = None
+        elif d["mode"] == "draw":
             a, b = d["start"], d["cur"]
             x1, y1, x2, y2 = min(a.x(), b.x()), min(a.y(), b.y()), max(a.x(), b.x()), max(a.y(), b.y())
             if (x2 - x1) * self.scale >= 4 and (y2 - y1) * self.scale >= 4:
-                if self.tool == "smart":
+                if self.tool == "pose":
+                    self._pose_box = (x1, y1, x2, y2)
+                    self._pose_hint()
+                elif self.tool == "smart":
                     self.smartBox.emit(x1, y1, x2, y2)
                 else:
                     self.beforeChange.emit()
@@ -445,6 +597,53 @@ class Canvas(QWidget):
             self.selectionChanged.emit(ann.id)
             self.changed.emit()
         self._poly = []
+        self.update()
+
+    def _finish_obb(self, m):
+        cs = self._obb_corners(self._obb["a"], self._obb["b"], m)
+        self._obb = None
+        if cs and math.hypot(cs[0][0] - cs[3][0], cs[0][1] - cs[3][1]) * self.scale >= 4:
+            self.beforeChange.emit()
+            ann = Annotation(self.cur_class, "obb", cs)
+            self.entry.anns.append(ann)
+            self.selected = ann.id
+            self.selectionChanged.emit(ann.id)
+            self.changed.emit()
+        self.update()
+
+    # ---- поза (ключевые точки)
+    def _pose_hint(self):
+        names = self.get_project().keypoints
+        n = len(self._pose_kps)
+        if n < len(names):
+            self.hint.emit(f"Точка {n + 1} из {len(names)}: {names[n]} - щелчок: видна, Ctrl+щелчок: закрыта, N: пропустить, "
+                           "Backspace: назад, Enter: закончить, Esc: отмена")
+
+    def _place_kp(self, ip, mods, skip=False):
+        names = self.get_project().keypoints
+        self._pose_kps.append([0.0, 0.0, 0] if skip else [ip.x(), ip.y(), 1 if (mods & Qt.ControlModifier) else 2])
+        if len(self._pose_kps) >= len(names):
+            self._finish_pose()
+        else:
+            self._pose_hint()
+        self.update()
+
+    def _finish_pose(self):
+        names = self.get_project().keypoints
+        if self._pose_box is None:
+            return
+        kps = [list(k) for k in self._pose_kps][:len(names)] + [[0.0, 0.0, 0]] * max(0, len(names) - len(self._pose_kps))
+        x1, y1, x2, y2 = self._pose_box
+        for x, y, v in kps:                      # рамка должна охватывать все видимые точки
+            if v > 0:
+                x1, y1, x2, y2 = min(x1, x), min(y1, y), max(x2, x), max(y2, y)
+        self.beforeChange.emit()
+        ann = Annotation(self.cur_class, "pose", [[x1, y1], [x2, y2]], kps=kps)
+        self.entry.anns.append(ann)
+        self.selected = ann.id
+        self.selectionChanged.emit(ann.id)
+        self._pose_box, self._pose_kps = None, []
+        self.changed.emit()
         self.update()
 
     def add_polygon(self, pts, cls=None):
@@ -475,9 +674,31 @@ class Canvas(QWidget):
             self._finish_poly()
         elif k in (Qt.Key_Return, Qt.Key_Enter) and self.tool == "sam" and self._sam_poly:
             self.accept_sam(as_box=bool(e.modifiers() & Qt.ShiftModifier))
+        elif k in (Qt.Key_Return, Qt.Key_Enter) and self.tool == "pose" and self._pose_box is not None:
+            self._finish_pose()
+        elif k == Qt.Key_N and self.tool == "pose" and self._pose_box is not None:
+            self._place_kp(QPointF(), Qt.NoModifier, skip=True)
+        elif k == Qt.Key_Backspace and self.tool == "pose" and self._pose_box is not None:
+            if self._pose_kps:
+                self._pose_kps.pop()
+                self._pose_hint()
+            else:
+                self._pose_box = None
+            self.update()
+        elif k in (Qt.Key_BracketLeft, Qt.Key_BracketRight) and self.selected_ann() and self.selected_ann().kind == "obb":
+            a = self.selected_ann()                 # [ и ]: повернуть выбранную рамку на 1 градус (Shift - на 5)
+            ang = math.radians((5 if e.modifiers() & Qt.ShiftModifier else 1) * (-1 if k == Qt.Key_BracketLeft else 1))
+            cx = sum(q[0] for q in a.pts) / 4
+            cy = sum(q[1] for q in a.pts) / 4
+            ca, sa = math.cos(ang), math.sin(ang)
+            self.beforeChange.emit()
+            a.pts = [[cx + (x - cx) * ca - (y - cy) * sa, cy + (x - cx) * sa + (y - cy) * ca] for x, y in a.pts]
+            self.changed.emit()
         elif k == Qt.Key_Escape:
             self.cancel_sam()
             self._poly = []
+            self._obb = None
+            self._pose_box, self._pose_kps = None, []
             self._drag = None
             self.select(None)
             self.update()
@@ -499,6 +720,10 @@ class Canvas(QWidget):
             for q in a.pts:
                 q[0] += dx
                 q[1] += dy
+            for kp in (a.kps or []):
+                if kp[2] > 0:
+                    kp[0] += dx
+                    kp[1] += dy
             self.changed.emit()
         else:
             super().keyPressEvent(e)

@@ -25,7 +25,7 @@ Label → check → export → train → results, with hints and explanations in
 To train a neural network to find objects in photos you need three things: **labeled data**, **the right settings** and
 **an understanding of what happens during training**. ML IDE covers all three:
 
-- it makes labeling convenient (boxes, polygons, "smart contour") and does part of the work for you with a trained model;
+- it makes labeling convenient (boxes, polygons, "Smart outline") and does part of the work for you with a trained model;
 - it suggests settings for your dataset and explains every parameter on mouse hover;
 - it launches training, draws charts and explains **in words** what is happening and what to do next.
 
@@ -36,29 +36,31 @@ a ready-made `train.py`, the right dataset format and augmentation presets are c
 
 | | |
 |---|---|
-| 🖼 **Import** | files, folders (recursive), drag & drop; existing **YOLO, COCO JSON, Pascal VOC** labels; **frames from video** |
-| ✏️ **Labeling** | boxes, polygons, **smart contour** (rough box → edge via GrabCut), **click-to-label (SAM)**: click an object, get a precise outline; undo/redo, copy labels from the previous frame, hotkeys 1–9 for classes |
-| 🤖 **Auto-label** | load your own `.onnx` (no PyTorch needed!) or `.pt` model — it proposes boxes/outlines, you just review them (`Y` — accept) |
-| 🎛 **Augmentation presets** | Light / Medium / Strong / Aerial / Night + your own, with a **live preview** on your photo |
-| 📦 **Export** | YOLO (v5, v8, v9, v10, v11, v12, 26: detection, segmentation, OBB), YOLOv7, Darknet, COCO, Pascal VOC; train/val/test, background, offline augmentation |
-| 💡 **Advisor** | analyzes the dataset and picks the model, epochs, image size, preset, layer freezing |
-| 🚀 **Training** | launch `train.py` from the program, loss/mAP/precision/recall charts and a **plain-language breakdown** |
-| 📊 **Results** | open a project — see the metrics, confusion matrix, examples and test the model on any photo |
-| 📤 **Model export** | `best.pt` → ONNX, TorchScript, OpenVINO, TensorRT, NCNN, TFLite, CoreML; preparation for **ESP32-S3** (ONNX 320 px + calibration images) |
-| 🔍 **Model viewer** | ONNX graph diagram, summary (parameters, input/output), layer list and an explanation of what each layer does |
-| 📚 **Reference** | guides and a glossary of terms (mAP, epoch, batch, overfitting…) with search, tooltips on every parameter |
-| 🧹 **Data quality** | **duplicate / near-duplicate** search, leak-free train/val split, **label review by a model** (likely mistakes, "what to label next"), class merge and ordering |
-| 📈 **Comparison and speed** | training run comparison (table, overlaid curves, verdict), model test on **video and webcam**, FPS measurement, code examples |
-| 🛟 **Reliability** | project backup (.bak) and recovery, finding moved files, annotation snapshots, recent projects, fast list for tens of thousands of images |
-| 🌐 **Language** | interface in **Russian and English** (View → Language) |
-| 🎓 **Examples and tour** | 6 learning datasets with one button and an interactive tour of the interface |
+| **Import** | files, folders (recursive), drag & drop; existing **YOLO, COCO JSON, Pascal VOC** labels; **frames from video** |
+| **Annotation** | boxes, polygons, **Smart outline** (rough box → edge via GrabCut), **click-to-label (SAM)**: click an object, get a precise outline; undo/redo, copy labels from the previous frame, keys 1–9 for classes |
+| **Auto-annotate** | load your own `.onnx` (no PyTorch needed!) or `.pt` model — it proposes boxes/outlines, you just review them (`Y` — accept) |
+| **Augmentation presets** | Light / Medium / Strong / Aerial / Night + your own, with a **live preview** on your photo |
+| **Export** | YOLO (v5, v8, v9, v10, v11, v12, 26: detection, segmentation, OBB), YOLOv7, Darknet, COCO, Pascal VOC; train/val/test, background, offline augmentation |
+| **Advisor** | analyzes the dataset and picks the model, epochs, image size, preset, layer freezing |
+| **Training** | launch `train.py` from the program, loss/mAP/precision/recall charts and a **plain-language breakdown** |
+| **Results** | open a project — see the metrics, confusion matrix, examples and test the model on any photo |
+| **Model export** | `best.pt` → ONNX, TorchScript, OpenVINO, TensorRT, NCNN, TFLite, CoreML; preparation for **ESP32-S3** (ONNX 320 px + calibration images) |
+| **Model viewer** | ONNX graph diagram, summary (parameters, input/output), layer list and an explanation of what each layer does |
+| **Reference** | guides and a glossary of terms (mAP, epoch, batch, overfitting…) with search, tooltips on every parameter |
+| **Data quality** | **duplicate / near-duplicate** search, leak-free train/val split, **label review by a model** (likely mistakes, "what to label next"), class merge and ordering |
+| **Comparison and speed** | training run comparison (table, overlaid curves, verdict), model test on **video and webcam**, FPS measurement, code examples |
+| **Reliability** | project backup (.bak) and recovery, finding moved files, annotation snapshots, recent projects, fast list for tens of thousands of images |
+| **Language and theme** | interface in **Russian and English**, **dark and light** theme, one vector icon set (View → Language / Theme) |
+| **Tasks** | **detection**, **segmentation**, **rotated boxes (OBB)**, **keypoints (pose)**, **image classification** - with YOLO export |
+| **Updates and GPU** | new-version check on GitHub (only on a button press), PyTorch with CUDA installed for your graphics card |
+| **Examples and tour** | 6 learning datasets with one button and an interactive tour of the interface |
 
 ## Screenshots
 
 <table>
 <tr>
 <td width="50%"><img src="docs/screenshots_en/welcome.png" alt="Welcome screen"><br><sub>Welcome screen</sub></td>
-<td width="50%"><img src="docs/screenshots_en/segmentation.png" alt="Segmentation"><br><sub>Labeling with polygons (segmentation)</sub></td>
+<td width="50%"><img src="docs/screenshots_en/segmentation.png" alt="Segmentation"><br><sub>Annotating with polygons (segmentation)</sub></td>
 </tr>
 <tr>
 <td><img src="docs/screenshots_en/results.png" alt="Training results"><br><sub>Training results: metrics, charts, breakdown</sub></td>
@@ -83,7 +85,7 @@ a ready-made `train.py`, the right dataset format and augmentation presets are c
 
 <table>
 <tr>
-<td width="50%"><img src="docs/screenshots_en/sam.png" alt="Click to label"><br><sub>Click (SAM): one click - a precise object outline</sub></td>
+<td width="50%"><img src="docs/screenshots_en/sam.png" alt="Click to label"><br><sub>Click (SAM): one click gives a precise object outline</sub></td>
 <td width="50%"><img src="docs/screenshots_en/review.png" alt="Model-based label review"><br><sub>Label review by a model: likely mistakes and suspicious frames</sub></td>
 </tr>
 <tr>
@@ -127,7 +129,7 @@ build_exe.bat          # result: dist\ML IDE\ML IDE.exe
 ### For training models
 
 The IDE itself is lightweight and **does not include PyTorch**. The "Training" button needs a Python with the `ultralytics` package
-(the "Training" window has an **"Install ultralytics"** button) — preferably with an Nvidia GPU. Without a GPU you can
+(the Training window has an **"Install ultralytics"** button) — preferably with an Nvidia GPU. Without a GPU you can
 train small datasets on CPU, or upload the export folder to Google Colab / Kaggle and run `train.py` there.
 
 ## Quick start in 10 minutes
@@ -140,7 +142,7 @@ train small datasets on CPU, or upload the export folder to Google Colab / Kaggl
 5. **Training** (`Ctrl+Shift+T`) → *Install ultralytics* (if needed) → *Start training*. The charts and explanations
    update on their own.
 6. **Results** (`Ctrl+Shift+R`) → metrics, confusion matrix, **"Model check"** on your own photo.
-7. Improvement loop: load the resulting `best.onnx` into **Auto-label**, label the remaining photos with the machine,
+7. Improvement loop: load the resulting `best.onnx` into **Auto-annotate**, label the remaining photos with the model,
    fix the mistakes (`Y` — accept suggestions) and retrain.
 
 > Your own labels: **Import folder** → create classes → draw boxes (`W`) or polygons (`P`).
@@ -153,7 +155,7 @@ train small datasets on CPU, or upload the export folder to Google Colab / Kaggl
 - **File → Video frames** - extract frames by time, by frame number, or on scene change.
 - **Tools → Duplicates and similar frames** - finds near-identical images; the **Export** option "Do not split similar frames" keeps
   neighbouring frames of one video out of both train and val (otherwise metrics look better than they are).
-- **Tools → Label review by model** - the model finds likely mistakes (missed object, wrong class, loose box) or tells you
+- **Tools → Check annotations with a model** - the model finds likely mistakes (missed object, wrong class, loose box) or tells you
   **which frames to label next** (where it is unsure).
 - **File → Import COCO / Pascal VOC labels**; right-click a class to rename, merge or move it.
 - **Tools → Compare training runs** and **Test the model on video and camera** (with frames-per-second measurement).
@@ -165,7 +167,7 @@ it shows where it is used and suggests the right settings (FP16, INT8, dynamic s
 
 | Format | Where it is used |
 |---|---|
-| **ONNX** | universal: Windows/Linux/macOS, web, C++/C#/Java; loads back into "Auto-label" |
+| **ONNX** | universal: Windows/Linux/macOS, web, C++/C#/Java; loads back into "Auto-annotate" |
 | TorchScript | C++ (LibTorch), mobile PyTorch |
 | OpenVINO | Intel CPUs and GPUs |
 | TensorRT | maximum speed on Nvidia GPUs |
@@ -201,7 +203,10 @@ Downloaded with a button from the official Ultralytics GitHub; not included in t
 | Pills | detection | 1 | ~8 MB | fast training on a small set |
 | Signatures in documents | detection | 1 | ~11 MB | heterogeneous objects, testing on your own document |
 | MRI: brain tumor (educational) | detection | 2 | ~4 MB | statistics and class balance (not for diagnosis) |
-| Cracks | **segmentation** | 1 | ~92 MB | polygons, "smart contour", `-seg` models |
+| Cracks | **segmentation** | 1 | ~92 MB | polygons, "Smart outline", `-seg` models |
+| DOTA8 aerial | **rotated boxes** | 15 | ~1 MB | the Rotated box tool, `-obb` models |
+| COCO8-pose | **keypoints** | 1 (17 points) | ~1 MB | the Keypoints tool, `-pose` models |
+| MNIST160 | **classification** | 10 | ~1 MB | the Image class tool, `-cls` models |
 | COCO: 5 classes | detection | 5 | ~7 MB | a lesson on small data and overfitting |
 
 ## Export formats
@@ -211,6 +216,8 @@ Downloaded with a button from the official Ultralytics GitHub; not included in t
 | **YOLO Ultralytics — Detection** | YOLOv5/v8/v9/v10/v11/v12/26 | `images/`, `labels/`, `data.yaml`, `train.py` |
 | **YOLO Ultralytics — Segmentation** | `-seg` models | the same, polygon labels |
 | **YOLO Ultralytics — OBB** | rotated boxes | labels with 4 corners |
+| **YOLO Ultralytics — Pose** | keypoints | "box + points" labels, `kpt_shape` and `flip_idx` in `data.yaml` |
+| **YOLO Ultralytics — Classify** | image classification | `train/val/<class>/` folders (no labels) |
 | YOLOv7 / Roboflow | old YOLOv7/YOLOR repositories | `train/images`, `train/labels`, `data.yaml` |
 | Darknet | YOLOv3 / v4 | `obj.names`, `obj.data`, `train.txt`, `valid.txt` |
 | COCO JSON | YOLOX, RT-DETR, Detectron2, MMDetection | `annotations/instances_*.json` |
@@ -230,18 +237,19 @@ cutouts, mosaic, MixUp, copy-paste. They are applied:
 - **offline** — N augmented copies are added to the training set together with recalculated boxes/outlines
   (needed for formats without online augmentation — COCO, Darknet).
 
-## Hotkeys
+## Shortcuts
 
 | Key | Action | Key | Action |
 |---|---|---|---|
-| `V` / `W` / `P` / `S` | select / box / polygon / smart contour | `A` / `D` | previous / next photo |
+| `V` / `W` / `P` / `S` / `G` | select / box / polygon / smart outline / click (SAM) |
+| `O` / `K` / `T` | rotated box / keypoints / image class | `[` `]` | rotate the selected rotated box | `A` / `D` | previous / next photo |
 | `1`–`9` | choose a class (and change it for the selection) | `R` | mark as reviewed and go on |
-| `Del` | delete selected | `Y` | accept auto-label suggestions |
+| `Del` | delete selected | `Y` | accept auto-annotate suggestions |
 | `Ctrl+Z` / `Ctrl+Shift+Z` | undo / redo | `Ctrl+D` | copy labels from the previous |
 | `Wheel` | zoom | `Space` + mouse | pan |
-| `Ctrl+H` | advisor | `Ctrl+L` | auto-label |
+| `Ctrl+H` | advisor | `Ctrl+L` | auto-annotate |
 | `Ctrl+E` | export | `Ctrl+Shift+T` / `Ctrl+Shift+R` | training / results |
-| `F1` | reference | `Shift+F1` | hotkey list |
+| `F1` | reference | `Shift+F1` | shortcut list |
 
 ## Project structure
 
@@ -250,7 +258,7 @@ mlide/
   model.py        data: annotations, images, project (.mlide.json)
   formats.py      YOLO / Darknet / COCO / VOC export, YOLO label import, train.py generation
   augment.py      presets and offline augmentation with box recalculation
-  autolabel.py    ONNX/PT models, smart contour (GrabCut)
+  autolabel.py    ONNX/PT models, Smart outline (GrabCut)
   knowledge.py    reference, advisor, "translator" of training results
   examples.py     learning datasets (download and project assembly)
   modelexport.py  export of trained models (ONNX, OpenVINO, ESP32…)

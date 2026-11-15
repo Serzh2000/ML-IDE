@@ -18,6 +18,7 @@ from ..augment import BUILTIN_PRESETS, FIELD_UI, AugParams, augment_sample, get_
 from ..formats import FORMATS, MODEL_FAMILIES, TASK_OF, Cancelled, ExportOptions, export_dataset
 from ..model import Annotation, Project
 from .. import knowledge
+from . import icons, style
 
 
 def add_tips(root, mapping):
@@ -126,7 +127,7 @@ class PresetDialog(QDialog):
         self.preview = QLabel("Сначала откройте изображение" if self.base_img is None else "")
         self.preview.setAlignment(Qt.AlignCenter)
         self.preview.setMinimumSize(380, 380)
-        self.preview.setStyleSheet("background:#1c1d21;border-radius:6px")
+        self.preview.setStyleSheet(f"background:{style.CHART};border-radius:6px")
         right.addWidget(self.preview, 1)
         nb = QPushButton("Другой вариант")
         nb.clicked.connect(self.refresh_preview)
@@ -253,7 +254,8 @@ class ExportDialog(QDialog):
         self.project = project
         s = project.export
         lay = QVBoxLayout(self)
-        adv = QPushButton("💡 Подобрать настройки под мой датасет…")
+        adv = QPushButton("Подобрать настройки под мой датасет…")
+        adv.setIcon(icons.icon("advisor"))
         adv.setToolTip("Советник проанализирует разметку и предложит модель, эпохи, размер изображения и пресет.")
         adv.clicked.connect(self._advise)
         lay.addWidget(adv)
@@ -434,6 +436,10 @@ class ExportDialog(QDialog):
 
     def _fmt_changed(self):
         ultra = self.fmt.currentData() in TASK_OF
+        if self.fmt.currentData() == "ultra_cls" and self.imgsz.value() == 640:
+            self.imgsz.setValue(224)
+        elif self.fmt.currentData() != "ultra_cls" and self.imgsz.value() == 224:
+            self.imgsz.setValue(640)
         for w in (self.script, self.family, self.size, self.epochs, self.imgsz, self.batch, self.online,
                   self.freeze, self.lr0, self.patience):
             w.setEnabled(ultra)
@@ -684,12 +690,14 @@ class AutoLabelDialog(QDialog):
 def dataset_report(project: Project) -> str:
     names = project.class_names()
     n = len(project.images)
-    labeled = [e for e in project.images if [a for a in e.anns if not a.suggested]]
+    labeled = [e for e in project.images if [a for a in e.anns if not a.suggested] or e.tag is not None]
     counts = [0] * max(1, len(names))
     tiny, dup, oob = [], [], []
     areas = []
     for e in project.images:
         seen = set()
+        if e.tag is not None and 0 <= e.tag < len(counts):
+            counts[e.tag] += 1
         for a in e.anns:
             if a.suggested:
                 continue
@@ -712,7 +720,7 @@ def dataset_report(project: Project) -> str:
     mx = max(counts) if counts else 1
     for i, nm in enumerate(names):
         bar = "█" * int(30 * counts[i] / mx) if mx else ""
-        warn = "   ⚠ мало примеров (<30)" if counts[i] < 30 else ""
+        warn = "   (внимание: мало примеров, <30)" if counts[i] < 30 else ""
         lines.append(f"  {i:>2} {nm:<20} {counts[i]:>6} {bar}{warn}")
     if areas:
         a = np.array(areas)
@@ -722,9 +730,9 @@ def dataset_report(project: Project) -> str:
             lines.append("  Много мелких объектов: увеличьте размер изображения (imgsz 960-1280) или обучайте по тайлам.")
     for title, lst in (("Крошечные рамки (<4 px)", tiny), ("Рамки за пределами кадра", oob), ("Дубликаты рамок", dup)):
         if lst:
-            lines += ["", f"⚠ {title}: {len(lst)}  например: " + ", ".join(sorted(set(lst))[:5])]
+            lines += ["", f"Внимание - {title}: {len(lst)}  например: " + ", ".join(sorted(set(lst))[:5])]
     if not (tiny or oob or dup):
-        lines += ["", "✔ Структурных проблем не найдено."]
+        lines += ["", "Структурных проблем не найдено."]
     return "\n".join(lines)
 
 
