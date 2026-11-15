@@ -3,5 +3,6 @@ numpy
 pillow
 pyyaml
 opencv-python-headless
+onnxruntime
 # optional: only needed for .pt models in Auto-annotate and for training
 # ultralytics

@@ -19,6 +19,7 @@ class Canvas(QWidget):
     cursorMoved = Signal(float, float)
     zoomChanged = Signal(float)
     smartBox = Signal(float, float, float, float)
+    samPoints = Signal(object)         # список (x, y, метка) для SAM
 
     def __init__(self, project_getter, parent=None):
         super().__init__(parent)
@@ -41,6 +42,8 @@ class Canvas(QWidget):
         self._drag = None                    # dict describing active drag
         self._poly: list[list[float]] = []   # in-progress polygon (image coords)
         self._pending_undo = False
+        self._sam_pts: list = []
+        self._sam_poly: list | None = None
         self._fitted = True
 
     # ------------------------------------------------------------------ public
@@ -49,6 +52,7 @@ class Canvas(QWidget):
         self.selected = None
         self._poly = []
         self._drag = None
+        self.cancel_sam()
         self.fit()
         self.selectionChanged.emit(None)
 
@@ -94,7 +98,35 @@ class Canvas(QWidget):
 
     def cancel_poly(self):
         self._poly = []
+        self.cancel_sam()
         self.update()
+
+    def cancel_sam(self):
+        self._sam_pts = []
+        self._sam_poly = None
+        self.update()
+
+    def set_sam_preview(self, poly):
+        self._sam_poly = poly
+        self.update()
+
+    def accept_sam(self, as_box=False):
+        if not self._sam_poly or not self.entry:
+            return False
+        if as_box:
+            xs = [p[0] for p in self._sam_poly]
+            ys = [p[1] for p in self._sam_poly]
+            ann = Annotation(self.cur_class, "box", [[min(xs), min(ys)], [max(xs), max(ys)]])
+        else:
+            ann = Annotation(self.cur_class, "poly", [list(p) for p in self._sam_poly])
+        self.beforeChange.emit()
+        self.entry.anns.append(ann)
+        self.selected = ann.id
+        self.selectionChanged.emit(ann.id)
+        self._sam_pts, self._sam_poly = [], None
+        self.changed.emit()
+        self.update()
+        return True
 
     # ------------------------------------------------------------------ coords
     def to_img(self, p: QPointF) -> QPointF:
@@ -147,6 +179,17 @@ class Canvas(QWidget):
             for i, q in enumerate(pts):
                 p.drawEllipse(q, 6 if i == 0 else 3.5, 6 if i == 0 else 3.5)
 
+        # превью SAM: маска и точки
+        if self._sam_poly:
+            col = self._color(self.cur_class)
+            p.setPen(QPen(col, 2))
+            p.setBrush(QColor(col.red(), col.green(), col.blue(), 90))
+            p.drawPolygon(QPolygonF([self.to_view(x, y) for x, y in self._sam_poly]))
+        for (x, y, lb) in self._sam_pts:
+            q = self.to_view(x, y)
+            p.setPen(QPen(QColor(255, 255, 255), 2))
+            p.setBrush(QColor(60, 220, 110) if lb else QColor(240, 70, 70))
+            p.drawEllipse(q, 6, 6)
         # rubber band for box/smart
         if self._drag and self._drag["mode"] == "draw":
             a, b = self._drag["start"], self._drag["cur"]
@@ -157,7 +200,7 @@ class Canvas(QWidget):
             p.drawRect(r)
 
         # crosshair
-        if self.tool in ("box", "smart", "poly") and self.underMouse() and not self._pan:
+        if self.tool in ("box", "smart", "poly", "sam") and self.underMouse() and not self._pan:
             p.setPen(QPen(QColor(255, 255, 255, 90), 1, Qt.DotLine))
             p.drawLine(0, int(self._mouse.y()), self.width(), int(self._mouse.y()))
             p.drawLine(int(self._mouse.x()), 0, int(self._mouse.x()), self.height())
@@ -249,6 +292,12 @@ class Canvas(QWidget):
         if e.button() != Qt.LeftButton or not self.image:
             return
         ip = self._clamp(self.to_img(pos))
+        if self.tool == "sam":
+            lb = 0 if (e.modifiers() & Qt.ControlModifier) else 1
+            self._sam_pts.append((ip.x(), ip.y(), lb))
+            self.update()
+            self.samPoints.emit(list(self._sam_pts))
+            return
         if self.tool in ("box", "smart"):
             self._drag = {"mode": "draw", "start": ip, "cur": ip}
         elif self.tool == "poly":
@@ -340,7 +389,7 @@ class Canvas(QWidget):
                 self.setCursor(Qt.CrossCursor)
             else:
                 self.setCursor(Qt.SizeAllCursor if self._pick(ip) else Qt.ArrowCursor)
-        elif self.tool in ("box", "smart", "poly"):
+        elif self.tool in ("box", "smart", "poly", "sam"):
             self.setCursor(Qt.CrossCursor)
         self.update()
 
@@ -424,13 +473,23 @@ class Canvas(QWidget):
             self.setCursor(Qt.OpenHandCursor)
         elif k in (Qt.Key_Return, Qt.Key_Enter) and self._poly:
             self._finish_poly()
+        elif k in (Qt.Key_Return, Qt.Key_Enter) and self.tool == "sam" and self._sam_poly:
+            self.accept_sam(as_box=bool(e.modifiers() & Qt.ShiftModifier))
         elif k == Qt.Key_Escape:
+            self.cancel_sam()
             self._poly = []
             self._drag = None
             self.select(None)
             self.update()
         elif k == Qt.Key_Backspace and self._poly:
             self._poly.pop()
+            self.update()
+        elif k == Qt.Key_Backspace and self.tool == "sam" and self._sam_pts:
+            self._sam_pts.pop()
+            if self._sam_pts:
+                self.samPoints.emit(list(self._sam_pts))
+            else:
+                self._sam_poly = None
             self.update()
         elif k in (Qt.Key_Left, Qt.Key_Right, Qt.Key_Up, Qt.Key_Down) and self.selected_ann() and not e.modifiers():
             a = self.selected_ann()

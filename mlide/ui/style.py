@@ -87,10 +87,10 @@ def apply_dark(app: QApplication):
         QCheckBox::indicator:checked {{ background: {ACCENT}; border-color: {ACCENT}; }}
 
         /* списки */
-        QListWidget {{ background: {BG}; border: none; outline: none; }}
-        QListWidget::item {{ padding: 5px 8px; border-radius: 6px; margin: 1px 4px; }}
-        QListWidget::item:hover {{ background: {SURFACE}; }}
-        QListWidget::item:selected {{ background: {ACCENT}; color: white; }}
+        QListView {{ background: {BG}; border: none; outline: none; }}
+        QListView::item {{ padding: 5px 8px; border-radius: 6px; margin: 1px 4px; }}
+        QListView::item:hover {{ background: {SURFACE}; }}
+        QListView::item:selected {{ background: {ACCENT}; color: white; }}
 
         /* группы и вкладки */
         QGroupBox {{ border: 1px solid {BORDER}; border-radius: 9px; margin-top: 12px; padding: 12px 8px 8px 8px; }}

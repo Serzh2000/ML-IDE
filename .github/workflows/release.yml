@@ -1,6 +1,6 @@
-name: Release (Windows exe)
+name: Release (Windows exe + installer)
 
-# Запуск: создайте тег вида v0.2.0 -> на GitHub появится релиз с ML-IDE-windows.zip
+# Запуск: создайте тег вида v0.4.0 -> на GitHub появится релиз с ML-IDE-windows.zip и установщиком
 on:
   push:
     tags: ["v*"]
@@ -25,10 +25,25 @@ jobs:
             --exclude-module torch --exclude-module ultralytics --exclude-module tkinter ^
             --icon assets\icon.ico --add-data "assets;assets" ^
             --collect-submodules mlide mlide\__main__.py
+      - name: Self-test of the built exe
+        shell: pwsh
+        run: |
+          & "dist/ML IDE/ML IDE.exe" --selftest st.txt
+          Start-Sleep -Seconds 5
+          Get-Content st.txt
+          if (Select-String -Path st.txt -Pattern "FAIL") { throw "selftest failed" }
       - name: Zip
         shell: pwsh
         run: Compress-Archive -Path "dist/ML IDE" -DestinationPath ML-IDE-windows.zip
+      - name: Installer (Inno Setup)
+        shell: pwsh
+        run: |
+          $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { choco install innosetup -y --no-progress; }
+          & $iscc installer\ML-IDE.iss
       - uses: softprops/action-gh-release@v2
         with:
-          files: ML-IDE-windows.zip
+          files: |
+            ML-IDE-windows.zip
+            dist/ML-IDE-*-setup.exe
           generate_release_notes: true

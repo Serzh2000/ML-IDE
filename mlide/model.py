@@ -4,6 +4,7 @@ from __future__ import annotations
 import copy
 import json
 import os
+import shutil
 import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -79,6 +80,30 @@ class Project:
         self.presets: dict[str, dict] = {}      # user augmentation presets
         self.export: dict = {}                  # last export settings
         self.dirty = False
+        self.recovered_from_backup = False
+
+    # ---- потерянные файлы
+    def missing_images(self):
+        return [e for e in self.images if not Path(e.path).exists()]
+
+    def relink(self, folder) -> tuple[int, int]:
+        """Ищет пропавшие изображения по имени файла в папке (и подпапках). Возвращает (найдено, осталось)."""
+        miss = self.missing_images()
+        if not miss:
+            return 0, 0
+        index: dict[str, str] = {}
+        for root, _dirs, files in os.walk(folder):
+            for f in files:
+                index.setdefault(f.lower(), os.path.join(root, f))
+        fixed = 0
+        for e in miss:
+            p = index.get(Path(e.path).name.lower())
+            if p:
+                e.path = str(Path(p).resolve())
+                fixed += 1
+        if fixed:
+            self.dirty = True
+        return fixed, len(miss) - fixed
 
     # ---- classes
     def add_class(self, name, color=None) -> int:
@@ -152,6 +177,11 @@ class Project:
     def save(self, path=None):
         target = Path(path) if path else self.path
         assert target, "no path"
+        if target.exists():                         # предыдущая версия сохраняется как резервная копия
+            try:
+                shutil.copy2(target, target.with_name(target.name + ".bak"))
+            except OSError:
+                pass
         self.write_to(target)
         self.path = target          # only after a successful write
         self.dirty = False
@@ -159,8 +189,17 @@ class Project:
     @staticmethod
     def load(path):
         path = Path(path)
-        data = json.loads(path.read_text(encoding="utf-8"))
+        recovered = False
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            bak = path.with_name(path.name + ".bak")
+            if not bak.exists():
+                raise
+            data = json.loads(bak.read_text(encoding="utf-8"))      # файл повреждён - берём резервную копию
+            recovered = True
         pr = Project(data.get("name", path.stem))
+        pr.recovered_from_backup = recovered
         pr.path = path
         pr.classes = data.get("classes", [])
         pr.presets = data.get("presets", {})

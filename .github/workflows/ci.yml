@@ -15,8 +15,22 @@ jobs:
           python-version: "3.12"
           cache: pip
       - run: pip install -r requirements.txt
-      - name: Smoke test (headless Qt)
+      - name: Format / importer round-trip tests
+        env:
+          PYTHONIOENCODING: utf-8
+        run: python tests/test_formats.py
+      - name: Video / duplicates / split tests
+        env:
+          PYTHONIOENCODING: utf-8
+        run: python tests/test_tools.py
+      - name: Smoke test (headless Qt, Russian UI)
         env:
           QT_QPA_PLATFORM: offscreen
           PYTHONIOENCODING: utf-8
         run: python tests/smoke.py
+      - name: Smoke test (English UI)
+        env:
+          QT_QPA_PLATFORM: offscreen
+          PYTHONIOENCODING: utf-8
+          MLIDE_LANG: en
+        run: python tests/test_i18n.py

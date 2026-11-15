@@ -94,3 +94,71 @@ ExamplesDialog(w); ResultsDialog(w.project, w)
 w2 = MainWindow(); assert w2.stack.currentIndex() == 0          # пустой проект -> стартовый экран
 w2.start_tour(); assert len(w2._tour.steps) >= 10; w2._tour.finish()
 print("0.2 UI ok")
+
+# ---- 0.3: разбор ONNX на синтетической модели, экспорт модели, просмотр
+def _v(n):
+    out = bytearray()
+    while True:
+        b = n & 0x7F
+        n >>= 7
+        out.append(b | (0x80 if n else 0))
+        if not n:
+            return bytes(out)
+def _f(num, wt, payload):
+    return _v((num << 3) | wt) + payload
+def _len(num, b):
+    return _f(num, 2, _v(len(b)) + b)
+def _str(num, s):
+    return _len(num, s.encode())
+def _vi(num, n):
+    return _f(num, 0, _v(n))
+def _value_info(name, dims):
+    shape = b"".join(_len(1, _vi(1, d)) for d in dims)
+    tensor = _vi(1, 1) + _len(2, shape)
+    return _str(1, name) + _len(2, _len(1, tensor))
+conv = _str(1, "x") + _str(1, "w") + _str(2, "y") + _str(3, "conv0") + _str(4, "Conv") + \
+    _len(5, _str(1, "kernel_shape") + _vi(8, 3) + _vi(8, 3) + _vi(20, 7))
+relu = _str(1, "y") + _str(2, "z") + _str(3, "relu0") + _str(4, "Relu")
+weight = _vi(1, 4) + _vi(1, 3) + _vi(1, 3) + _vi(1, 3) + _vi(2, 1) + _str(8, "w")
+graph = _len(1, conv) + _len(1, relu) + _str(2, "g") + _len(5, weight) + _len(11, _value_info("x", [1, 3, 8, 8])) + \
+    _len(12, _value_info("z", [1, 4, 6, 6]))
+model_bytes = _vi(1, 8) + _str(2, "test") + _len(7, graph) + _len(8, _str(1, "") + _vi(2, 18))
+onnx_path = tmp / "tiny.onnx"
+onnx_path.write_bytes(model_bytes)
+from mlide import onnxparse, modelexport
+om = onnxparse.load_onnx(onnx_path)
+assert [n.op for n in om.nodes] == ["Conv", "Relu"] and om.params == 4 * 3 * 3 * 3, (om.nodes, om.params)
+assert om.inputs[0][2] == [1, 3, 8, 8] and om.nodes[0].attrs["kernel_shape"] == [3, 3]
+cmd = modelexport.build_command("python", "best.pt", "esp32", 320)
+assert '"format": "onnx"' in cmd[-1] and '"imgsz": 320' in cmd[-1], cmd[-1]
+assert modelexport.build_command("python", "b.pt", "onnx", half=True)[-1].count('"half": true') == 1
+from mlide.ui.model_viewer import ModelViewerDialog
+from mlide.ui.model_export import ModelExportDialog
+vd = ModelViewerDialog(w, str(onnx_path)); assert len(vd.items) == 4      # вход + 2 слоя + выход
+ModelExportDialog(w.project, w)
+print("0.3 UI/model ok")
+
+# ---- 0.4: новые окна и логика (русский интерфейс)
+from mlide import classtools, importers, dedupe, video, sam as sam_mod
+from mlide.ui.video_dialog import VideoDialog
+from mlide.ui.dedupe_dialog import DedupeDialog
+from mlide.ui.review_dialog import ReviewDialog, analyze_labels
+from mlide.ui.compare_dialog import CompareDialog
+from mlide.ui.live_test import LiveTestDialog
+from mlide.ui.help_dialogs import GpuHelpDialog, CodeSnippetsDialog
+from mlide.ui.imagelist import ImageListModel
+for dlg in (VideoDialog(w), DedupeDialog(w.project, w), ReviewDialog(w.project, w), CompareDialog(w.project, w),
+            LiveTestDialog(w.project, w), GpuHelpDialog(w), CodeSnippetsDialog("best.onnx", ["a", "b"], 640, w)):
+    assert dlg is not None
+from mlide.autolabel import Detection
+sc, issues = analyze_labels([(0, (10, 10, 100, 100))], [Detection(1, 0.9, (12, 12, 98, 98))], ["a", "b"])
+assert issues and sc > 1.0
+m = ImageListModel(lambda: w.project); m.rebuild(0); assert m.rowCount() == len(w.project.images)
+m.rebuild(1); assert all(not [a for a in w.project.images[m.image_index(r)].anns if not a.suggested] for r in range(m.rowCount()))
+assert not sam_mod.models_ready() or sam_mod.runtime_available()
+# английские фрагменты знаний подключаются переключателем языка
+import subprocess
+r = subprocess.run([sys.executable, "-c", "import mlide.knowledge as K; print(K.GUIDES[0][0])"], capture_output=True, text=True,
+                   encoding="utf-8", env={**os.environ, "MLIDE_LANG": "en", "PYTHONIOENCODING": "utf-8"})
+assert "Where to start" in r.stdout, r.stdout + r.stderr
+print("0.4 UI/model ok")

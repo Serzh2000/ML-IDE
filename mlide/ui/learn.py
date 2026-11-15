@@ -16,6 +16,7 @@ from PySide6.QtWidgets import (QDialog, QDialogButtonBox, QFileDialog, QFormLayo
                                QTextBrowser, QVBoxLayout, QWidget)
 
 from .. import knowledge as K
+from ..i18n import T
 
 def find_python() -> str:
     """Default interpreter for training. A path under WindowsApps is usually the Microsoft Store stub
@@ -96,7 +97,7 @@ class HelpDialog(QDialog):
             if q and q not in title.lower() and q not in re.sub("<[^>]+>", " ", h).lower():
                 continue
             if sec != last:
-                it = QListWidgetItem(sec.upper())
+                it = QListWidgetItem(T(sec).upper())
                 it.setFlags(Qt.NoItemFlags)
                 f = it.font()
                 f.setBold(True)
@@ -172,7 +173,7 @@ class LineChart(QWidget):
             p.drawLine(x, 30, x + 14, 30)
             p.setPen(QColor(190, 193, 200))
             p.drawText(x + 18, 34, label)
-            x += 24 + p.fontMetrics().horizontalAdvance(label) + 8
+            x += 24 + p.fontMetrics().horizontalAdvance(T(label)) + 8
         r = QRectF(44, 42, self.width() - 56, self.height() - 62)
         vals = [v for k, _l, _c in self.series for v in self.data.get(k, []) if v is not None and np.isfinite(v)]
         if not vals or len(self.xs) < 1:
@@ -244,8 +245,12 @@ class TrainDialog(QDialog):
         b2 = QPushButton("Установить ultralytics")
         b2.clicked.connect(self.install)
         row.addWidget(self.py, 1)
+        bg = QPushButton("Видеокарта…")
+        bg.setToolTip("<p>Есть ли у вас видеокарта Nvidia и как включить её для обучения (CUDA); бесплатные варианты с GPU.</p>")
+        bg.clicked.connect(lambda: __import__("mlide.ui.help_dialogs", fromlist=["x"]).GpuHelpDialog(self).exec())
         row.addWidget(b)
         row.addWidget(b2)
+        row.addWidget(bg)
         f.addRow("Python", row)
         lay.addLayout(f)
 

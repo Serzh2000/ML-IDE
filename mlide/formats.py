@@ -62,6 +62,9 @@ class ExportOptions:
     freeze: int = 0            # заморозка первых N слоёв (дообучение на малых данных)
     lr0: float = 0.0           # 0 = по умолчанию; >0 = AdamW с этим шагом
     patience: int = 100
+    group_split: bool = False      # похожие кадры (дубли, кадры одного видео) - только в одну часть выборки
+    group_hash: bool = True        # искать визуально похожие картинки
+    group_names: bool = True       # группировать по шаблону имени файла (clip_0001, clip_0002…)
 
 
 class Cancelled(Exception):
@@ -144,7 +147,13 @@ def yolo_lines(fmt, anns, w, h):
 
 
 # ----------------------------------------------------------------------------- export
-def _split(items, o: ExportOptions):
+def _split(items, o: ExportOptions, progress=None):
+    if getattr(o, "group_split", False) and len(items) > 1:
+        from .dedupe import build_groups, split_groups
+        groups = build_groups([e.path for e in items], use_hash=o.group_hash, use_names=o.group_names,
+                              progress=(lambda d, t: progress(d, t, "поиск похожих кадров")) if progress else None)
+        res = split_groups(items, lambda e: groups[e.path], {"train": o.train, "val": o.val, "test": o.test}, o.seed)
+        return {k: v for k, v in res.items() if v}
     rnd = random.Random(o.seed)
     items = list(items)
     rnd.shuffle(items)
@@ -198,7 +207,7 @@ def export_dataset(project: Project, o: ExportOptions, progress=lambda i, n, m: 
         raise ValueError("Нечего экспортировать: нет размеченных изображений, подходящих под фильтры.")
 
     _clean_previous(project, out, o.fmt)
-    splits = _split(entries, o)
+    splits = _split(entries, o, progress)
     total = sum(len(v) for v in splits.values())
     done = 0
     rng = np.random.default_rng(o.seed)

@@ -14,6 +14,7 @@ class WelcomePage(QWidget):
     openProject = Signal()
     openExamples = Signal()
     startTour = Signal()
+    openRecent = Signal(str)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -53,7 +54,10 @@ class WelcomePage(QWidget):
         for i, (title_t, desc, sig, primary) in enumerate(items):
             grid.addWidget(self._card(title_t, desc, sig, primary), i // 2, i % 2)
         col.addLayout(grid)
-        col.addSpacing(18)
+        self.recent_box = QVBoxLayout()
+        self.recent_box.setAlignment(Qt.AlignHCenter)
+        col.addLayout(self.recent_box)
+        col.addSpacing(10)
         tour = QPushButton("▶  Пройти тур по приложению")
         tour.setCursor(Qt.PointingHandCursor)
         tour.setFlat(True)
@@ -66,6 +70,27 @@ class WelcomePage(QWidget):
         col.addWidget(hint, 0, Qt.AlignHCenter)
         outer.addLayout(col)
         outer.addStretch(1)
+
+    def set_recent(self, items):
+        while self.recent_box.count():
+            w = self.recent_box.takeAt(0).widget()
+            if w:
+                w.deleteLater()
+        if not items:
+            return
+        lab = QLabel("Недавние проекты")
+        lab.setStyleSheet("color:#8b92a1;font-size:12px;")
+        lab.setAlignment(Qt.AlignHCenter)
+        self.recent_box.addWidget(lab)
+        from pathlib import Path
+        for p in items[:4]:
+            b = QPushButton("📄  " + Path(p).name)
+            b.setFlat(True)
+            b.setCursor(Qt.PointingHandCursor)
+            b.setToolTip(p)
+            b.setStyleSheet("QPushButton{color:#7aa2ff;border:none;font-size:13px;padding:3px 10px;} QPushButton:hover{color:white;}")
+            b.clicked.connect(lambda _=False, p=p: self.openRecent.emit(p))
+            self.recent_box.addWidget(b, 0, Qt.AlignHCenter)
 
     def _card(self, title, desc, sig, primary):
         f = QFrame()

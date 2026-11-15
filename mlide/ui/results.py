@@ -58,6 +58,22 @@ class ResultsDialog(QDialog):
         row.addWidget(b)
         row.addWidget(QLabel("Запуск:"))
         row.addWidget(self.runs)
+        eb = QPushButton("Экспортировать модель…")
+        eb.setToolTip("<p>Выгрузить лучшую модель этого запуска в ONNX, OpenVINO, TensorRT, NCNN, TFLite, ESP32 и др.</p>")
+        eb.clicked.connect(self._export_model)
+        row.addWidget(eb)
+        vb = QPushButton("Схема модели…")
+        vb.setToolTip("<p>Показать устройство обученной модели: слои, связи, число параметров и пояснения. Нужен best.onnx.</p>")
+        vb.clicked.connect(self._view_model)
+        row.addWidget(vb)
+        cb = QPushButton("Сравнить запуски…")
+        cb.setToolTip("<p>Таблица и наложенные кривые всех запусков обучения из папки: какой лучше и чем отличались настройки.</p>")
+        cb.clicked.connect(self._compare)
+        row.addWidget(cb)
+        lb = QPushButton("Видео / камера…")
+        lb.setToolTip("<p>Прогнать лучшую модель по видеофайлу или веб-камере и замерить скорость (кадр/с).</p>")
+        lb.clicked.connect(self._live)
+        row.addWidget(lb)
         lay.addLayout(row)
         self.summary = QLabel("")
         self.summary.setTextFormat(Qt.RichText)
@@ -243,6 +259,28 @@ class ResultsDialog(QDialog):
         super().resizeEvent(e)
         self._fit_pix()
         self._fit_test()
+
+    def _compare(self):
+        from .compare_dialog import CompareDialog
+        self.project.export["out_dir"] = self.folder.text().strip() or self.project.export.get("out_dir", "")
+        CompareDialog(self.project, self).exec()
+
+    def _live(self):
+        from .live_test import LiveTestDialog
+        w = self._find_model()
+        if w:
+            self.project.export["auto_model"] = str(w)
+        LiveTestDialog(self.project, self).exec()
+
+    def _view_model(self):
+        from .model_viewer import ModelViewerDialog
+        w = (self.run_dir / "weights" / "best.onnx") if self.run_dir else None
+        ModelViewerDialog(self, str(w) if w and w.exists() else "").exec()
+
+    def _export_model(self):
+        from .model_export import ModelExportDialog
+        w = (self.run_dir / "weights" / "best.pt") if self.run_dir else None
+        ModelExportDialog(self.project, self, str(w) if w and w.exists() else "").exec()
 
     # ---------------------------------------------------------------- проверка модели
     def _find_model(self):

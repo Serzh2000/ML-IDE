@@ -9,19 +9,29 @@ from PySide6.QtCore import QSettings, QSize, QStandardPaths, Qt, QTimer
 from PySide6.QtGui import (QAction, QActionGroup, QColor, QIcon, QImage, QImageReader, QKeySequence,
                            QPixmap, QShortcut)
 from PySide6.QtWidgets import (QApplication, QColorDialog, QComboBox, QDockWidget, QFileDialog, QHBoxLayout,
-                               QInputDialog, QLabel, QListWidget, QListWidgetItem, QMainWindow, QMessageBox, QStackedWidget,
+                               QInputDialog, QLabel, QListView, QListWidget, QListWidgetItem, QMainWindow, QMessageBox, QStackedWidget,
                                QPushButton, QToolBar, QVBoxLayout, QWidget)
 
-from .. import __version__, autolabel, formats, imgio
+from .. import __version__, autolabel, classtools, formats, imgio, importers, sam as sam_mod
 from ..augment import get_all_presets
 from ..model import Annotation, ImageEntry, Project
 from .canvas import Canvas
 from .dialogs import AutoLabelDialog, ExportDialog, PresetDialog, StatsDialog
 from .learn import AdvisorDialog, HelpDialog, TrainDialog
+from .model_export import ModelExportDialog
+from .model_viewer import ModelViewerDialog
 from .results import ResultsDialog
 from .tour import TourOverlay, rect_of
 from .examples_dialog import ExamplesDialog
+from .sam_download import ensure_sam
+from .compare_dialog import CompareDialog
+from .dedupe_dialog import DedupeDialog
+from .help_dialogs import CodeSnippetsDialog, GpuHelpDialog
+from .live_test import LiveTestDialog
+from .review_dialog import ReviewDialog
+from .video_dialog import VideoDialog
 from .welcome import WelcomePage
+from .imagelist import FILTERS, ImageListModel
 from .. import paths
 from .style import apply_dark
 
@@ -70,6 +80,7 @@ class MainWindow(QMainWindow):
         self.welcome.openProject.connect(self.open_project)
         self.welcome.openExamples.connect(self.open_examples)
         self.welcome.startTour.connect(self.start_tour)
+        self.welcome.openRecent.connect(self._open_recent)
         self.setAcceptDrops(True)
         self._build_docks()
         self._build_actions()
@@ -77,6 +88,8 @@ class MainWindow(QMainWindow):
         self.canvas.changed.connect(self.on_changed)
         self.canvas.selectionChanged.connect(self.on_canvas_selection)
         self.canvas.smartBox.connect(self.on_smart_box)
+        self.canvas.samPoints.connect(self.on_sam_points)
+        self._sam = None
         self.canvas.cursorMoved.connect(lambda x, y: self.pos_label.setText(f"x {x:.0f}  y {y:.0f}"))
         self.canvas.zoomChanged.connect(lambda s: self.zoom_label.setText(f"{s * 100:.0f}%"))
 
@@ -103,9 +116,13 @@ class MainWindow(QMainWindow):
 
     def _build_docks(self):
         # images
-        self.img_list = QListWidget()
+        self.img_list = QListView()
+        self.img_model = ImageListModel(lambda: self.project)
+        self.img_list.setModel(self.img_model)
+        self.img_list.setUniformItemSizes(True)
+        self.img_list.setSelectionMode(QListView.SingleSelection)
         self.img_filter = QComboBox()
-        self.img_filter.addItems(["Все изображения", "Без разметки", "С разметкой", "С подсказками", "Не проверенные"])
+        self.img_filter.addItems(FILTERS)
         self.img_filter.currentIndexChanged.connect(self.refresh_images)
         w = QWidget()
         v = QVBoxLayout(w)
@@ -120,13 +137,15 @@ class MainWindow(QMainWindow):
         d.setWidget(w)
         d.setObjectName("images")
         self.addDockWidget(Qt.LeftDockWidgetArea, d)
-        self.img_list.currentItemChanged.connect(self._on_img_item)
+        self.img_list.selectionModel().currentChanged.connect(self._on_img_item)
         self.dock_images = d
 
         # classes
         self.cls_list = QListWidget()
         self.cls_list.currentRowChanged.connect(self._on_class_row)
         self.cls_list.itemDoubleClicked.connect(lambda _: self.rename_class())
+        self.cls_list.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.cls_list.customContextMenuRequested.connect(self._class_menu)
         w = QWidget()
         v = QVBoxLayout(w)
         v.setContentsMargins(4, 4, 4, 4)
@@ -218,6 +237,19 @@ class MainWindow(QMainWindow):
         self.a_adv = A("Советник по настройкам…", self.advisor, "Ctrl+H")
         self.a_train = A("Обучение модели…", self.train, "Ctrl+Shift+T")
         self.a_results = A("Результаты обучения…", self.results, "Ctrl+Shift+R")
+        self.a_modelexp = A("Экспорт модели (ONNX, ESP32…)…", self.export_model, "Ctrl+Shift+M")
+        self.a_viewer = A("Просмотр модели (схема ONNX)…", self.view_model, "Ctrl+Shift+G")
+        self.a_imp_coco = A("Импорт разметки COCO (JSON)…", self.import_coco)
+        self.a_imp_voc = A("Импорт разметки Pascal VOC…", self.import_voc)
+        self.a_video = A("Кадры из видео…", self.extract_video, "Ctrl+Shift+V")
+        self.a_snap = A("Сохранить снимок разметки", self.save_snapshot)
+        self.a_opensnap = A("Открыть снимок разметки…", self.open_snapshot)
+        self.a_dups = A("Дубли и похожие кадры…", self.find_duplicates)
+        self.a_review_model = A("Проверка разметки моделью…", self.review_with_model)
+        self.a_compare = A("Сравнение запусков обучения…", self.compare_runs)
+        self.a_live = A("Тест модели на видео и камере…", self.live_test)
+        self.a_gpu = A("Видеокарта и ускорение (CUDA)…", self.gpu_help)
+        self.a_code = A("Примеры кода для запуска модели…", self.code_examples)
         self.a_tour = A("Тур по приложению", self.start_tour)
         self.a_exit = A("Выход", self.close, "Ctrl+Q")
 
@@ -246,7 +278,8 @@ class MainWindow(QMainWindow):
         for key, text, sc, tip in (("select", "Выбор", "V", "Выбор / перемещение / изменение размера (V)"),
                                    ("box", "Рамка", "W", "Рисовать рамки (W)"),
                                    ("poly", "Полигон", "P", "Рисовать полигоны для сегментации (P)"),
-                                   ("smart", "Умный контур", "S", "Обведите объект грубой рамкой - контур найдётся сам (S)")):
+                                   ("smart", "Умный контур", "S", "Обведите объект грубой рамкой - контур найдётся сам (S)"),
+                                   ("sam", "Клик (SAM)", "G", "Кликните по объекту - нейросеть найдёт точный контур. Ctrl+клик - исключить область, Enter - принять (G)")):
             a = A(text, lambda _=False, k=key: self.set_tool(k), sc, checkable=True, tip=tip)
             grp.addAction(a)
             self.tool_actions[key] = a
@@ -256,21 +289,29 @@ class MainWindow(QMainWindow):
 
         mb = self.menuBar()
         m = mb.addMenu("&Файл")
-        for a in (self.a_new, self.a_open, self.a_examples, self.a_save, self.a_saveas, None, self.a_imp, self.a_impf, None,
-                  self.a_export, None, self.a_exit):
+        for a in (self.a_new, self.a_open, self.a_examples):
+            m.addAction(a)
+        self.recent_menu = m.addMenu("Недавние проекты")
+        for a in (self.a_save, self.a_saveas, self.a_snap, self.a_opensnap, None, self.a_imp, self.a_impf, self.a_video, None,
+                  self.a_imp_coco, self.a_imp_voc, None, self.a_export, None, self.a_exit):
             m.addSeparator() if a is None else m.addAction(a)
+        self._fill_recent()
         m = mb.addMenu("&Правка")
         for a in (self.a_undo, self.a_redo, None, self.a_del, self.a_copyprev, self.a_accept, self.a_review):
             m.addSeparator() if a is None else m.addAction(a)
         m = mb.addMenu("&Инструменты")
-        for a in (self.a_auto, self.a_presets, self.a_stats, self.a_adv, self.a_train, self.a_results):
-            m.addAction(a)
+        for a in (self.a_auto, self.a_review_model, self.a_dups, self.a_presets, self.a_stats, self.a_adv, None,
+                  self.a_train, self.a_results, self.a_compare, self.a_modelexp, self.a_viewer, self.a_live, self.a_code, self.a_gpu):
+            m.addSeparator() if a is None else m.addAction(a)
         m = mb.addMenu("&Вид")
         for a in (self.a_fit, self.a_100, self.a_labels):
             m.addAction(a)
         m.addSeparator()
         for d in (self.dock_images, self.dock_classes, self.dock_objects):
             m.addAction(d.toggleViewAction())
+        lm = m.addMenu("Язык / Language")
+        for code, label in (("ru", "Русский"), ("en", "English")):
+            lm.addAction(label, lambda c=code: self.change_language(c))
         hm = mb.addMenu("&Справка")
         hm.addAction(self.a_tour)
         hm.addAction(self.a_ref)
@@ -325,38 +366,26 @@ class MainWindow(QMainWindow):
         return f"{mark} {e.name}   [{len(real)}{'+' + str(sug) + '?' if sug else ''}]"
 
     def refresh_images(self):
-        f = self.img_filter.currentIndex()
-        self.img_list.blockSignals(True)
-        self.img_list.clear()
-        cur_row = -1
-        for i, e in enumerate(self.project.images):
-            real = [a for a in e.anns if not a.suggested]
-            ok = (f == 0 or (f == 1 and not real) or (f == 2 and real) or
-                  (f == 3 and len(real) != len(e.anns)) or (f == 4 and not e.reviewed))
-            if not ok and i != self.idx:
-                continue
-            it = QListWidgetItem(self._img_text(e))
-            it.setData(Qt.UserRole, i)
-            self.img_list.addItem(it)
-            if i == self.idx:
-                cur_row = self.img_list.count() - 1
-        if cur_row >= 0:
-            self.img_list.setCurrentRow(cur_row)
-        self.img_list.blockSignals(False)
+        sm = self.img_list.selectionModel()
+        sm.blockSignals(True)
+        self.img_model.rebuild(self.img_filter.currentIndex(), self.idx)
+        row = self.img_model.row_of(self.idx)
+        if row >= 0:
+            self.img_list.setCurrentIndex(self.img_model.index(row))
+        sm.blockSignals(False)
         self.dock_images.setWindowTitle(f"Изображения ({len(self.project.images)})")
 
     def _update_img_item(self):
-        for r in range(self.img_list.count()):
-            it = self.img_list.item(r)
-            if it.data(Qt.UserRole) == self.idx and self.entry:
-                it.setText(self._img_text(self.entry))
+        self.img_model.touch(self.idx)
 
     def refresh_classes(self):
         self.cls_list.blockSignals(True)
         row = self.cls_list.currentRow()
         self.cls_list.clear()
+        from collections import Counter
+        cnt = Counter(a.cls for e in self.project.images for a in e.anns if not a.suggested)
         for i, c in enumerate(self.project.classes):
-            counts = sum(1 for e in self.project.images for a in e.anns if a.cls == i and not a.suggested)
+            counts = cnt.get(i, 0)
             it = QListWidgetItem(color_icon(c["color"]), f"{i + 1 if i < 9 else '·'}  {c['name']}   ({counts})")
             self.cls_list.addItem(it)
         self.cls_list.setCurrentRow(min(max(row, 0), self.cls_list.count() - 1) if self.cls_list.count() else -1)
@@ -383,8 +412,8 @@ class MainWindow(QMainWindow):
 
     # ================================================================ image navigation
     def _on_img_item(self, cur, _prev):
-        if cur is not None:
-            self.load_image(cur.data(Qt.UserRole))
+        if cur is not None and cur.isValid():
+            self.load_image(self.img_model.image_index(cur.row()))
 
     def load_image(self, i):
         if not (0 <= i < len(self.project.images)):
@@ -407,11 +436,12 @@ class MainWindow(QMainWindow):
         self.info_label.setText(f"{e.w}×{e.h}  [{i + 1}/{len(self.project.images)}]")
         self.refresh_anns()
         self._update_img_item()
-        for r in range(self.img_list.count()):
-            if self.img_list.item(r).data(Qt.UserRole) == i and self.img_list.currentRow() != r:
-                self.img_list.blockSignals(True)
-                self.img_list.setCurrentRow(r)
-                self.img_list.blockSignals(False)
+        row = self.img_model.row_of(i)
+        if row >= 0 and self.img_list.currentIndex().row() != row:
+            sm = self.img_list.selectionModel()
+            sm.blockSignals(True)
+            self.img_list.setCurrentIndex(self.img_model.index(row))
+            sm.blockSignals(False)
         self.canvas.setFocus()
 
     def step(self, d):
@@ -601,6 +631,38 @@ class MainWindow(QMainWindow):
             e.anns.append(Annotation(a.cls, a.kind, pts))
         self.on_changed()
 
+    def on_sam_points(self, pts):
+        e = self.entry
+        if not e or not pts:
+            return
+        if self._sam is None:
+            if not ensure_sam(self):
+                self.canvas.cancel_sam()
+                return
+            QApplication.setOverrideCursor(Qt.WaitCursor)
+            try:
+                self._sam = sam_mod.SamModel()
+            finally:
+                QApplication.restoreOverrideCursor()
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        try:
+            if self._cv_cache[0] != e.path:
+                self._cv_cache = (e.path, imgio.imread(e.path))
+            self._sam.set_image(self._cv_cache[1], key=e.path)
+            mask, iou = self._sam.predict(pts)
+        except Exception as ex:  # noqa
+            QApplication.restoreOverrideCursor()
+            QMessageBox.warning(self, "Разметка по клику", f"{type(ex).__name__}: {ex}")
+            self.canvas.cancel_sam()
+            return
+        finally:
+            QApplication.restoreOverrideCursor()
+        poly = sam_mod.mask_to_polygon(mask)
+        self.canvas.set_sam_preview(poly)
+        self.statusBar().showMessage(
+            ("Контур найден" if poly else "Контур не найден - кликните по объекту") +
+            ". Enter - принять полигон, Shift+Enter - принять рамку, Ctrl+клик - исключить область, Backspace - убрать точку, Esc - отмена", 12000)
+
     def on_smart_box(self, x1, y1, x2, y2):
         e = self.entry
         if not e:
@@ -779,7 +841,11 @@ class MainWindow(QMainWindow):
         except Exception as ex:  # noqa
             QMessageBox.critical(self, "Открыть проект", f"{type(ex).__name__}: {ex}")
             return
-        missing = [e for e in self.project.images if not Path(e.path).exists()]
+        if getattr(self.project, "recovered_from_backup", False):
+            QMessageBox.warning(self, "Проект восстановлен", "Файл проекта был повреждён: открыта его резервная копия (.bak). "
+                                "Последние изменения могли не сохраниться.")
+        missing = self.project.missing_images()
+        self._remember(p)
         self.idx = -1
         self.undo_stack.clear()
         self.redo_stack.clear()
@@ -787,8 +853,17 @@ class MainWindow(QMainWindow):
         if self.project.images:
             self.load_image(0)
         if missing:
-            QMessageBox.warning(self, "Нет изображений", f"Не найдено файлов изображений: {len(missing)} "
-                                f"(перемещены или удалены), например:\n{missing[0].path}")
+            r = QMessageBox.question(self, "Нет изображений", f"Не найдено файлов изображений: {len(missing)} "
+                                     f"(перемещены или удалены), например:\n{missing[0].path}\n\n"
+                                     "Указать папку, где они лежат сейчас?")
+            if r == QMessageBox.Yes:
+                d = QFileDialog.getExistingDirectory(self, "Папка с изображениями (ищу по имени файла)")
+                if d:
+                    fixed, left = self.project.relink(d)
+                    self.refresh_all()
+                    if self.idx >= 0:
+                        self.load_image(self.idx)
+                    self.statusBar().showMessage(f"Найдено файлов: {fixed}, не найдено: {left}", 8000)
 
     def save_project(self) -> bool:
         if not self.project.path:
@@ -815,6 +890,7 @@ class MainWindow(QMainWindow):
             self._save_failed(p, ex)
             return False
         self.project.name = Path(p).name[:-len(".mlide.json")]
+        self._remember(p)
         self._clear_recovery()
         self._title()
         return True
@@ -895,7 +971,8 @@ class MainWindow(QMainWindow):
             (lambda: self._tb(*self.tool_actions.values()), "3. Инструменты разметки",
              "<b>Выбор (V)</b> - двигать и менять размер.<br><b>Рамка (W)</b> - прямоугольник вокруг объекта.<br>"
              "<b>Полигон (P)</b> - точный контур для сегментации.<br><b>Умный контур (S)</b> - обведите объект "
-             "грубой рамкой, программа найдёт границу сама."),
+             "грубой рамкой, программа найдёт границу сама.<br><b>Клик (SAM, G)</b> - кликните по объекту, нейросеть найдёт "
+             "точный контур; Ctrl+клик исключает область, Enter принимает."),
             (lambda: rect_of(self, self.stack), "4. Рабочая область",
              "Рисуйте прямо на картинке. <b>Колесо мыши</b> - масштаб, <b>пробел + перетаскивание</b> или средняя кнопка - "
              "сдвиг. Размечайте <b>все</b> нужные объекты на кадре: пропущенный объект учит модель его игнорировать."),
@@ -917,10 +994,11 @@ class MainWindow(QMainWindow):
             (lambda: self._tb(self.a_export), "10. Экспорт датасета",
              "Сохраняет разметку в нужном формате: YOLO (v5-v12, 26: детекция, сегментация, OBB), Darknet, COCO, VOC. "
              "Сам делит выборку на train/val/test и создаёт готовый <code>train.py</code>."),
-            (lambda: self._tb(self.a_train, self.a_results), "11. Обучение и результаты",
+            (lambda: self._tb(self.a_train, self.a_results), "11. Обучение, результаты, экспорт модели",
              "<b>Обучение</b> запускает train.py из программы и показывает графики с объяснением простым языком. "
              "<b>Результаты</b> (Ctrl+Shift+R) - открыть любое прошлое обучение: метрики, матрица ошибок, примеры и "
-             "проверка модели на вашем фото."),
+             "проверка модели на вашем фото. Готовую модель можно выгрузить в ONNX и другие форматы: <i>Инструменты → Экспорт модели</i> "
+             "(есть подготовка для ESP32-S3)."),
             (lambda: self._tb(self.a_ref), "12. Справочник всегда под рукой",
              "<b>F1</b> - руководства («с чего начать», «как читать графики», «что делать, если качество низкое») и "
              "словарь терминов: mAP, epoch, batch, переобучение… Горячие клавиши - Shift+F1."),
@@ -946,6 +1024,197 @@ class MainWindow(QMainWindow):
 
     def results(self):
         ResultsDialog(self.project, self).exec()
+
+    def export_model(self):
+        ModelExportDialog(self.project, self).exec()
+
+    def view_model(self):
+        ModelViewerDialog(self).exec()
+
+    # ================================================================ импорт, классы, видео, снимки, недавние
+    def _after_import(self, rep):
+        cur = self.entry.path if self.entry else None
+        self.idx = next((i for i, e in enumerate(self.project.images) if e.path == cur), -1)
+        self.refresh_all()
+        if self.idx < 0 and self.project.images:
+            self.load_image(0)
+        QMessageBox.information(self, "Импорт разметки", rep.summary())
+
+    def import_coco(self):
+        p, _ = QFileDialog.getOpenFileName(self, "Разметка COCO (JSON)", "", "COCO JSON (*.json)")
+        if not p:
+            return
+        d = QFileDialog.getExistingDirectory(self, "Папка с изображениями (Отмена - искать рядом с json)")
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        try:
+            rep = importers.import_coco(self.project, p, d or None)
+        except Exception as ex:  # noqa
+            QApplication.restoreOverrideCursor()
+            QMessageBox.warning(self, "Импорт COCO", f"{type(ex).__name__}: {ex}")
+            return
+        QApplication.restoreOverrideCursor()
+        self._after_import(rep)
+
+    def import_voc(self):
+        d = QFileDialog.getExistingDirectory(self, "Папка Pascal VOC (с Annotations/ и JPEGImages/ или xml рядом с фото)")
+        if not d:
+            return
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        try:
+            rep = importers.import_voc(self.project, d)
+        except Exception as ex:  # noqa
+            QApplication.restoreOverrideCursor()
+            QMessageBox.warning(self, "Импорт VOC", f"{type(ex).__name__}: {ex}")
+            return
+        QApplication.restoreOverrideCursor()
+        self._after_import(rep)
+
+    def extract_video(self):
+        dlg = VideoDialog(self)
+        if dlg.exec() == dlg.DialogCode.Accepted and dlg.result_paths and dlg.add_to_project:
+            self._add_paths(dlg.result_paths)
+
+    def find_duplicates(self):
+        if len(self.project.images) < 2:
+            QMessageBox.information(self, "Дубли", "Нужно хотя бы два изображения.")
+            return
+        dlg = DedupeDialog(self.project, self)
+        dlg.goto.connect(lambda i: (self.load_image(i), self.refresh_images()))
+        dlg.exec()
+        if dlg.changed:
+            self.idx = -1
+            self.undo_stack.clear()
+            self.redo_stack.clear()
+            self.refresh_all()
+            if self.project.images:
+                self.load_image(0)
+
+    def review_with_model(self):
+        if not self.project.images:
+            QMessageBox.information(self, "Проверка разметки", "Сначала добавьте изображения.")
+            return
+        self._review = ReviewDialog(self.project, self)
+        self._review.goto.connect(lambda i: (self.load_image(i), self.refresh_images()))
+        self._review.show()
+
+    def compare_runs(self):
+        CompareDialog(self.project, self).exec()
+
+    def live_test(self):
+        LiveTestDialog(self.project, self).exec()
+
+    def gpu_help(self):
+        GpuHelpDialog(self).exec()
+
+    def code_examples(self):
+        names = self.project.class_names() or ["class0"]
+        CodeSnippetsDialog("best.onnx", names, 640, self).exec()
+
+    # ---- классы: объединение, порядок
+    def _class_menu(self, pos):
+        r = self.cls_list.currentRow()
+        if r < 0:
+            return
+        from PySide6.QtWidgets import QMenu
+        m = QMenu(self)
+        m.addAction("Переименовать…", self.rename_class)
+        m.addAction("Цвет…", self.recolor_class)
+        sub = m.addMenu("Объединить с классом…")
+        for i, c in enumerate(self.project.classes):
+            if i != r:
+                sub.addAction(c["name"], lambda i=i: self.merge_class(r, i))
+        m.addSeparator()
+        up = m.addAction("Переместить выше", lambda: self.move_class_to(r, r - 1))
+        up.setEnabled(r > 0)
+        dn = m.addAction("Переместить ниже", lambda: self.move_class_to(r, r + 1))
+        dn.setEnabled(r < len(self.project.classes) - 1)
+        m.addSeparator()
+        m.addAction("Удалить класс…", self.remove_class)
+        m.exec(self.cls_list.mapToGlobal(pos))
+
+    def _classes_changed(self):
+        self.undo_stack.clear()
+        self.redo_stack.clear()
+        self.canvas.select(None)
+        self.refresh_all()
+        self.canvas.update()
+
+    def merge_class(self, src, dst):
+        a, b = self.project.classes[src]["name"], self.project.classes[dst]["name"]
+        n = classtools.class_usage(self.project)[src]
+        if QMessageBox.question(self, "Объединение классов", f"Все объекты класса «{a}» ({n}) станут классом «{b}», "
+                                f"а класс «{a}» исчезнет. Продолжить?") != QMessageBox.Yes:
+            return
+        classtools.merge_classes(self.project, src, dst)
+        self._classes_changed()
+
+    def move_class_to(self, idx, pos):
+        classtools.move_class(self.project, idx, pos)
+        self._classes_changed()
+        self.cls_list.setCurrentRow(pos)
+
+    # ---- снимки разметки
+    def save_snapshot(self):
+        if not self.project.path:
+            if not self.save_project_as():
+                return
+        elif self.project.dirty:
+            self.save_project()
+        import datetime
+        d = self.project.path.parent / f"{self.project.name}_snapshots"
+        d.mkdir(exist_ok=True)
+        target = d / f"{self.project.name}_{datetime.datetime.now():%Y%m%d_%H%M%S}.mlide.json"
+        try:
+            self.project.write_to(target)
+        except Exception as ex:  # noqa
+            QMessageBox.warning(self, "Снимок", f"{type(ex).__name__}: {ex}")
+            return
+        self.statusBar().showMessage(f"Снимок сохранён: {target}", 8000)
+
+    def open_snapshot(self):
+        start = str(self.project.path.parent / f"{self.project.name}_snapshots") if self.project.path else ""
+        p, _ = QFileDialog.getOpenFileName(self, "Открыть снимок разметки", start, "Проект ML IDE (*.mlide.json)")
+        if p and self._maybe_save():
+            self._open_path(p)
+
+    # ---- недавние проекты
+    def _recent(self) -> list:
+        v = QSettings("MLIDE", "MLIDE").value("recent", [])
+        v = [v] if isinstance(v, str) else list(v or [])
+        return [p for p in v if Path(p).exists()][:8]
+
+    def _remember(self, path):
+        s = QSettings("MLIDE", "MLIDE")
+        lst = [p for p in self._recent() if os.path.normcase(p) != os.path.normcase(str(path))]
+        s.setValue("recent", [str(path)] + lst[:7])
+        self._fill_recent()
+
+    def _fill_recent(self):
+        if not hasattr(self, "recent_menu"):
+            return
+        self.recent_menu.clear()
+        items = self._recent()
+        for p in items:
+            self.recent_menu.addAction(Path(p).name, lambda p=p: self._open_recent(p))
+        self.recent_menu.setEnabled(bool(items))
+        self.welcome.set_recent(items)
+
+    def _open_recent(self, p):
+        if self._maybe_save():
+            self._open_path(p)
+
+    def change_language(self, code):
+        from .. import i18n
+        if code == i18n.lang():
+            return
+        i18n.save_language(code)
+        r = QMessageBox.question(self, "Язык / Language", "Язык интерфейса изменится после перезапуска. Перезапустить сейчас?\n"
+                                 "The interface language changes after a restart. Restart now?")
+        if r == QMessageBox.Yes and self._maybe_save():
+            import subprocess
+            args = [sys.executable] if getattr(sys, "frozen", False) else [sys.executable, "-m", "mlide"]
+            subprocess.Popen(args)
+            QApplication.quit()
 
     def show_reference(self, start=None):
         HelpDialog(SHORTCUTS_HTML, self, start if isinstance(start, str) else None).exec()
@@ -976,10 +1245,39 @@ def install_translations(app):
             app._tr.append(t)
 
 
+def selftest(out_path):
+    """Проверка собранного приложения: все зависимости импортируются (запуск: ML IDE.exe --selftest файл.txt)."""
+    lines = []
+    for name in ("PySide6", "cv2", "numpy", "PIL", "yaml", "onnxruntime"):
+        try:
+            m = __import__(name)
+            lines.append(f"{name}: OK {getattr(m, '__version__', '')}")
+        except Exception as e:  # noqa
+            lines.append(f"{name}: FAIL {type(e).__name__}: {e}")
+    try:
+        import onnxruntime as ort
+        lines.append("onnxruntime providers: " + ",".join(ort.get_available_providers()))
+        from .. import sam, examples, onnxparse, importers, dedupe, video, modelexport  # noqa
+        lines.append("mlide modules: OK; icon: " + str(paths.resource("assets/icon.png").exists()))
+        from .. import i18n
+        lines.append(f"i18n dictionary entries: {len(i18n.load_table())}")
+        if len(i18n.load_table()) < 500:
+            lines.append("i18n: FAIL dictionary missing")
+    except Exception as e:  # noqa
+        lines.append(f"mlide modules: FAIL {type(e).__name__}: {e}")
+    Path(out_path).write_text("\n".join(lines), encoding="utf-8")
+    return 0 if all("FAIL" not in ln for ln in lines) else 1
+
+
 def run(argv):
+    if argv and argv[0] == "--selftest":
+        return selftest(argv[1] if len(argv) > 1 else "selftest.txt")
+    from .. import i18n
+    i18n.set_language(i18n.detect_language())
     app = QApplication(sys.argv[:1])
     app.setApplicationName("ML IDE")
-    install_translations(app)
+    if i18n.lang() == "ru":
+        install_translations(app)
     apply_dark(app)
     from PySide6.QtGui import QIcon
     ico = paths.resource("assets/icon.ico")

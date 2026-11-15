@@ -14,7 +14,7 @@ os.environ["ML_IDE_NO_TOUR"] = "1"
 from PySide6.QtCore import QEventLoop, QTimer
 from PySide6.QtWidgets import QApplication, QFileDialog
 
-from mlide import paths
+from mlide import i18n, paths
 from mlide.ui.dialogs import AutoLabelDialog, ExportDialog, PresetDialog
 from mlide.ui.examples_dialog import ExamplesDialog
 from mlide.ui.learn import AdvisorDialog, HelpDialog, TrainDialog
@@ -34,12 +34,14 @@ def main():
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
 
+    i18n.set_language(i18n.detect_language())      # MLIDE_LANG=en python tools/make_screenshots.py ... - английские скриншоты
     # в скриншотах не должно быть личных путей: показываем нейтральные
     paths.examples_dir = lambda: Path("C:/Users/user/ML IDE/examples")
     app = QApplication([])
     from PySide6.QtGui import QIcon
     app.setWindowIcon(QIcon(str(paths.resource("assets/icon.ico"))))
-    install_translations(app)
+    if i18n.lang() == "ru":
+        install_translations(app)
     apply_dark(app)
 
     def settle(ms=350):

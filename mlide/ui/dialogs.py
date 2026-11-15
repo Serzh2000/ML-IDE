@@ -8,7 +8,7 @@ import cv2
 import numpy as np
 from PySide6.QtCore import QObject, Qt, QThread, Signal
 from PySide6.QtGui import QImage, QPixmap
-from PySide6.QtWidgets import (QAbstractItemView, QCheckBox, QComboBox, QDialog, QDialogButtonBox,
+from PySide6.QtWidgets import (QAbstractItemView, QListWidgetItem, QCheckBox, QComboBox, QDialog, QDialogButtonBox,
                                QDoubleSpinBox, QFileDialog, QFormLayout, QGroupBox, QHBoxLayout,
                                QInputDialog, QLabel, QLineEdit, QListWidget, QMessageBox,
                                QPlainTextEdit, QProgressBar, QPushButton, QSpinBox, QVBoxLayout)
@@ -136,7 +136,7 @@ class PresetDialog(QDialog):
         right.addWidget(close)
         lay.addLayout(right, 1)
 
-        self.lst.currentTextChanged.connect(self._select)
+        self.lst.currentItemChanged.connect(lambda cur, _p: self._select(cur.data(Qt.UserRole) if cur else None))
         self._reload_list(current)
 
     # ---- helpers
@@ -147,16 +147,18 @@ class PresetDialog(QDialog):
         self.lst.blockSignals(True)
         self.lst.clear()
         for k in self._all():
-            self.lst.addItem(k)
+            it = QListWidgetItem(k)
+            it.setData(Qt.UserRole, k)
+            self.lst.addItem(it)
         self.lst.blockSignals(False)
         names = list(self._all())
         self.lst.setCurrentRow(names.index(select) if select in names else 2)
-        self._select(self.lst.currentItem().text())
+        self._select(self.lst.currentItem().data(Qt.UserRole))
 
     @property
     def current_name(self):
         it = self.lst.currentItem()
-        return it.text() if it else None
+        return it.data(Qt.UserRole) if it else None
 
     def _select(self, name):
         if not name:
@@ -292,17 +294,33 @@ class ExportDialog(QDialog):
         self.rev.setChecked(bool(s.get("only_reviewed", False)))
         f.addRow(self.unl)
         f.addRow(self.rev)
+        self.group = QCheckBox("Не разделять похожие кадры между train/val/test (защита от утечки)")
+        self.group.setChecked(bool(s.get("group_split", False)))
+        self.group_hint = QLabel("")
+        self.group_hint.setWordWrap(True)
+        f.addRow(self.group)
+        f.addRow(self.group_hint)
+        try:
+            from ..dedupe import source_key
+            keys = [source_key(e.path) for e in project.images]
+            if keys and len(keys) / max(1, len(set(keys))) > 3 and "group_split" not in s:
+                self.group.setChecked(True)
+            if keys and len(keys) / max(1, len(set(keys))) > 3:
+                self.group_hint.setText("<span style='color:#f0a030'>Похоже, часть кадров - из одного видео/серии (имена с номерами). "
+                                        "Рекомендуем оставить галочку включённой.</span>")
+        except Exception:
+            pass
         lay.addWidget(g)
 
         g = QGroupBox("Аугментация")
         f = QFormLayout(g)
         self.preset = QComboBox()
         for k in get_all_presets(project.presets):
-            self.preset.addItem(k)
+            self.preset.addItem(k, k)
         legacy = {"None": "Без аугментаций", "Light": "Лёгкая", "Medium (YOLO default)": "Средняя (по умолчанию YOLO)",
                   "Heavy": "Сильная", "Aerial / drone": "Аэросъёмка / дрон", "Low light / night": "Тёмное время / ночь"}
         pname = s.get("preset", "Средняя (по умолчанию YOLO)")
-        self.preset.setCurrentText(legacy.get(pname, pname))
+        self.preset.setCurrentIndex(max(0, self.preset.findData(legacy.get(pname, pname))))
         self.bake = QCheckBox("Добавить аугментированные копии в train (офлайн)")
         self.bake.setChecked(bool(s.get("bake_aug", False)))
         self.online = QCheckBox("Записать этот пресет в train.py (онлайн, Ultralytics)")
@@ -381,6 +399,7 @@ class ExportDialog(QDialog):
             self.seed: "Число, от которого зависит случайное перемешивание. Тот же seed - то же разбиение (воспроизводимость).",
             self.unl: "Неразмеченные картинки попадут в датасет с пустыми метками как «фон». Это уменьшает ложные срабатывания, но только если на них точно нет объектов. До ~10% датасета.",
             self.rev: "Экспортировать только изображения, отмеченные проверенными (клавиша R).",
+            self.group: "Одинаковые и почти одинаковые кадры (дубли, соседние кадры видео) попадут только в одну часть выборки. Иначе модель «видит» копии проверочных картинок при обучении, и метрики получаются завышенными. Поиск похожих делается при экспорте и может занять время на больших датасетах.",
             self.preset: "Набор искажений для обучения (повороты, яркость, шум…). Чем меньше данных, тем сильнее нужна аугментация. Подробнее: Инструменты → Пресеты аугментаций.",
             self.bake: "Заранее создать N аугментированных копий каждой обучающей картинки и добавить их в датасет. Нужно для форматов без онлайн-аугментации (COCO, Darknet). Для Ultralytics обычно не нужно: она аугментирует на лету.",
             self.online: "Записать параметры пресета в train.py: Ultralytics применит искажения на лету в каждой эпохе. Не включайте вместе с офлайн-копиями без нужды - искажения удвоятся.",
@@ -400,7 +419,7 @@ class ExportDialog(QDialog):
         dlg = AdvisorDialog(self.project, self)
         if dlg.exec() == QDialog.Accepted and dlg.settings:
             s = dlg.settings
-            self.preset.setCurrentText(s["preset"])
+            self.preset.setCurrentIndex(max(0, self.preset.findData(s["preset"])))
             self.epochs.setValue(s["epochs"])
             self.imgsz.setValue(s["imgsz"])
             self.size.setCurrentText(s["size"])
@@ -440,17 +459,18 @@ class ExportDialog(QDialog):
             fmt=self.fmt.currentData(), out_dir=str(out),
             train=self.sp["train"].value(), val=self.sp["val"].value(), test=self.sp["test"].value(),
             seed=self.seed.value(), include_unlabeled=self.unl.isChecked(), only_reviewed=self.rev.isChecked(),
-            bake_aug=self.bake.isChecked(), aug=presets[self.preset.currentText()],
+            bake_aug=self.bake.isChecked(), aug=presets[self.preset.currentData()],
             write_train_script=self.script.isChecked(), family=self.family.currentText(),
             size=self.size.currentText(), epochs=self.epochs.value(), imgsz=self.imgsz.value(),
             batch=self.batch.value(), online_aug=self.online.isChecked(),
-            freeze=self.freeze.value(), lr0=self.lr0.value(), patience=self.patience.value())
+            freeze=self.freeze.value(), lr0=self.lr0.value(), patience=self.patience.value(),
+            group_split=self.group.isChecked())
         self.project.export = {
             "fmt": o.fmt, "out_dir": o.out_dir, "train_pct": o.train, "val_pct": o.val, "test_pct": o.test,
             "seed": o.seed, "include_unlabeled": o.include_unlabeled, "only_reviewed": o.only_reviewed,
-            "preset": self.preset.currentText(), "bake_aug": o.bake_aug, "online_aug": o.online_aug,
+            "preset": self.preset.currentData(), "bake_aug": o.bake_aug, "online_aug": o.online_aug,
             "script": o.write_train_script, "family": o.family, "size": o.size, "epochs": o.epochs,
-            "imgsz": o.imgsz, "batch": o.batch, "freeze": o.freeze, "lr0": o.lr0, "patience": o.patience}
+            "imgsz": o.imgsz, "batch": o.batch, "freeze": o.freeze, "lr0": o.lr0, "patience": o.patience, "group_split": o.group_split}
         self.project.dirty = True
         self.go.setEnabled(False)
         self.bar.setVisible(True)
