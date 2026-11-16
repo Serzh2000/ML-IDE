@@ -1,6 +1,6 @@
 ; Установщик ML IDE (Inno Setup 6). Сборка:  iscc installer\ML-IDE.iss   (после build_exe.bat -> dist\ML IDE\)
 #define MyAppName "ML IDE"
-#define MyAppVersion "0.5.0"
+#define MyAppVersion "0.5.1"
 #define MyAppExe "ML IDE.exe"
 
 [Setup]

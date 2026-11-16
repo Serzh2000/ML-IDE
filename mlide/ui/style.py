@@ -102,10 +102,10 @@ def apply_theme(app: QApplication, name: str = "dark"):
         QPushButton {{ background: {SURFACE}; border: 1px solid {BORDER}; border-radius: 7px; padding: 6px 14px; }}
         QPushButton:hover {{ background: {SURFACE_HI}; border-color: {MUTED}; }}
         QPushButton:pressed {{ background: {BORDER}; }}
-        QPushButton:default {{ background: {ACCENT}; border-color: {ACCENT}; color: white; font-weight: 600; }}
+        QPushButton:default {{ background: {ACCENT}; border-color: {ACCENT}; color: white; }}
         QPushButton:default:hover {{ background: {ACCENT_HI}; }}
         QPushButton:disabled {{ color: {DISABLED}; background: {PANEL}; }}
-        QPushButton[primary="true"] {{ background: {ACCENT}; border-color: {ACCENT}; color: white; font-weight: 600; }}
+        QPushButton[primary="true"] {{ background: {ACCENT}; border-color: {ACCENT}; color: white; }}
         QPushButton[primary="true"]:hover {{ background: {ACCENT_HI}; }}
 
         /* поля ввода */

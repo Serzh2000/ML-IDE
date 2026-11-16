@@ -177,7 +177,13 @@ def _split(items, o: ExportOptions, progress=None):
         groups = build_groups([e.path for e in items], use_hash=o.group_hash, use_names=o.group_names,
                               progress=(lambda d, t: progress(d, t, "поиск похожих кадров")) if progress else None)
         res = split_groups(items, lambda e: groups[e.path], {"train": o.train, "val": o.val, "test": o.test}, o.seed)
-        return {k: v for k, v in res.items() if v}
+        res = {k: v for k, v in res.items() if v}
+        if not (o.val > 0 and len(items) >= 2 and not res.get("val")):
+            return res
+        # все кадры оказались «похожими» (одна группа): без проверочной части обучение невозможно
+        o._warn = ("Все изображения признаны похожими (одна группа), поэтому проверочная часть получилась пустой. "
+                   "Разбиение сделано случайно, без защиты от утечки: метрики могут быть завышены. "
+                   "Отключите «Не разделять похожие кадры», чтобы не видеть это предупреждение.")
     rnd = random.Random(o.seed)
     items = list(items)
     rnd.shuffle(items)
@@ -253,6 +259,7 @@ def _copy_image(src: str, dst: Path):
 
 def export_dataset(project: Project, o: ExportOptions, progress=lambda i, n, m: True):
     """Returns a short report string."""
+    o._warn = ""
     out = Path(o.out_dir)
     out.mkdir(parents=True, exist_ok=True)
     names = project.class_names()
@@ -408,6 +415,10 @@ def export_dataset(project: Project, o: ExportOptions, progress=lambda i, n, m: 
         cfg = {}
         for s in splits:
             cfg[s] = f"images/{s}" if o.fmt != "yolov7" else f"{s}/images"
+        if "val" not in cfg and "train" in cfg:
+            cfg["val"] = cfg["train"]                  # Ultralytics требует ключ val; без проверочной части проверяем на train
+            if not getattr(o, "_warn", ""):
+                o._warn = "Проверочной части нет: в data.yaml val указывает на train (метрики будут завышены)."
         cfg["nc"] = len(names)
         cfg["names"] = {i: n for i, n in enumerate(names)}
         if o.fmt == "ultra_pose":
@@ -437,7 +448,8 @@ def export_dataset(project: Project, o: ExportOptions, progress=lambda i, n, m: 
 
     sp = ", ".join(f"{k}: {len(v)}" for k, v in splits.items())
     return (f"Экспортировано изображений: {stats['images']} (из них аугментированных: {stats['aug']}), "
-            f"объектов: {stats['labels']}.\nРазделение - {sp}\n-> {out}")
+            f"объектов: {stats['labels']}.\nРазделение - {sp}\n-> {out}"
+            + (f"\nВнимание: {o._warn}" if getattr(o, "_warn", "") else ""))
 
 
 # ----------------------------------------------------------------------------- training script

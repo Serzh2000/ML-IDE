@@ -226,7 +226,8 @@ class TrainDialog(QDialog):
     def __init__(self, project, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Обучение модели")
-        self.resize(1180, 780)
+        scr = self.screen().availableGeometry() if self.screen() else None
+        self.resize(min(1180, int(scr.width() * 0.95)) if scr else 1180, min(780, int(scr.height() * 0.9)) if scr else 780)
         self.project = project
         self.proc: QProcess | None = None
         self.total_epochs = 0
@@ -275,6 +276,9 @@ class TrainDialog(QDialog):
         ob = QPushButton("Открыть папку результатов")
         ob.clicked.connect(self.open_results)
         self.status = QLabel("")
+        for _b in (self.start_btn, self.stop_btn, ob):
+            _b.setAutoDefault(False)
+            _b.setMinimumWidth(_b.sizeHint().width() + 12)
         row.addWidget(self.start_btn)
         row.addWidget(self.stop_btn)
         row.addWidget(ob)
@@ -412,8 +416,24 @@ class TrainDialog(QDialog):
             return
         d = self._dir()
         if not (d / "train.py").exists():
-            QMessageBox.warning(self, "Обучение", "В папке нет train.py. Сначала сделайте экспорт в формате "
-                                "Ultralytics с галочкой «Создать train.py».")
+            box = QMessageBox(QMessageBox.Question, "Обучение", "В папке нет train.py. Нужно сделать экспорт в формате "
+                              "Ultralytics с галочкой «Создать train.py». Открыть окно экспорта сейчас?", parent=self)
+            go = box.addButton("Открыть экспорт", QMessageBox.AcceptRole)
+            box.addButton("Отмена", QMessageBox.RejectRole)
+            box.exec()
+            if box.clickedButton() is not go:
+                return
+            main = self.parent()
+            if main is None or not hasattr(main, "export"):
+                return
+            main.export()                                   # то же окно, что Ctrl+E
+            out = self.project.export.get("out_dir", "")
+            if out:
+                self.folder.setText(out)
+                self._synced_dir = out
+            if (self._dir() / "train.py").exists():
+                self.raise_()
+                self.start()                                # экспорт готов - сразу продолжаем обучение
             return
         py = self.py.text().strip()
         if not py:

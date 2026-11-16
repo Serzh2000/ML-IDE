@@ -11,7 +11,7 @@ from PySide6.QtGui import QImage, QPixmap
 from PySide6.QtWidgets import (QAbstractItemView, QListWidgetItem, QCheckBox, QComboBox, QDialog, QDialogButtonBox,
                                QDoubleSpinBox, QFileDialog, QFormLayout, QGroupBox, QHBoxLayout,
                                QInputDialog, QLabel, QLineEdit, QListWidget, QMessageBox,
-                               QPlainTextEdit, QProgressBar, QPushButton, QSpinBox, QVBoxLayout)
+                               QPlainTextEdit, QProgressBar, QPushButton, QSpinBox, QVBoxLayout, QWidget, QScrollArea, QFrame)
 
 from .. import autolabel, imgio
 from ..augment import BUILTIN_PRESETS, FIELD_UI, AugParams, augment_sample, get_all_presets
@@ -250,10 +250,20 @@ class ExportDialog(QDialog):
     def __init__(self, project: Project, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Экспорт датасета")
-        self.resize(620, 640)
         self.project = project
         s = project.export
-        lay = QVBoxLayout(self)
+        # содержимое прокручивается (окно не всегда помещается на экране), кнопки снизу всегда видны
+        outer = QVBoxLayout(self)
+        body = QWidget()
+        lay = QVBoxLayout(body)
+        lay.setContentsMargins(0, 0, 6, 0)
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.NoFrame)
+        scroll.setWidget(body)
+        outer.addWidget(scroll, 1)
+        scr = self.screen().availableGeometry() if self.screen() else None
+        self.resize(640, min(820, int(scr.height() * 0.85)) if scr else 640)
         adv = QPushButton("Подобрать настройки под мой датасет…")
         adv.setIcon(icons.icon("advisor"))
         adv.setToolTip("Советник проанализирует разметку и предложит модель, эпохи, размер изображения и пресет.")
@@ -381,14 +391,14 @@ class ExportDialog(QDialog):
         self.bar.setVisible(False)
         self.status = QLabel("")
         self.status.setWordWrap(True)
-        lay.addWidget(self.bar)
-        lay.addWidget(self.status)
+        outer.addWidget(self.bar)
+        outer.addWidget(self.status)
         self.btns = QDialogButtonBox()
         self.go = self.btns.addButton("Экспортировать", QDialogButtonBox.AcceptRole)
         self.btns.addButton(QDialogButtonBox.Close)
         self.btns.accepted.connect(self._run)
         self.btns.rejected.connect(self.reject)
-        lay.addWidget(self.btns)
+        outer.addWidget(self.btns)
         self.fmt.currentIndexChanged.connect(self._fmt_changed)
         self._fmt_changed()
         self.worker = None
