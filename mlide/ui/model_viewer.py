@@ -381,3 +381,23 @@ class ModelViewerDialog(QDialog):
             f"<p><b>Имя:</b> <code>{n.name}</code> (№{n.idx})</p>"
             + (f"<p><b>Веса:</b><br>{'<br>'.join(wts)}</p>" if wts else "")
             + (f"<p><b>Параметры:</b></p><ul>{attrs}</ul>" if attrs else ""))
+
+
+def show_in_netron(parent, path: str = "") -> bool:
+    """Схема модели как в Netron (netron.app): открывается в браузере, всё работает локально. Без пути спрашивает файл."""
+    from .. import netron_view
+    if not path or not Path(path).exists():
+        path, _ = QFileDialog.getOpenFileName(parent, "Модель для просмотра", path or "",
+                                              "Модели (*.onnx *.tflite *.pt *.pth *.xml *.param *.mlpackage *.pb);;Все файлы (*)")
+        if not path:
+            return False
+    if not netron_view.available():
+        QMessageBox.warning(parent, "Просмотр модели", "Файлы Netron не найдены в установке приложения; открываю упрощённую схему.")
+        ModelViewerDialog(parent, path).exec()
+        return True
+    try:
+        netron_view.open_in_browser(path)
+    except Exception as e:  # noqa
+        QMessageBox.warning(parent, "Просмотр модели", f"Не удалось открыть браузер: {e}")
+        return False
+    return True

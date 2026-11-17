@@ -285,6 +285,7 @@ The test runs in GitHub Actions on every push (`.github/workflows/ci.yml`); a `v
 - GUI — [PySide6 / Qt](https://doc.qt.io/qtforpython/) (LGPL), image processing — OpenCV (Apache-2.0).
 - [`ultralytics`](https://github.com/ultralytics/ultralytics) (AGPL-3.0) is **not included** in the program and is not packed into the `.exe`: it is installed
   separately, only if you run training or `.pt` models. Take its license into account if you use trained models in products.
+- The model diagram opens in [Netron](https://github.com/lutzroeder/netron) (MIT, © Lutz Roeder): its files are in `assets/netron`, it runs locally, without sending the model or any statistics.
 - Learning datasets are downloaded from the official Ultralytics GitHub under the AGPL-3.0 license and are not part of this repository.
 
 ## FAQ

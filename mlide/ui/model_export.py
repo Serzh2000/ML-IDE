@@ -11,6 +11,7 @@ from PySide6.QtWidgets import (QCheckBox, QComboBox, QDialog, QFileDialog, QForm
                                QLineEdit, QMessageBox, QPlainTextEdit, QPushButton, QSpinBox, QTextBrowser,
                                QVBoxLayout)
 
+from .. import paths
 from .. import modelexport as ME
 from .dialogs import add_tips
 from .learn import cards_html
@@ -167,7 +168,7 @@ class ModelExportDialog(QDialog):
         self.result_path = None
         self.open_btn.setEnabled(False)
         self.proc = QProcess(self)
-        env = QProcessEnvironment.systemEnvironment()
+        env = paths.child_qenv()
         env.insert("PYTHONIOENCODING", "utf-8")
         env.insert("PYTHONUNBUFFERED", "1")
         self.proc.setProcessEnvironment(env)
@@ -175,7 +176,9 @@ class ModelExportDialog(QDialog):
         self.proc.readyReadStandardOutput.connect(self._on_out)
         self.proc.finished.connect(lambda code, _s: self._on_done(code, key))
         self.proc.setWorkingDirectory(str(w.parent))
-        self.proc.start(cmd[0], cmd[1:])
+        with paths.child_launch():           # без каталога DLL приложения (иначе Python падает с 0xC0000005)
+            self.proc.start(cmd[0], cmd[1:])
+            self.proc.waitForStarted(8000)
         self.go.setEnabled(False)
         self.status.setText("идёт экспорт… (первый раз может докачать нужные пакеты)")
 
@@ -223,9 +226,9 @@ class ModelExportDialog(QDialog):
         CodeSnippetsDialog("best.onnx", names, self.imgsz.value(), self).exec()
 
     def _open_graph(self):
-        from .model_viewer import ModelViewerDialog
+        from .model_viewer import show_in_netron
         if self.result_path:
-            ModelViewerDialog(self, str(self.result_path)).exec()
+            show_in_netron(self, str(self.result_path))
 
     def _open_folder(self):
         if self.result_path:

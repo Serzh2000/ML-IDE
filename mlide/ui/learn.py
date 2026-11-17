@@ -15,6 +15,7 @@ from PySide6.QtWidgets import (QDialog, QDialogButtonBox, QFileDialog, QFormLayo
                                QListWidget, QListWidgetItem, QMessageBox, QPlainTextEdit, QPushButton, QSplitter,
                                QTextBrowser, QVBoxLayout, QWidget)
 
+from .. import paths
 from .. import knowledge as K
 from ..i18n import T
 from . import icons, style
@@ -222,6 +223,48 @@ class LineChart(QWidget):
 
 
 # =============================================================================== обучение
+
+
+def diagnose_exit(code, log):
+    """Переводит код выхода и хвост журнала в понятное объяснение: (заголовок, html-текст)."""
+    c = code & 0xFFFFFFFF
+    low = log.lower()
+    why, todo = [], []
+    if "'val:' key missing" in log or "'train' and 'val' are required" in low:
+        why.append("В data.yaml нет проверочной части (val).")
+        todo.append("Сделайте экспорт заново (окно «Экспорт датасета»): новая версия всегда записывает val. "
+                    "Если картинок мало или все похожи - добавьте ещё изображений.")
+    if "no module named" in low and "ultralytics" in low:
+        why.append("Не установлен пакет ultralytics.")
+        todo.append("Нажмите «Установить ultralytics».")
+    if "out of memory" in low or "winerror 1455" in low or "paging file" in low:
+        why.append("Не хватило памяти (видеопамяти или оперативной).")
+        todo.append("В экспорте уменьшите batch (например до 4) и размер изображения (например до 416), закройте другие программы.")
+    if "cuda" in low and ("error" in low or "not available" in low) and not why:
+        why.append("Проблема с видеокартой или драйвером CUDA.")
+        todo.append("Нажмите «Видеокарта…» и установите PyTorch под вашу видеокарту, либо обучайте на процессоре.")
+    if c == 0xC0000005 and not why:
+        why.append("Python аварийно завершился (ошибка доступа к памяти, код 0xC0000005). Обычно так бывает, "
+                   "когда не хватает оперативной памяти, при сбое установленного PyTorch или из-за антивируса.")
+        todo.append("В экспорте поставьте batch 4 и размер изображения 416, закройте другие программы и запустите снова. "
+                    "Если повторяется - нажмите «Установить ultralytics» (переустановит пакеты) или запустите train.py "
+                    "в окне командной строки и пришлите последние строки журнала.")
+    elif c in (0xC000013A, 0xC0000142) and not why:
+        why.append("Процесс был закрыт (окно, антивирус или завершение Python).")
+    if not why:
+        why.append(f"Обучение завершилось с кодом {code}.")
+        todo.append("Последние строки журнала внизу показывают причину.")
+    err = ""
+    for ln in reversed([x.strip() for x in log.splitlines() if x.strip()]):
+        if re.search(r"(error|exception|ошибка)", ln, re.I):
+            err = ln[:300]
+            break
+    text = " ".join(html.escape(x) for x in why) + "<br><br><b>Что делать:</b> " + " ".join(html.escape(x) for x in todo)
+    if err:
+        text += "<br><br><i>Последняя ошибка в журнале:</i> " + html.escape(err)
+    return "Обучение прервалось", text
+
+
 class TrainDialog(QDialog):
     def __init__(self, project, parent=None):
         super().__init__(parent)
@@ -375,7 +418,7 @@ class TrainDialog(QDialog):
             QMessageBox.warning(self, title, "Укажите путь к Python (python.exe).")
             return
         pr = QProcess(self)
-        env = QProcessEnvironment.systemEnvironment()
+        env = paths.child_qenv()
         env.insert("PYTHONIOENCODING", "utf-8")
         pr.setProcessEnvironment(env)
         pr.setProcessChannelMode(QProcess.MergedChannels)
@@ -388,7 +431,9 @@ class TrainDialog(QDialog):
                 self.status.setText("")
         pr.errorOccurred.connect(failed)
         self.status.setText(f"{title}…")
-        pr.start(py, args)
+        with paths.child_launch():           # без каталога DLL приложения (иначе Python падает с 0xC0000005)
+            pr.start(py, args)
+            pr.waitForStarted(8000)
         return pr
 
     def check_env(self):
@@ -442,7 +487,7 @@ class TrainDialog(QDialog):
         self._read_total_epochs()
         self.proc = QProcess(self)
         self.proc.setWorkingDirectory(str(d))
-        env = QProcessEnvironment.systemEnvironment()
+        env = paths.child_qenv()
         env.insert("PYTHONIOENCODING", "utf-8")
         env.insert("PYTHONUNBUFFERED", "1")
         self.proc.setProcessEnvironment(env)
@@ -460,7 +505,9 @@ class TrainDialog(QDialog):
         self.status.setText("идёт обучение…")
         self.explain.setHtml(cards_html(K.explain_training(K.parse_rows([]), self.total_epochs)))
         # last: a failed start reports through errorOccurred synchronously, from inside start()
-        self.proc.start(py, ["-u", "train.py"])
+        with paths.child_launch():           # без каталога DLL приложения (иначе Python падает с 0xC0000005)
+            self.proc.start(py, ["-u", "train.py"])
+            self.proc.waitForStarted(8000)
 
     def stop(self, wait=False):
         if not self.running:
@@ -499,16 +546,10 @@ class TrainDialog(QDialog):
     def _on_finished(self, code, _status):
         self.start_btn.setEnabled(True)
         self.stop_btn.setEnabled(False)
-        self.status.setText("завершено" if code == 0 else f"остановлено (код {code})")
+        self.status.setText("завершено" if code == 0 else "обучение прервано, причина - справа")
         if code != 0:
-            low = self.log.toPlainText()[-3000:].lower()
-            tips = []
-            if "no module named" in low and "ultralytics" in low:
-                tips.append("Не установлен пакет ultralytics - нажмите «Установить ultralytics».")
-            if "out of memory" in low:
-                tips.append("Не хватило видеопамяти: уменьшите batch или imgsz в экспорте и запустите снова.")
-            if tips:
-                self.explain.setHtml(cards_html([("warn", "Обучение прервалось", " ".join(tips))]))
+            title, text = diagnose_exit(code, self.log.toPlainText()[-6000:])
+            self.explain.setHtml(cards_html([("warn", title, text)]))
         self.poll(force=True, finished=(code == 0))
 
     # ---- polling results.csv

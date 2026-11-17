@@ -19,7 +19,7 @@ from .canvas import Canvas
 from .dialogs import AutoLabelDialog, ExportDialog, PresetDialog, StatsDialog
 from .learn import AdvisorDialog, HelpDialog, TrainDialog
 from .model_export import ModelExportDialog
-from .model_viewer import ModelViewerDialog
+from .model_viewer import ModelViewerDialog, show_in_netron
 from .results import ResultsDialog
 from .tour import TourOverlay, rect_of
 from .examples_dialog import ExamplesDialog
@@ -248,7 +248,8 @@ class MainWindow(QMainWindow):
         self.a_train = A("Обучение модели…", self.train, "Ctrl+Shift+T")
         self.a_results = A("Результаты обучения…", self.results, "Ctrl+Shift+R")
         self.a_modelexp = A("Экспорт модели (ONNX, ESP32…)…", self.export_model, "Ctrl+Shift+M")
-        self.a_viewer = A("Просмотр модели (схема ONNX)…", self.view_model, "Ctrl+Shift+G")
+        self.a_viewer = A("Просмотр модели (как в Netron)…", self.view_model, "Ctrl+Shift+G")
+        self.a_viewer2 = A("Сводка модели: слои простыми словами…", self.view_model_summary)
         self.a_imp_coco = A("Импорт разметки COCO (JSON)…", self.import_coco)
         self.a_imp_voc = A("Импорт разметки Pascal VOC…", self.import_voc)
         self.a_video = A("Кадры из видео…", self.extract_video, "Ctrl+Shift+V")
@@ -325,7 +326,7 @@ class MainWindow(QMainWindow):
             m.addSeparator() if a is None else m.addAction(a)
         m = mb.addMenu("&Инструменты")
         for a in (self.a_auto, self.a_review_model, self.a_dups, self.a_presets, self.a_stats, self.a_adv, None,
-                  self.a_train, self.a_results, self.a_compare, self.a_modelexp, self.a_viewer, self.a_live, self.a_code, self.a_gpu):
+                  self.a_train, self.a_results, self.a_compare, self.a_modelexp, self.a_viewer, self.a_viewer2, self.a_live, self.a_code, self.a_gpu):
             m.addSeparator() if a is None else m.addAction(a)
         m = mb.addMenu("&Вид")
         for a in (self.a_fit, self.a_100, self.a_labels):
@@ -1087,6 +1088,10 @@ class MainWindow(QMainWindow):
         ModelExportDialog(self.project, self).exec()
 
     def view_model(self):
+        w = self.project.export.get("auto_model", "")
+        show_in_netron(self, w if str(w).lower().endswith(".onnx") else "")
+
+    def view_model_summary(self):
         ModelViewerDialog(self).exec()
 
     # ================================================================ импорт, классы, видео, снимки, недавние
@@ -1335,6 +1340,8 @@ def selftest(out_path):
         lines.append("onnxruntime providers: " + ",".join(ort.get_available_providers()))
         from .. import sam, examples, onnxparse, importers, dedupe, video, modelexport  # noqa
         lines.append("mlide modules: OK; icon: " + str(paths.resource("assets/icon.png").exists()))
+        from .. import netron_view
+        lines.append(f"netron assets: {netron_view.available()}" + ("" if netron_view.available() else " FAIL"))
         from .. import i18n
         lines.append(f"i18n dictionary entries: {len(i18n.load_table())}")
         if len(i18n.load_table()) < 500:
@@ -1343,6 +1350,56 @@ def selftest(out_path):
         lines.append(f"mlide modules: FAIL {type(e).__name__}: {e}")
     Path(out_path).write_text("\n".join(lines), encoding="utf-8")
     return 0 if all("FAIL" not in ln for ln in lines) else 1
+
+
+def selftest_child(out_path, py):
+    """Запускает системный Python с нагрузкой PyTorch: с окружением приложения «как есть» и с очищенным (paths.child_env)."""
+    import os
+    import subprocess
+    code = "import torch;m=torch.nn.Conv2d(3,16,3);x=torch.randn(8,3,64,64,requires_grad=True);[m(x).sum().backward() for _ in range(20)];print('torch-ok')"
+    lines = [f"frozen={getattr(sys, 'frozen', False)}", "PATH has app dir: " + str(any("_internal" in p for p in os.environ.get("PATH", "").split(os.pathsep)))]
+    lines.append("ENV: " + repr(sorted(os.environ)))
+    lines.append("CLEAN PATH head: " + repr(paths.child_env().get("PATH", "").split(os.pathsep)[:3]))
+    lines.append("CLEAN has PYI: " + repr([k for k in paths.child_env() if k.startswith("_PYI")]))
+    lines.append("PATH head: " + repr(os.environ.get("PATH", "").split(os.pathsep)[:4]))
+    ok = True
+    for label, env in (("raw env", dict(os.environ)), ("clean env", paths.child_env())):
+        r = subprocess.run([py, "-c", code], capture_output=True, text=True, env=env, timeout=300)
+        lines.append(f"{label}: exit={r.returncode & 0xFFFFFFFF:#x} {r.stdout.strip()[-40:]}")
+        if label == "clean env" and r.returncode != 0:
+            ok = False
+    folder = sys.argv[4] if len(sys.argv) > 4 else ""            # необязательно: папка с _t1.py - реальный запуск обучения
+    if folder:
+        for label, env in (("raw env", dict(os.environ)), ("clean env", paths.child_env())):
+            try:
+                with paths.child_launch():
+                    pr = subprocess.Popen([py, "-u", "_t1.py"], cwd=folder, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                try:
+                    code = pr.wait(timeout=100)
+                    lines.append(f"train {label} + dll reset: exit={code & 0xFFFFFFFF:#x}")
+                except subprocess.TimeoutExpired:
+                    pr.kill()
+                    lines.append(f"train {label} + dll reset: still running after 100 s (no crash)")
+            except Exception as e:  # noqa
+                lines.append(f"train {label}: {e}")
+    if folder:                                                    # так же, как кнопка «Начать обучение»: QProcess + paths.child_launch
+        from PySide6.QtCore import QCoreApplication, QProcess
+        _app = QCoreApplication.instance() or QCoreApplication([])
+        qp = QProcess()
+        qp.setWorkingDirectory(folder)
+        qp.setProcessEnvironment(paths.child_qenv())
+        with paths.child_launch():
+            qp.start(py, ["-u", "_t1.py"])
+            qp.waitForStarted(8000)
+        if qp.waitForFinished(150000):
+            code = qp.exitCode() & 0xFFFFFFFF
+            lines.append(f"train via QProcess: exit={code:#x}")
+            ok = ok and code == 0
+        else:
+            qp.kill()
+            lines.append("train via QProcess: still running after 150 s (no crash)")
+    Path(out_path).write_text("\n".join(lines), encoding="utf-8")
+    return 0 if ok else 1
 
 
 def selftest_sam(out_path):
@@ -1381,6 +1438,8 @@ def selftest_sam(out_path):
 
 
 def run(argv):
+    if argv and argv[0] == "--selftest-child":
+        return selftest_child(argv[1], argv[2])
     if argv and argv[0] == "--selftest-sam":
         return selftest_sam(argv[1] if len(argv) > 1 else "selftest_sam.txt")
     if argv and argv[0] == "--selftest":

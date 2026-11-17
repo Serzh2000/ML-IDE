@@ -273,9 +273,9 @@ class ResultsDialog(QDialog):
         LiveTestDialog(self.project, self).exec()
 
     def _view_model(self):
-        from .model_viewer import ModelViewerDialog
+        from .model_viewer import show_in_netron
         w = (self.run_dir / "weights" / "best.onnx") if self.run_dir else None
-        ModelViewerDialog(self, str(w) if w and w.exists() else "").exec()
+        show_in_netron(self, str(w) if w and w.exists() else "")
 
     def _export_model(self):
         from .model_export import ModelExportDialog

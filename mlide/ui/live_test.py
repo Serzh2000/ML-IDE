@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import statistics
+import sys
 import time
 from pathlib import Path
 
@@ -63,9 +64,31 @@ def open_capture(src):
     return cap
 
 
+class _Scan(QThread):
+    """Ищет подключённые камеры (номера 0-4)."""
+    found = Signal(list)
+
+    def run(self):
+        out = []
+        for i in range(5):
+            try:
+                cap = cv2.VideoCapture(i, cv2.CAP_DSHOW) if sys.platform == "win32" else cv2.VideoCapture(i)
+                if cap is not None and cap.isOpened():
+                    ok, fr = cap.read()
+                    w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)) or (fr.shape[1] if ok else 0)
+                    h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) or (fr.shape[0] if ok else 0)
+                    out.append((i, f"{w}x{h}" if w and h else ""))
+                if cap is not None:
+                    cap.release()
+            except Exception:
+                pass
+        self.found.emit(out)
+
+
 class _Runner(QThread):
     frame = Signal(QImage, float, float)      # картинка, мс на кадр (модель), FPS
     ended = Signal(str)
+    dets = Signal(list)                       # для фото: [(имя класса, уверенность), ...]
 
     def __init__(self, model_path, src, conf, iou, imgsz, names):
         super().__init__()
@@ -80,6 +103,21 @@ class _Runner(QThread):
             model = autolabel.load_model(self.model_path, self.imgsz)
         except Exception as e:  # noqa
             self.ended.emit(f"Не удалось загрузить модель: {e}")
+            return
+        if imgio.is_image(self.src):                      # одиночное фото: одна проверка и показ результата
+            img = imgio.imread(self.src)
+            if img is None:
+                self.ended.emit("Не удалось открыть изображение.")
+                return
+            t0 = time.perf_counter()
+            dets = model.predict(img, self.conf, self.iou)
+            ms = (time.perf_counter() - t0) * 1000
+            vis = draw_dets(img.copy(), dets, self.names)
+            rgb = cv2.cvtColor(vis, cv2.COLOR_BGR2RGB)
+            h, w = rgb.shape[:2]
+            self.dets.emit([(self.names[d.cls] if d.cls < len(self.names) else (d.name or str(d.cls)), d.conf) for d in dets])
+            self.frame.emit(QImage(rgb.data, w, h, 3 * w, QImage.Format_RGB888).copy(), ms, 0.0)
+            self.ended.emit("")
             return
         cap = open_capture(self.src)
         if not cap.isOpened():
@@ -144,6 +182,8 @@ class LiveTestDialog(QDialog):
         row = QHBoxLayout()
         self.model = QLineEdit(project.export.get("auto_model", ""))
         self.model.setPlaceholderText("Модель .onnx / .pt")
+        self._scan = _Scan()
+        self._scan.found.connect(self._cams_found)
         b = QPushButton("Обзор…")
         b.clicked.connect(self._browse_model)
         row.addWidget(QLabel("Модель:"))
@@ -152,11 +192,15 @@ class LiveTestDialog(QDialog):
         lay.addLayout(row)
         row = QHBoxLayout()
         self.src = QComboBox()
-        self.src.setEditable(True)
-        self.src.addItems(["0", "1"])
-        self.src.setToolTip("<p>Номер веб-камеры (0 - первая) или путь к видеофайлу.</p>")
-        bs = QPushButton("Видеофайл…")
+        self.src.addItem("Поиск камер…", None)
+        self.src.setToolTip("<p>Подключённая камера, либо выбранные вами видеофайл или фото.</p>")
+        bs = QPushButton("Видео…")
+        bs.setIcon(icons.icon("video"))
         bs.clicked.connect(self._browse_src)
+        bp = QPushButton("Фото…")
+        bp.setIcon(icons.icon("images"))
+        bp.setToolTip("<p>Проверить модель на одной картинке: результат показывается сразу.</p>")
+        bp.clicked.connect(self._browse_photo)
         self.conf = QDoubleSpinBox()
         self.conf.setRange(0.05, 0.95)
         self.conf.setSingleStep(0.05)
@@ -168,6 +212,7 @@ class LiveTestDialog(QDialog):
         row.addWidget(QLabel("Источник:"))
         row.addWidget(self.src, 1)
         row.addWidget(bs)
+        row.addWidget(bp)
         row.addWidget(QLabel("Порог:"))
         row.addWidget(self.conf)
         row.addWidget(QLabel("Размер:"))
@@ -200,10 +245,16 @@ class LiveTestDialog(QDialog):
         self.result.setMaximumHeight(150)
         lay.addWidget(self.result)
         add_tips(self, {
-            self.model: "Модель для проверки: .onnx (работает без torch) или .pt (нужен ultralytics).",
+            self.model: "Модель для проверки: .onnx (работает без torch) или .pt. Для .pt берётся готовый .onnx рядом, а если его нет - файл конвертируется (нужен Python с ultralytics, его ставит окно «Обучение»).",
             self.conf: "Показывать только находки с уверенностью не ниже этого значения.",
             self.imgsz: "Размер входа модели (как при обучении/экспорте). Меньше - быстрее, но мелкие объекты хуже видны.",
         })
+
+    def showEvent(self, e):
+        super().showEvent(e)
+        if not getattr(self, "_scanned", False):
+            self._scanned = True
+            self._scan.start()
 
     def _browse_model(self):
         p, _ = QFileDialog.getOpenFileName(self, "Модель", self.model.text(), "YOLO (*.onnx *.pt)")
@@ -213,7 +264,37 @@ class LiveTestDialog(QDialog):
     def _browse_src(self):
         p, _ = QFileDialog.getOpenFileName(self, "Видео", "", "Видео (*.mp4 *.avi *.mov *.mkv *.wmv *.webm);;Все файлы (*)")
         if p:
-            self.src.setCurrentText(p)
+            self._add_source(f"Видео: {Path(p).name}", p)
+
+    def _browse_photo(self):
+        p, _ = QFileDialog.getOpenFileName(self, "Фото", "", "Изображения (*.jpg *.jpeg *.png *.bmp *.webp *.tif *.tiff);;Все файлы (*)")
+        if p:
+            self._add_source(f"Фото: {Path(p).name}", p)
+            if self.model.text().strip():
+                self._start()                               # фото проверяем сразу
+
+    def _add_source(self, label, value):
+        i = self.src.findData(value)
+        if i < 0:
+            self.src.addItem(label, value)
+            i = self.src.count() - 1
+        self.src.setCurrentIndex(i)
+
+    def _src_value(self):
+        v = self.src.currentData()
+        return "" if v is None else str(v)
+
+    def _cams_found(self, cams):
+        keep = [(self.src.itemText(i), self.src.itemData(i)) for i in range(self.src.count())
+                if self.src.itemData(i) is not None and not str(self.src.itemData(i)).isdigit()]
+        self.src.clear()
+        for i, res in cams:
+            self.src.addItem(f"Камера {i}" + (f" ({res})" if res else ""), str(i))
+        for t, d in keep:
+            self.src.addItem(t, d)
+        if self.src.count() == 0:
+            self.src.addItem("Камеры не найдены - выберите видео или фото", None)
+        self.src.setCurrentIndex(max(0, self.src.count() - 1) if keep else 0)
 
     def _check(self):
         m = self.model.text().strip()
@@ -227,9 +308,17 @@ class LiveTestDialog(QDialog):
         if not m:
             return
         self.project.export["auto_model"] = m
-        self.runner = _Runner(m, self.src.currentText().strip(), self.conf.value(), 0.45, self.imgsz.value(),
-                              class_names_for(m, self.project))
+        src = self._src_value()
+        if not src:
+            QMessageBox.information(self, "Проверка модели", "Выберите камеру, видео или фото.")
+            return
+        if self.runner is not None and self.runner.isRunning():
+            self.runner.stop()
+            self.runner.wait(3000)
+        self.result.clear()
+        self.runner = _Runner(m, src, self.conf.value(), 0.45, self.imgsz.value(), class_names_for(m, self.project))
         self.runner.frame.connect(self._frame)
+        self.runner.dets.connect(self._photo_dets)
         self.runner.ended.connect(self._ended)
         self.runner.start()
         self.start.setEnabled(False)
@@ -239,7 +328,17 @@ class LiveTestDialog(QDialog):
     def _frame(self, img, ms, fps):
         self._last = img
         self.view.setPixmap(QPixmap.fromImage(img).scaled(self.view.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
-        self.stats.setText(f"модель: {ms:.0f} мс/кадр · показ: {fps:.1f} кадр/с")
+        self.stats.setText(f"модель: {ms:.0f} мс" + (f"/кадр · показ: {fps:.1f} кадр/с" if fps else ""))
+
+    def _photo_dets(self, items):
+        if not items:
+            body = "Модель ничего не нашла на этом фото. Попробуйте снизить «Порог» или проверьте другую картинку."
+        else:
+            cnt = {}
+            for n, c in items:
+                cnt.setdefault(n, []).append(c)
+            body = "; ".join(f"{n}: {len(v)} (уверенность до {max(v):.2f})" for n, v in sorted(cnt.items()))
+        self.result.setHtml(cards_html([("ok" if items else "warn", f"Найдено объектов: {len(items)}", body)]))
 
     def _ended(self, msg):
         self.start.setEnabled(True)
@@ -256,11 +355,15 @@ class LiveTestDialog(QDialog):
         if not m:
             return
         frame = None
-        cap = open_capture(self.src.currentText().strip())
-        if cap is not None and cap.isOpened():
-            ok, frame = cap.read()
-            cap.release()
-            frame = frame if ok else None
+        sv = self._src_value()
+        if sv and imgio.is_image(sv):
+            frame = imgio.imread(sv)
+        elif sv:
+            cap = open_capture(sv)
+            if cap is not None and cap.isOpened():
+                ok, frame = cap.read()
+                cap.release()
+                frame = frame if ok else None
         self.benchbtn.setEnabled(False)
         self.stats.setText("замер… (около 10 секунд)")
         self.bench = _Bench(m, self.imgsz.value(), frame)
@@ -283,6 +386,7 @@ class LiveTestDialog(QDialog):
                                    "медленнее, чем на ПК.")]))
 
     def closeEvent(self, e):
+        self._scan.wait(3000)
         self._stop()
         if self.runner:
             self.runner.wait(2000)

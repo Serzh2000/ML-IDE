@@ -31,7 +31,9 @@ class OnnxYolo:
     """Runs YOLOv5/v7/v8/v9/v11/v12 (anchor-free or v5 style) and end-to-end v10/v26 ONNX detectors."""
 
     def __init__(self, path, imgsz=640):
-        self.net = cv2.dnn.readNetFromONNX(str(path))
+        # читаем байты сами: OpenCV не открывает файлы по путям с кириллицей на Windows
+        with open(path, "rb") as f:
+            self.net = cv2.dnn.readNetFromONNX(np.frombuffer(f.read(), np.uint8))
         self.imgsz = imgsz
         self.names = None
 
@@ -118,7 +120,49 @@ class UltralyticsModel:
         return dets
 
 
+def resolve_weights(path) -> str:
+    """.pt без установленного ultralytics (так в собранном приложении): берём готовый .onnx рядом или конвертируем
+    системным Python, в котором есть ultralytics. Возвращает путь к модели, которую можно загрузить."""
+    from pathlib import Path
+    p = Path(path)
+    if p.suffix.lower() != ".pt":
+        return str(p)
+    try:
+        import ultralytics  # noqa: F401
+        return str(p)
+    except ImportError:
+        pass
+    for cand in (p.with_suffix(".onnx"), p.parent / "best.onnx", p.parent / "last.onnx"):
+        if cand.exists() and cand.stat().st_mtime >= p.stat().st_mtime - 5:
+            return str(cand)
+    import shutil
+    import subprocess
+    import sys
+    from . import paths
+    py = shutil.which("python") or shutil.which("py")
+    if not py:
+        raise RuntimeError("Для файла .pt нужен Python с пакетом ultralytics, но Python не найден. Откройте «Результаты» → "
+                           "«Экспорт модели…» и сделайте .onnx.")
+    code = "from ultralytics import YOLO;import sys;print('OUT:'+str(YOLO(sys.argv[1]).export(format='onnx')))"
+    with paths.child_launch():
+        pr = subprocess.Popen([py, "-c", code, str(p)], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
+                              encoding="utf-8", errors="replace", env=paths.child_env(),
+                              creationflags=(subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0))
+    out = pr.communicate(timeout=600)[0] or ""
+    if pr.returncode != 0:
+        tail = " ".join(out.strip().splitlines()[-2:])
+        raise RuntimeError("Не удалось преобразовать .pt в .onnx (в Python нужен пакет ultralytics: Обучение → «Установить "
+                           f"ultralytics»). {tail}")
+    for ln in out.splitlines():
+        if ln.startswith("OUT:") and Path(ln[4:].strip()).exists():
+            return ln[4:].strip()
+    if p.with_suffix(".onnx").exists():
+        return str(p.with_suffix(".onnx"))
+    raise RuntimeError("Преобразование в .onnx не создало файл. Сделайте экспорт вручную: «Результаты» → «Экспорт модели…».")
+
+
 def load_model(path, imgsz=640):
+    path = resolve_weights(path)
     if str(path).lower().endswith(".onnx"):
         return OnnxYolo(path, imgsz)
     return UltralyticsModel(path, imgsz)

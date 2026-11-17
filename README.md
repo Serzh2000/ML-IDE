@@ -287,6 +287,7 @@ python tools/make_screenshots.py --help  # скриншоты для README
 - GUI — [PySide6 / Qt](https://doc.qt.io/qtforpython/) (LGPL), обработка изображений — OpenCV (Apache-2.0).
 - [`ultralytics`](https://github.com/ultralytics/ultralytics) (AGPL-3.0) **не входит** в программу и не упаковывается в `.exe`: он ставится
   отдельно, только если вы запускаете обучение или `.pt`-модели. Учитывайте его лицензию, если используете обученные модели в продуктах.
+- Схема модели открывается в [Netron](https://github.com/lutzroeder/netron) (MIT, © Lutz Roeder): его файлы лежат в `assets/netron`, работает локально, без отправки модели и статистики.
 - Учебные наборы скачиваются с официального GitHub Ultralytics по лицензии AGPL-3.0 и в этот репозиторий не входят.
 
 ## Частые вопросы

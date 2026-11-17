@@ -23,6 +23,10 @@ jobs:
         env:
           PYTHONIOENCODING: utf-8
         run: python tests/test_tools.py
+      - name: Netron viewer server test
+        env:
+          PYTHONIOENCODING: utf-8
+        run: python tests/test_netron.py
       - name: Smoke test (headless Qt, Russian UI)
         env:
           QT_QPA_PLATFORM: offscreen

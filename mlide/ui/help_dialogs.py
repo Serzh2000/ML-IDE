@@ -10,6 +10,8 @@ from PySide6.QtGui import QDesktopServices, QGuiApplication
 from PySide6.QtWidgets import (QDialog, QHBoxLayout, QLabel, QLineEdit, QMessageBox, QPlainTextEdit, QPushButton, QTabWidget,
                                QTextBrowser, QVBoxLayout, QWidget)
 
+from .. import paths
+
 from .learn import cards_html
 
 
@@ -109,13 +111,15 @@ class GpuHelpDialog(QDialog):
         py, args = self._steps.pop(0)
         self.log.appendPlainText("\n$ " + py + " " + " ".join(args))
         self.proc = QProcess(self)
-        env = QProcessEnvironment.systemEnvironment()
+        env = paths.child_qenv()
         env.insert("PYTHONIOENCODING", "utf-8")
         self.proc.setProcessEnvironment(env)
         self.proc.setProcessChannelMode(QProcess.MergedChannels)
         self.proc.readyReadStandardOutput.connect(self._on_out)
         self.proc.finished.connect(lambda code, _s: self._next_step() if (code == 0 or "uninstall" in " ".join(args)) else self._failed(code))
-        self.proc.start(py, args)
+        with paths.child_launch():           # без каталога DLL приложения (иначе Python падает с 0xC0000005)
+            self.proc.start(py, args)
+            self.proc.waitForStarted(8000)
 
     def _on_out(self):
         text = bytes(self.proc.readAllStandardOutput()).decode("utf-8", "replace")
@@ -189,7 +193,8 @@ MODEL = "{base}.onnx"
 NAMES = {nm}
 IMGSZ, CONF, IOU = {imgsz}, 0.25, 0.45
 
-net = cv2.dnn.readNetFromONNX(MODEL)
+with open(MODEL, "rb") as f:                  # через байты: работает и с кириллицей в пути
+    net = cv2.dnn.readNetFromONNX(np.frombuffer(f.read(), np.uint8))
 
 
 def letterbox(img, size):
