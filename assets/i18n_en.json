@@ -1147,5 +1147,8 @@
 " · загрузка ~": " · download ~",
 "<span style='color:#ff6b6b'>Не удалось обновить каталог: ": "<span style='color:#ff6b6b'>Could not update the catalog: ",
 "<p><b>Чему научит:</b> ": "<p><b>What it teaches:</b> ",
-" кл.": " cl."
+" кл.": " cl.",
+"Видеокарта Nvidia не найдена, обучение пойдёт на процессоре. Это в десятки раз медленнее: полное обучение (100 эпох) может занять много часов. Для пробы в экспорте поставьте 5-10 эпох и меньший размер изображения.": "No Nvidia graphics card was found, so training will run on the CPU. This is tens of times slower: a full training (100 epochs) can take many hours. For a trial, set 5-10 epochs and a smaller image size in the export.",
+"Всё равно начать": "Start anyway",
+"Про видеокарту…": "About the graphics card..."
 }

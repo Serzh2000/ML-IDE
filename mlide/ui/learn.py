@@ -485,6 +485,23 @@ class TrainDialog(QDialog):
             QMessageBox.warning(self, "Обучение", "Укажите путь к Python.")
             return
         self._read_total_epochs()
+        if not getattr(self, "_gpu_checked", False) and (self.total_epochs == 0 or self.total_epochs > 10):
+            from .help_dialogs import GpuHelpDialog, detect_gpu
+            if not detect_gpu().get("found"):
+                box = QMessageBox(QMessageBox.Warning, "Обучение",
+                                  "Видеокарта Nvidia не найдена, обучение пойдёт на процессоре. Это в десятки раз медленнее: полное обучение "
+                                  "(100 эпох) может занять много часов. Для пробы в экспорте поставьте 5-10 эпох и меньший размер изображения.",
+                                  parent=self)
+                go = box.addButton("Всё равно начать", QMessageBox.AcceptRole)
+                gpu = box.addButton("Про видеокарту…", QMessageBox.ActionRole)
+                box.addButton("Отмена", QMessageBox.RejectRole)
+                box.exec()
+                if box.clickedButton() is gpu:
+                    GpuHelpDialog(self).exec()
+                    return
+                if box.clickedButton() is not go:
+                    return
+            self._gpu_checked = True                        # предупреждаем один раз за сеанс окна
         self.proc = QProcess(self)
         self.proc.setWorkingDirectory(str(d))
         env = paths.child_qenv()

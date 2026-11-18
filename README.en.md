@@ -97,6 +97,19 @@ a ready-made `train.py`, the right dataset format and augmentation presets are c
 </tr>
 </table>
 
+### New tasks and the examples catalog
+
+<table>
+<tr>
+<td width="50%"><img src="docs/screenshots_en/obb.png" alt="Rotated boxes"><br><sub>Rotated boxes (OBB): aerial images</sub></td>
+<td width="50%"><img src="docs/screenshots_en/pose.png" alt="Keypoints"><br><sub>Keypoints (pose): skeleton and points</sub></td>
+</tr>
+<tr>
+<td><img src="docs/screenshots_en/classify.png" alt="Classification"><br><sub>Image classification: set a frame's class with one key</sub></td>
+<td><img src="docs/screenshots_en/examples.png" alt="Examples catalog"><br><sub>A catalog of 130 learning datasets: search and filters</sub></td>
+</tr>
+</table>
+
 ## Installation
 
 ### Option 1. Ready-made `.exe` (Windows)

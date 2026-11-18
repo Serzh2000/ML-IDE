@@ -98,6 +98,19 @@
 </tr>
 </table>
 
+### Новые задачи и каталог примеров
+
+<table>
+<tr>
+<td width="50%"><img src="docs/screenshots/obb.png" alt="Повёрнутые рамки"><br><sub>Повёрнутые рамки (OBB): аэроснимки</sub></td>
+<td width="50%"><img src="docs/screenshots/pose.png" alt="Ключевые точки"><br><sub>Ключевые точки (pose): скелет и точки</sub></td>
+</tr>
+<tr>
+<td><img src="docs/screenshots/classify.png" alt="Классификация"><br><sub>Классификация изображений: класс кадра одной клавишей</sub></td>
+<td><img src="docs/screenshots/examples.png" alt="Каталог примеров"><br><sub>Каталог из 130 учебных наборов: поиск и фильтры</sub></td>
+</tr>
+</table>
+
 ## Установка
 
 ### Вариант 1. Готовый `.exe` (Windows)
