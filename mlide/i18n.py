@@ -31,10 +31,23 @@ def detect_language() -> str:
         return env
     try:
         from . import settings
-        v = settings.get().value("lang", "ru")
-        return v if v in ("ru", "en") else "ru"
+        v = settings.get().value("lang")
+        if v in ("ru", "en"):
+            return v
     except Exception:
-        return "ru"
+        pass
+    return system_language()
+
+
+def system_language() -> str:
+    """Язык по умолчанию при первом запуске: русский для русскоязычных систем (ru, uk, be, kk), иначе английский."""
+    try:
+        from PySide6.QtCore import QLocale
+        name = QLocale.system().name().lower()
+    except Exception:
+        import locale
+        name = (locale.getlocale()[0] or "").lower()
+    return "ru" if name.startswith(("ru", "uk", "be", "kk")) else "en"
 
 
 def save_language(code: str):

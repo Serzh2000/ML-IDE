@@ -1,0 +1,1853 @@
+[
+ {
+  "id": "Francesco/activity-diagrams-qdobr",
+  "license": "cc",
+  "classes": [
+   "activity-diagrams",
+   "action",
+   "activity",
+   "commeent",
+   "control_flow",
+   "control_flowcontrol_flow",
+   "decision_node",
+   "exit_node",
+   "final_flow_node",
+   "final_node",
+   "fork",
+   "merge",
+   "merge_noode",
+   "None",
+   "object",
+   "object_flow",
+   "signal_recept",
+   "signal_send",
+   "start_node",
+   "text"
+  ],
+  "train_rows": 259,
+  "w": 640,
+  "h": 640,
+  "downloads": 298,
+  "slug": "activity-diagrams-qdobr"
+ },
+ {
+  "id": "Francesco/construction-safety-gsnvb",
+  "license": "cc",
+  "classes": [
+   "construction-safety",
+   "helmet",
+   "no-helmet",
+   "no-vest",
+   "person",
+   "vest"
+  ],
+  "train_rows": 997,
+  "w": 640,
+  "h": 640,
+  "downloads": 271,
+  "slug": "construction-safety-gsnvb"
+ },
+ {
+  "id": "Francesco/aquarium-qlnqy",
+  "license": "cc",
+  "classes": [
+   "aquarium",
+   "fish",
+   "jellyfish",
+   "penguin",
+   "puffin",
+   "shark",
+   "starfish",
+   "stingray"
+  ],
+  "train_rows": 448,
+  "w": 640,
+  "h": 640,
+  "downloads": 270,
+  "slug": "aquarium-qlnqy"
+ },
+ {
+  "id": "Francesco/chess-pieces-mjzgj",
+  "license": "cc",
+  "classes": [
+   "chess-pieces",
+   "bishop",
+   "black-bishop",
+   "black-king",
+   "black-knight",
+   "black-pawn",
+   "black-queen",
+   "black-rook",
+   "white-bishop",
+   "white-king",
+   "white-knight",
+   "white-pawn",
+   "white-queen",
+   "white-rook"
+  ],
+  "train_rows": 202,
+  "w": 640,
+  "h": 640,
+  "downloads": 263,
+  "slug": "chess-pieces-mjzgj"
+ },
+ {
+  "id": "Francesco/x-ray-rheumatology",
+  "license": "cc",
+  "classes": [
+   "x-ray-rheumatology",
+   "artefact",
+   "distal phalanges",
+   "fifth metacarpal bone",
+   "first metacarpal bone",
+   "fourth metacarpal bone",
+   "intermediate phalanges",
+   "proximal phalanges",
+   "radius",
+   "second metacarpal bone",
+   "soft tissue calcination",
+   "third metacarpal bone",
+   "ulna"
+  ],
+  "train_rows": 135,
+  "w": 640,
+  "h": 640,
+  "downloads": 245,
+  "slug": "x-ray-rheumatology"
+ },
+ {
+  "id": "Francesco/vehicles-q0x2v",
+  "license": "cc",
+  "classes": [
+   "vehicles",
+   "big bus",
+   "big truck",
+   "bus-l-",
+   "bus-s-",
+   "car",
+   "mid truck",
+   "small bus",
+   "small truck",
+   "truck-l-",
+   "truck-m-",
+   "truck-s-",
+   "truck-xl-"
+  ],
+  "train_rows": 2634,
+  "w": 640,
+  "h": 640,
+  "downloads": 244,
+  "slug": "vehicles-q0x2v"
+ },
+ {
+  "id": "Francesco/cable-damage",
+  "license": "cc",
+  "classes": [
+   "cable-damage",
+   "break",
+   "thunderbolt"
+  ],
+  "train_rows": 919,
+  "w": 640,
+  "h": 640,
+  "downloads": 201,
+  "slug": "cable-damage"
+ },
+ {
+  "id": "Francesco/axial-mri",
+  "license": "cc",
+  "classes": [
+   "axial-MRI",
+   "negative",
+   "positive"
+  ],
+  "train_rows": 253,
+  "w": 640,
+  "h": 640,
+  "downloads": 195,
+  "slug": "axial-mri"
+ },
+ {
+  "id": "Francesco/flir-camera-objects",
+  "license": "cc",
+  "classes": [
+   "flir-camera-objects",
+   "bicycle",
+   "car",
+   "dog",
+   "person"
+  ],
+  "train_rows": 9306,
+  "w": 640,
+  "h": 640,
+  "downloads": 189,
+  "slug": "flir-camera-objects"
+ },
+ {
+  "id": "Francesco/poker-cards-cxcvz",
+  "license": "cc",
+  "classes": [
+   "poker-cards",
+   "59",
+   "10 Diamonds",
+   "10 Hearts",
+   "10 Spades",
+   "10 Trefoils",
+   "2 Diamonds",
+   "2 Hearts",
+   "2 Spades",
+   "2 Trefoils",
+   "3 Diamonds",
+   "3 Hearts",
+   "3 Spades",
+   "3 Trefoils",
+   "4 Diamonds",
+   "4 Hearts",
+   "4 Spades",
+   "4 Trefoils",
+   "5 Diamonds",
+   "5 Hearts",
+   "5 Spades",
+   "5 Trefoils",
+   "6 Diamonds",
+   "6 Hearts",
+   "6 Spades",
+   "6 Trefoils",
+   "7 Diamonds",
+   "7 Hearts",
+   "7 Spades",
+   "7 Trefoils",
+   "8 Diamonds",
+   "8 Hearts",
+   "8 Spades",
+   "8 Trefoils",
+   "9 Diamonds",
+   "9 Hearts",
+   "9 Spades",
+   "9 Trefoils",
+   "A Diamonds",
+   "A Hearts",
+   "A Spades",
+   "A Trefoils",
+   "J Diamonds",
+   "J Hearts",
+   "J Spades",
+   "J Trefoils",
+   "K Diamonds",
+   "K Hearts",
+   "K Spades",
+   "K Trefoils",
+   "Q Diamonds",
+   "Q Hearts",
+   "Q Spades",
+   "Q Trefoils"
+  ],
+  "train_rows": 964,
+  "w": 640,
+  "h": 640,
+  "downloads": 186,
+  "slug": "poker-cards-cxcvz"
+ },
+ {
+  "id": "Francesco/thermal-dogs-and-people-x6ejw",
+  "license": "cc",
+  "classes": [
+   "thermal-dogs-n-people",
+   "dog",
+   "person"
+  ],
+  "train_rows": 142,
+  "w": 640,
+  "h": 640,
+  "downloads": 182,
+  "slug": "thermal-dogs-and-people-x6ejw"
+ },
+ {
+  "id": "Francesco/apex-videogame",
+  "license": "cc",
+  "classes": [
+   "apex-game",
+   "avatar",
+   "object"
+  ],
+  "train_rows": 2583,
+  "w": 640,
+  "h": 640,
+  "downloads": 181,
+  "slug": "apex-videogame"
+ },
+ {
+  "id": "Francesco/solar-panels-taxvb",
+  "license": "cc",
+  "classes": [
+   "solar-panels",
+   "Cell",
+   "Cell-Multi",
+   "No-Anomaly",
+   "Shadowing",
+   "Unclassified"
+  ],
+  "train_rows": 112,
+  "w": 640,
+  "h": 640,
+  "downloads": 179,
+  "slug": "solar-panels-taxvb"
+ },
+ {
+  "id": "Francesco/insects-mytwu",
+  "license": "cc",
+  "classes": [
+   "insects",
+   "army worm",
+   "legume blister beetle",
+   "red spider",
+   "rice gall midge",
+   "rice leaf roller",
+   "rice leafhopper",
+   "rice water weevil",
+   "wheat phloeothrips",
+   "white backed plant hopper",
+   "yellow rice borer"
+  ],
+  "train_rows": 696,
+  "w": 640,
+  "h": 640,
+  "downloads": 176,
+  "slug": "insects-mytwu"
+ },
+ {
+  "id": "Francesco/currency-v4f8j",
+  "license": "cc",
+  "classes": [
+   "currency",
+   "Dime",
+   "Nickel",
+   "Penny",
+   "Quarter",
+   "fifty",
+   "five",
+   "hundred",
+   "one",
+   "ten",
+   "twenty"
+  ],
+  "train_rows": 576,
+  "w": 640,
+  "h": 640,
+  "downloads": 165,
+  "slug": "currency-v4f8j"
+ },
+ {
+  "id": "Francesco/brain-tumor-m2pbp",
+  "license": "cc",
+  "classes": [
+   "brain-tumor",
+   "label0",
+   "label1",
+   "label2"
+  ],
+  "train_rows": 6930,
+  "w": 640,
+  "h": 640,
+  "downloads": 162,
+  "slug": "brain-tumor-m2pbp"
+ },
+ {
+  "id": "Francesco/corrosion-bi3q3",
+  "license": "cc",
+  "classes": [
+   "corrosion-0",
+   "Slippage",
+   "corrosion",
+   "crack"
+  ],
+  "train_rows": 840,
+  "w": 640,
+  "h": 640,
+  "downloads": 162,
+  "slug": "corrosion-bi3q3"
+ },
+ {
+  "id": "Francesco/signatures-xc8up",
+  "license": "cc",
+  "classes": [
+   "signatures",
+   "signature"
+  ],
+  "train_rows": 257,
+  "w": 640,
+  "h": 640,
+  "downloads": 161,
+  "slug": "signatures-xc8up"
+ },
+ {
+  "id": "Francesco/pests-2xlvx",
+  "license": "cc",
+  "classes": [
+   "pests",
+   "Agrotis",
+   "Athetis lepigone",
+   "Athetis lineosa",
+   "Chilo suppressalis",
+   "Cnaphalocrocis medinalis Guenee",
+   "Creatonotus transiens",
+   "Diaphania indica",
+   "Endotricha consocia",
+   "Euproctis sparsa",
+   "Gryllidae",
+   "Gryllotalpidae",
+   "Helicoverpa armigera",
+   "Holotrichia oblita Faldermann",
+   "Loxostege sticticalis",
+   "Mamestra brassicae",
+   "Maruca testulalis Geyer",
+   "Mythimna separata",
+   "Naranga aenescens Moore",
+   "Nilaparvata",
+   "Paracymoriza taiwanalis",
+   "Sesamia inferens",
+   "Sirthenea flavipes",
+   "Sogatella furcifera",
+   "Spodoptera exigua",
+   "Spoladea recurvalis",
+   "Staurophora celsia",
+   "Timandra Recompta",
+   "Trichoptera"
+  ],
+  "train_rows": 509,
+  "w": 640,
+  "h": 640,
+  "downloads": 159,
+  "slug": "pests-2xlvx"
+ },
+ {
+  "id": "Francesco/csgo-videogame",
+  "license": "cc",
+  "classes": [
+   "CSGO",
+   "CT",
+   "T"
+  ],
+  "train_rows": 1774,
+  "w": 640,
+  "h": 640,
+  "downloads": 147,
+  "slug": "csgo-videogame"
+ },
+ {
+  "id": "Francesco/bacteria-ptywi",
+  "license": "cc",
+  "classes": [
+   "bacteria",
+   "Str_pne"
+  ],
+  "train_rows": 30,
+  "w": 640,
+  "h": 640,
+  "downloads": 147,
+  "slug": "bacteria-ptywi"
+ },
+ {
+  "id": "Francesco/bccd-ouzjz",
+  "license": "cc",
+  "classes": [
+   "bccd",
+   "Platelets",
+   "RBC",
+   "WBC"
+  ],
+  "train_rows": 255,
+  "w": 640,
+  "h": 640,
+  "downloads": 146,
+  "slug": "bccd-ouzjz"
+ },
+ {
+  "id": "Francesco/4-fold-defect",
+  "license": "cc",
+  "classes": [
+   "4-fold-defect",
+   "4-fold defect"
+  ],
+  "train_rows": 503,
+  "w": 640,
+  "h": 640,
+  "downloads": 146,
+  "slug": "4-fold-defect"
+ },
+ {
+  "id": "Francesco/coins-1apki",
+  "license": "cc",
+  "classes": [
+   "coins",
+   "coin",
+   "nail",
+   "nut",
+   "screw"
+  ],
+  "train_rows": 6121,
+  "w": 640,
+  "h": 640,
+  "downloads": 145,
+  "slug": "coins-1apki"
+ },
+ {
+  "id": "Francesco/aerial-cows",
+  "license": "cc",
+  "classes": [
+   "aerial-cows",
+   "cow"
+  ],
+  "train_rows": 1084,
+  "w": 640,
+  "h": 640,
+  "downloads": 142,
+  "slug": "aerial-cows"
+ },
+ {
+  "id": "Francesco/weed-crop-aerial",
+  "license": "cc",
+  "classes": [
+   "weed-crop-aerial",
+   "crop",
+   "weed"
+  ],
+  "train_rows": 823,
+  "w": 640,
+  "h": 640,
+  "downloads": 141,
+  "slug": "weed-crop-aerial"
+ },
+ {
+  "id": "Francesco/tweeter-posts",
+  "license": "cc",
+  "classes": [
+   "tweeter-posts",
+   "caption",
+   "tweet"
+  ],
+  "train_rows": 87,
+  "w": 640,
+  "h": 640,
+  "downloads": 137,
+  "slug": "tweeter-posts"
+ },
+ {
+  "id": "Francesco/halo-infinite-angel-videogame",
+  "license": "cc",
+  "classes": [
+   "halo-infinite-angel-videogame",
+   "enemy",
+   "enemy-head",
+   "friendly",
+   "friendly-head"
+  ],
+  "train_rows": 462,
+  "w": 640,
+  "h": 640,
+  "downloads": 137,
+  "slug": "halo-infinite-angel-videogame"
+ },
+ {
+  "id": "Francesco/circuit-elements",
+  "license": "cc",
+  "classes": [
+   "circuit",
+   "Button",
+   "Buzzer",
+   "Capacitor",
+   "Capacitor Jumper",
+   "Capacitor Network",
+   "Clock",
+   "Connector",
+   "Diode",
+   "EM",
+   "Electrolytic Capacitor",
+   "Electrolytic capacitor",
+   "Ferrite Bead",
+   "Flex Cable",
+   "Fuse",
+   "IC",
+   "Inductor",
+   "Jumper",
+   "Led",
+   "Pads",
+   "Pins",
+   "Potentiometer",
+   "RP",
+   "Resistor",
+   "Resistor Jumper",
+   "Resistor Network",
+   "Switch",
+   "Test Point",
+   "Transducer",
+   "Transformer",
+   "Transistor",
+   "Unknown Unlabeled"
+  ],
+  "train_rows": 672,
+  "w": 640,
+  "h": 640,
+  "downloads": 135,
+  "slug": "circuit-elements"
+ },
+ {
+  "id": "Francesco/printed-circuit-board",
+  "license": "cc",
+  "classes": [
+   "printed-circuit-board",
+   "Button",
+   "Capacitor",
+   "Capacitor Jumper",
+   "Clock",
+   "Connector",
+   "Diode",
+   "EM",
+   "Electrolytic Capacitor",
+   "Ferrite Bead",
+   "IC",
+   "Inductor",
+   "Jumper",
+   "Led",
+   "Pads",
+   "Pins",
+   "Resistor",
+   "Resistor Jumper",
+   "Resistor Network",
+   "Switch",
+   "Test Point",
+   "Transistor",
+   "Unknown Unlabeled",
+   "iC"
+  ],
+  "train_rows": 548,
+  "w": 640,
+  "h": 640,
+  "downloads": 134,
+  "slug": "printed-circuit-board"
+ },
+ {
+  "id": "Francesco/peixos-fish",
+  "license": "cc",
+  "classes": [
+   "peixos",
+   "peix",
+   "taca"
+  ],
+  "train_rows": 821,
+  "w": 640,
+  "h": 640,
+  "downloads": 134,
+  "slug": "peixos-fish"
+ },
+ {
+  "id": "Francesco/animals-ij5d2",
+  "license": "cc",
+  "classes": [
+   "animals",
+   "cat",
+   "chicken",
+   "cow",
+   "dog",
+   "fox",
+   "goat",
+   "horse",
+   "person",
+   "racoon",
+   "skunk"
+  ],
+  "train_rows": 700,
+  "w": 640,
+  "h": 640,
+  "downloads": 134,
+  "slug": "animals-ij5d2"
+ },
+ {
+  "id": "Francesco/underwater-objects-5v7p8",
+  "license": "cc",
+  "classes": [
+   "underwater-objects",
+   "echinus",
+   "holothurian",
+   "scallop",
+   "starfish",
+   "waterweeds"
+  ],
+  "train_rows": 5320,
+  "w": 640,
+  "h": 640,
+  "downloads": 134,
+  "slug": "underwater-objects-5v7p8"
+ },
+ {
+  "id": "Francesco/digits-t2eg6",
+  "license": "cc",
+  "classes": [
+   "digits",
+   "0",
+   "1",
+   "2",
+   "3",
+   "4",
+   "5",
+   "6",
+   "7",
+   "8",
+   "9"
+  ],
+  "train_rows": 2912,
+  "w": 640,
+  "h": 640,
+  "downloads": 130,
+  "slug": "digits-t2eg6"
+ },
+ {
+  "id": "Francesco/road-traffic",
+  "license": "cc",
+  "classes": [
+   "road-traffic",
+   "bicycles",
+   "buses",
+   "crosswalks",
+   "fire hydrants",
+   "motorcycles",
+   "traffic lights",
+   "vehicles"
+  ],
+  "train_rows": 494,
+  "w": 640,
+  "h": 640,
+  "downloads": 129,
+  "slug": "road-traffic"
+ },
+ {
+  "id": "Francesco/road-signs-6ih4y",
+  "license": "cc",
+  "classes": [
+   "road-signs",
+   "bus_stop",
+   "do_not_enter",
+   "do_not_stop",
+   "do_not_turn_l",
+   "do_not_turn_r",
+   "do_not_u_turn",
+   "enter_left_lane",
+   "green_light",
+   "left_right_lane",
+   "no_parking",
+   "parking",
+   "ped_crossing",
+   "ped_zebra_cross",
+   "railway_crossing",
+   "red_light",
+   "stop",
+   "t_intersection_l",
+   "traffic_light",
+   "u_turn",
+   "warning",
+   "yellow_light"
+  ],
+  "train_rows": 1376,
+  "w": 640,
+  "h": 640,
+  "downloads": 129,
+  "slug": "road-signs-6ih4y"
+ },
+ {
+  "id": "Francesco/marbles",
+  "license": "cc",
+  "classes": [
+   "marbles",
+   "red",
+   "white"
+  ],
+  "train_rows": 54,
+  "w": 640,
+  "h": 640,
+  "downloads": 129,
+  "slug": "marbles"
+ },
+ {
+  "id": "Francesco/gynecology-mri",
+  "license": "cc",
+  "classes": [
+   "gynecology-MRI",
+   "6W",
+   "7W",
+   "EH"
+  ],
+  "train_rows": 2122,
+  "w": 640,
+  "h": 640,
+  "downloads": 129,
+  "slug": "gynecology-mri"
+ },
+ {
+  "id": "Francesco/abdomen-mri",
+  "license": "cc",
+  "classes": [
+   "abdomen-MRI",
+   "0"
+  ],
+  "train_rows": 1887,
+  "w": 640,
+  "h": 640,
+  "downloads": 128,
+  "slug": "abdomen-mri"
+ },
+ {
+  "id": "Francesco/document-parts",
+  "license": "cc",
+  "classes": [
+   "document-parts",
+   "table",
+   "title"
+  ],
+  "train_rows": 906,
+  "w": 640,
+  "h": 640,
+  "downloads": 126,
+  "slug": "document-parts"
+ },
+ {
+  "id": "Francesco/acl-x-ray",
+  "license": "cc",
+  "classes": [
+   "acl-x-ray",
+   "acl"
+  ],
+  "train_rows": 2141,
+  "w": 640,
+  "h": 460,
+  "downloads": 125,
+  "slug": "acl-x-ray"
+ },
+ {
+  "id": "Francesco/soda-bottles",
+  "license": "cc",
+  "classes": [
+   "soda-bottles",
+   "coca-cola",
+   "fanta",
+   "sprite"
+  ],
+  "train_rows": 1547,
+  "w": 640,
+  "h": 640,
+  "downloads": 120,
+  "slug": "soda-bottles"
+ },
+ {
+  "id": "Francesco/mitosis-gjs3g",
+  "license": "cc",
+  "classes": [
+   "mitosis",
+   "Mitosis"
+  ],
+  "train_rows": 213,
+  "w": 640,
+  "h": 640,
+  "downloads": 119,
+  "slug": "mitosis-gjs3g"
+ },
+ {
+  "id": "Francesco/wine-labels",
+  "license": "cc",
+  "classes": [
+   "wine-labels",
+   "AlcoholPercentage",
+   "Appellation AOC DOC AVARegion",
+   "Appellation QualityLevel",
+   "CountryCountry",
+   "Distinct Logo",
+   "Established YearYear",
+   "Maker-Name",
+   "Organic",
+   "Sustainable",
+   "Sweetness-Brut-SecSweetness-Brut-Sec",
+   "TypeWine Type",
+   "VintageYear"
+  ],
+  "train_rows": 3172,
+  "w": 640,
+  "h": 640,
+  "downloads": 119,
+  "slug": "wine-labels"
+ },
+ {
+  "id": "Francesco/pills-sxdht",
+  "license": "cc",
+  "classes": [
+   "pills",
+   "Cipro 500",
+   "Ibuphil 600 mg",
+   "Ibuphil Cold 400-60",
+   "Xyzall 5mg",
+   "blue",
+   "pink",
+   "red",
+   "white"
+  ],
+  "train_rows": 316,
+  "w": 640,
+  "h": 640,
+  "downloads": 118,
+  "slug": "pills-sxdht"
+ },
+ {
+  "id": "Francesco/grass-weeds",
+  "license": "cc",
+  "classes": [
+   "grass-weeds",
+   "0 ridderzuring"
+  ],
+  "train_rows": 1661,
+  "w": 640,
+  "h": 640,
+  "downloads": 116,
+  "slug": "grass-weeds"
+ },
+ {
+  "id": "Francesco/paper-parts",
+  "license": "cc",
+  "classes": [
+   "paper-parts",
+   "author",
+   "chapter",
+   "equation",
+   "equation number",
+   "figure",
+   "figure caption",
+   "footnote",
+   "list of content heading",
+   "list of content text",
+   "page number",
+   "paragraph",
+   "reference text",
+   "section",
+   "subsection",
+   "subsubsection",
+   "table",
+   "table caption",
+   "table of contents text",
+   "title"
+  ],
+  "train_rows": 8472,
+  "w": 640,
+  "h": 640,
+  "downloads": 115,
+  "slug": "paper-parts"
+ },
+ {
+  "id": "Francesco/bone-fracture-7fylg",
+  "license": "cc",
+  "classes": [
+   "bone-fracture",
+   "angle",
+   "fracture",
+   "line",
+   "messed_up_angle"
+  ],
+  "train_rows": 326,
+  "w": 640,
+  "h": 640,
+  "downloads": 112,
+  "slug": "bone-fracture-7fylg"
+ },
+ {
+  "id": "Francesco/cells-uyemf",
+  "license": "cc",
+  "classes": [
+   "cells",
+   "celula"
+  ],
+  "train_rows": 16,
+  "w": 640,
+  "h": 640,
+  "downloads": 110,
+  "slug": "cells-uyemf"
+ },
+ {
+  "id": "Francesco/aerial-pool",
+  "license": "cc",
+  "classes": [
+   "aerial-pool",
+   "black-hat",
+   "bodysurface",
+   "bodyunder",
+   "umpire",
+   "white-hat"
+  ],
+  "train_rows": 673,
+  "w": 640,
+  "h": 640,
+  "downloads": 104,
+  "slug": "aerial-pool"
+ },
+ {
+  "id": "Francesco/street-work",
+  "license": "cc",
+  "classes": [
+   "street-work-items",
+   "Cone",
+   "Face_Shield",
+   "Gloves",
+   "Goggles",
+   "Head",
+   "Helmet",
+   "No glasses",
+   "No gloves"
+  ],
+  "train_rows": 611,
+  "w": 640,
+  "h": 640,
+  "downloads": 104,
+  "slug": "street-work"
+ },
+ {
+  "id": "Francesco/thermal-cheetah-my4dp",
+  "license": "cc",
+  "classes": [
+   "thermal-cheetah",
+   "cheetah",
+   "human"
+  ],
+  "train_rows": 90,
+  "w": 640,
+  "h": 640,
+  "downloads": 102,
+  "slug": "thermal-cheetah-my4dp"
+ },
+ {
+  "id": "Francesco/trail-camera",
+  "license": "cc",
+  "classes": [
+   "game",
+   "Deer",
+   "Hog"
+  ],
+  "train_rows": 941,
+  "w": 640,
+  "h": 640,
+  "downloads": 99,
+  "slug": "trail-camera"
+ },
+ {
+  "id": "Francesco/asbestos",
+  "license": "cc",
+  "classes": [
+   "asbestos",
+   "thick-dark-mark",
+   "thick-light-mark",
+   "thin-dark-mark",
+   "thin-light-mark"
+  ],
+  "train_rows": 932,
+  "w": 640,
+  "h": 640,
+  "downloads": 99,
+  "slug": "asbestos"
+ },
+ {
+  "id": "Francesco/circuit-voltages",
+  "license": "cc",
+  "classes": [
+   "circuit-voltages",
+   "GND",
+   "IDC",
+   "IDC_I",
+   "R",
+   "VDC",
+   "VDC_I"
+  ],
+  "train_rows": 92,
+  "w": 640,
+  "h": 640,
+  "downloads": 99,
+  "slug": "circuit-voltages"
+ },
+ {
+  "id": "Francesco/lettuce-pallets",
+  "license": "cc",
+  "classes": [
+   "lettuce",
+   "Ready",
+   "empty_pod",
+   "germination",
+   "pod",
+   "young"
+  ],
+  "train_rows": 1060,
+  "w": 640,
+  "h": 640,
+  "downloads": 97,
+  "slug": "lettuce-pallets"
+ },
+ {
+  "id": "Francesco/wall-damage",
+  "license": "cc",
+  "classes": [
+   "wall-damage",
+   "Minorrotation",
+   "Moderaterotation",
+   "Severerotation"
+  ],
+  "train_rows": 325,
+  "w": 640,
+  "h": 640,
+  "downloads": 96,
+  "slug": "wall-damage"
+ },
+ {
+  "id": "Francesco/furniture-ngpea",
+  "license": "cc",
+  "classes": [
+   "furniture",
+   "Chair",
+   "Sofa",
+   "Table"
+  ],
+  "train_rows": 454,
+  "w": 640,
+  "h": 640,
+  "downloads": 95,
+  "slug": "furniture-ngpea"
+ },
+ {
+  "id": "Francesco/cotton-plant-disease",
+  "license": "cc",
+  "classes": [
+   "cotton-plant-disease",
+   "dc"
+  ],
+  "train_rows": 724,
+  "w": 640,
+  "h": 640,
+  "downloads": 94,
+  "slug": "cotton-plant-disease"
+ },
+ {
+  "id": "Francesco/tweeter-profile",
+  "license": "cc",
+  "classes": [
+   "tweeter-profile",
+   "profile_info"
+  ],
+  "train_rows": 425,
+  "w": 640,
+  "h": 640,
+  "downloads": 93,
+  "slug": "tweeter-profile"
+ },
+ {
+  "id": "Francesco/cloud-types",
+  "license": "cc",
+  "classes": [
+   "cloud-types",
+   "Fish",
+   "Flower",
+   "Gravel",
+   "Sugar"
+  ],
+  "train_rows": 3528,
+  "w": 640,
+  "h": 640,
+  "downloads": 93,
+  "slug": "cloud-types"
+ },
+ {
+  "id": "Francesco/cables-nl42k",
+  "license": "cc",
+  "classes": [
+   "cables",
+   "Antenne",
+   "BBS",
+   "BFU",
+   "Batterie",
+   "DDF",
+   "PCF",
+   "PCU AC",
+   "PCU DC",
+   "PDU",
+   "PSU",
+   "RBS"
+  ],
+  "train_rows": 4816,
+  "w": 640,
+  "h": 640,
+  "downloads": 93,
+  "slug": "cables-nl42k"
+ },
+ {
+  "id": "Francesco/leaf-disease-nsdsr",
+  "license": "cc",
+  "classes": [
+   "leaf-disease",
+   "mildew",
+   "rose_P01",
+   "rose_R02"
+  ],
+  "train_rows": 1589,
+  "w": 640,
+  "h": 640,
+  "downloads": 92,
+  "slug": "leaf-disease-nsdsr"
+ },
+ {
+  "id": "Francesco/cavity-rs0uf",
+  "license": "cc",
+  "classes": [
+   "cavity-0",
+   "cavity",
+   "normal"
+  ],
+  "train_rows": 287,
+  "w": 640,
+  "h": 640,
+  "downloads": 91,
+  "slug": "cavity-rs0uf"
+ },
+ {
+  "id": "Francesco/soccer-players-5fuqs",
+  "license": "cc",
+  "classes": [
+   "soccer-players",
+   "football",
+   "player",
+   "referee"
+  ],
+  "train_rows": 114,
+  "w": 640,
+  "h": 640,
+  "downloads": 90,
+  "slug": "soccer-players-5fuqs"
+ },
+ {
+  "id": "Francesco/hand-gestures-jps7z",
+  "license": "cc",
+  "classes": [
+   "hand-gestures",
+   "0",
+   "1",
+   "2",
+   "3",
+   "4",
+   "5",
+   "6",
+   "7",
+   "8",
+   "9",
+   "10",
+   "11",
+   "12",
+   "13"
+  ],
+  "train_rows": 642,
+  "w": 640,
+  "h": 640,
+  "downloads": 89,
+  "slug": "hand-gestures-jps7z"
+ },
+ {
+  "id": "Francesco/excavators-czvg9",
+  "license": "cc",
+  "classes": [
+   "excavators",
+   "EXCAVATORS",
+   "dump truck",
+   "wheel loader"
+  ],
+  "train_rows": 2244,
+  "w": 640,
+  "h": 640,
+  "downloads": 85,
+  "slug": "excavators-czvg9"
+ },
+ {
+  "id": "Francesco/cell-towers",
+  "license": "cc",
+  "classes": [
+   "pieces",
+   "joint",
+   "side"
+  ],
+  "train_rows": 705,
+  "w": 640,
+  "h": 640,
+  "downloads": 85,
+  "slug": "cell-towers"
+ },
+ {
+  "id": "Francesco/apples-fvpl5",
+  "license": "cc",
+  "classes": [
+   "apples",
+   "apple",
+   "damaged_apple"
+  ],
+  "train_rows": 489,
+  "w": 640,
+  "h": 640,
+  "downloads": 84,
+  "slug": "apples-fvpl5"
+ },
+ {
+  "id": "Francesco/people-in-paintings",
+  "license": "cc",
+  "classes": [
+   "people-in-paintings",
+   "Human"
+  ],
+  "train_rows": 634,
+  "w": 640,
+  "h": 640,
+  "downloads": 83,
+  "slug": "people-in-paintings"
+ },
+ {
+  "id": "Francesco/bees-jt5in",
+  "license": "cc",
+  "classes": [
+   "bees-0",
+   "bees"
+  ],
+  "train_rows": 5640,
+  "w": 640,
+  "h": 640,
+  "downloads": 82,
+  "slug": "bees-jt5in"
+ },
+ {
+  "id": "Francesco/truck-movement",
+  "license": "cc",
+  "classes": [
+   "truck-movement",
+   "otr_chassis_loaded",
+   "otr_chassis_unloaded",
+   "otr_chassis_working",
+   "person",
+   "stacker"
+  ],
+  "train_rows": 740,
+  "w": 640,
+  "h": 640,
+  "downloads": 82,
+  "slug": "truck-movement"
+ },
+ {
+  "id": "Francesco/liver-disease",
+  "license": "cc",
+  "classes": [
+   "diseases",
+   "ballooning",
+   "fibrosis",
+   "inflammation",
+   "steatosis"
+  ],
+  "train_rows": 2782,
+  "w": 640,
+  "h": 640,
+  "downloads": 81,
+  "slug": "liver-disease"
+ },
+ {
+  "id": "Francesco/parasites-1s07h",
+  "license": "cc",
+  "classes": [
+   "parasites",
+   "Ancylostoma Spp",
+   "Ascaris Lumbricoides",
+   "Enterobius Vermicularis",
+   "Fasciola Hepatica",
+   "Hymenolepis",
+   "Schistosoma",
+   "Taenia Sp",
+   "Trichuris Trichiura"
+  ],
+  "train_rows": 1484,
+  "w": 640,
+  "h": 640,
+  "downloads": 81,
+  "slug": "parasites-1s07h"
+ },
+ {
+  "id": "Francesco/farcry6-videogame",
+  "license": "cc",
+  "classes": [
+   "farcry6",
+   "assassin",
+   "atv",
+   "car",
+   "gun",
+   "gun menu",
+   "healthbar",
+   "horse",
+   "hud",
+   "map",
+   "person",
+   "surroundings"
+  ],
+  "train_rows": 82,
+  "w": 640,
+  "h": 640,
+  "downloads": 79,
+  "slug": "farcry6-videogame"
+ },
+ {
+  "id": "Francesco/stomata-cells",
+  "license": "cc",
+  "classes": [
+   "stomata-cells",
+   "close",
+   "open"
+  ],
+  "train_rows": 1482,
+  "w": 640,
+  "h": 640,
+  "downloads": 78,
+  "slug": "stomata-cells"
+ },
+ {
+  "id": "Francesco/fish-market-ggjso",
+  "license": "cc",
+  "classes": [
+   "fish",
+   "aair",
+   "boal",
+   "chapila",
+   "deshi puti",
+   "foli",
+   "ilish",
+   "kal baush",
+   "katla",
+   "koi",
+   "magur",
+   "mrigel",
+   "pabda",
+   "pangas",
+   "puti",
+   "rui",
+   "shol",
+   "taki",
+   "tara baim",
+   "telapiya"
+  ],
+  "train_rows": 14180,
+  "w": 640,
+  "h": 640,
+  "downloads": 75,
+  "slug": "fish-market-ggjso"
+ },
+ {
+  "id": "Francesco/team-fight-tactics",
+  "license": "cc",
+  "classes": [
+   "characters",
+   "Akali",
+   "Blitzcrank",
+   "Braum",
+   "Caitlyn",
+   "Camille",
+   "Cho-Gath",
+   "Darius",
+   "Dr- Mundo",
+   "Ekko",
+   "Ezreal",
+   "Fiora",
+   "Galio",
+   "Gankplank",
+   "Garen",
+   "Graves",
+   "Heimerdinger",
+   "Illaoi",
+   "Janna",
+   "Jayce",
+   "Jhin",
+   "Jinx",
+   "Kai-Sa",
+   "Kassadin",
+   "Katarina",
+   "Kog-Maw",
+   "Leona",
+   "Lissandra",
+   "Lulu",
+   "Lux",
+   "Malzahar",
+   "Miss Fortune",
+   "Orianna",
+   "Poppy",
+   "Quinn",
+   "Samira",
+   "Seraphine",
+   "Shaco",
+   "Singed",
+   "Sion",
+   "Swain",
+   "Tahm Kench",
+   "Talon",
+   "Taric",
+   "Tristana",
+   "Trundle",
+   "Twisted Fate",
+   "Twitch",
+   "Urgot",
+   "Veigar",
+   "Vex",
+   "Vi",
+   "Viktor",
+   "Warwick",
+   "Yone",
+   "Yuumi",
+   "Zac",
+   "Ziggs",
+   "Zilean",
+   "Zyra"
+  ],
+  "train_rows": 1162,
+  "w": 640,
+  "h": 640,
+  "downloads": 75,
+  "slug": "team-fight-tactics"
+ },
+ {
+  "id": "Francesco/robomasters-285km",
+  "license": "cc",
+  "classes": [
+   "robots",
+   "armor",
+   "base",
+   "car",
+   "rune",
+   "rune-blue",
+   "rune-gray",
+   "rune-grey",
+   "rune-red",
+   "watcher"
+  ],
+  "train_rows": 1945,
+  "w": 640,
+  "h": 640,
+  "downloads": 68,
+  "slug": "robomasters-285km"
+ },
+ {
+  "id": "Francesco/smoke-uvylj",
+  "license": "cc",
+  "classes": [
+   "smoke-0",
+   "smoke"
+  ],
+  "train_rows": 522,
+  "w": 640,
+  "h": 640,
+  "downloads": 67,
+  "slug": "smoke-uvylj"
+ },
+ {
+  "id": "Francesco/cotton-20xz5",
+  "license": "cc",
+  "classes": [
+   "cotton",
+   "G-arboreum",
+   "G-barbadense",
+   "G-herbaceum",
+   "G-hirsitum"
+  ],
+  "train_rows": 367,
+  "w": 640,
+  "h": 640,
+  "downloads": 66,
+  "slug": "cotton-20xz5"
+ },
+ {
+  "id": "Francesco/number-ops",
+  "license": "cc",
+  "classes": [
+   "number-ops",
+   "0",
+   "1",
+   "2",
+   "3",
+   "4",
+   "5",
+   "6",
+   "7",
+   "8",
+   "9",
+   "div",
+   "eqv",
+   "minus",
+   "mult",
+   "plus"
+  ],
+  "train_rows": 4869,
+  "w": 640,
+  "h": 640,
+  "downloads": 65,
+  "slug": "number-ops"
+ },
+ {
+  "id": "Francesco/phages",
+  "license": "cc",
+  "classes": [
+   "phages",
+   "activated",
+   "non-activated"
+  ],
+  "train_rows": 1155,
+  "w": 640,
+  "h": 640,
+  "downloads": 64,
+  "slug": "phages"
+ },
+ {
+  "id": "Francesco/valentines-chocolate",
+  "license": "cc",
+  "classes": [
+   "valentines-chocolate",
+   "sees-dark-almond-nougat",
+   "sees-dark-almonds",
+   "sees-dark-bordeaux",
+   "sees-dark-caramel-patties",
+   "sees-dark-chocolate-buttercream",
+   "sees-dark-marzipan",
+   "sees-dark-normandie",
+   "sees-dark-scotchmallow",
+   "sees-dark-walnut-square",
+   "sees-milk-almond-caramel",
+   "sees-milk-almonds",
+   "sees-milk-beverly",
+   "sees-milk-bordeaux",
+   "sees-milk-butterscotch-square",
+   "sees-milk-california-brittle",
+   "sees-milk-chelsea",
+   "sees-milk-chocolate-buttercream",
+   "sees-milk-coconut-cream",
+   "sees-milk-mayfair",
+   "sees-milk-mocha",
+   "sees-milk-molasses-chips",
+   "sees-milk-rum-nougat"
+  ],
+  "train_rows": 68,
+  "w": 640,
+  "h": 640,
+  "downloads": 64,
+  "slug": "valentines-chocolate"
+ },
+ {
+  "id": "Francesco/underwater-pipes-4ng4t",
+  "license": "cc",
+  "classes": [
+   "underwater-pipes",
+   "pipe"
+  ],
+  "train_rows": 5617,
+  "w": 640,
+  "h": 640,
+  "downloads": 63,
+  "slug": "underwater-pipes-4ng4t"
+ },
+ {
+  "id": "Francesco/coral-lwptl",
+  "license": "cc",
+  "classes": [
+   "coral",
+   "Arborescent",
+   "Caespitose-a",
+   "Caespitose-b",
+   "Columnar",
+   "Corymbose",
+   "Digitate",
+   "Encrusting",
+   "Foliose",
+   "Massive-Faviidae",
+   "Massive-Merulinidae",
+   "Massive-Mussidae",
+   "Massive-Poritidae",
+   "Solitary",
+   "Tabular"
+  ],
+  "train_rows": 427,
+  "w": 640,
+  "h": 640,
+  "downloads": 62,
+  "slug": "coral-lwptl"
+ },
+ {
+  "id": "Francesco/mask-wearing-608pr",
+  "license": "cc",
+  "classes": [
+   "mask-wearing",
+   "mask",
+   "no-mask"
+  ],
+  "train_rows": 105,
+  "w": 640,
+  "h": 640,
+  "downloads": 61,
+  "slug": "mask-wearing-608pr"
+ },
+ {
+  "id": "Francesco/secondary-chains",
+  "license": "cc",
+  "classes": [
+   "secondary-chains",
+   "chain"
+  ],
+  "train_rows": 103,
+  "w": 640,
+  "h": 640,
+  "downloads": 58,
+  "slug": "secondary-chains"
+ },
+ {
+  "id": "Francesco/peanuts-sd4kf",
+  "license": "cc",
+  "classes": [
+   "peanuts",
+   "with mold",
+   "without mold"
+  ],
+  "train_rows": 268,
+  "w": 640,
+  "h": 640,
+  "downloads": 58,
+  "slug": "peanuts-sd4kf"
+ },
+ {
+  "id": "Francesco/washroom-rf1fa",
+  "license": "cc",
+  "classes": [
+   "washroom",
+   "bathtub",
+   "c",
+   "geyser",
+   "mirror",
+   "showerhead",
+   "sink",
+   "toilet",
+   "towel",
+   "washbasin",
+   "wc"
+  ],
+  "train_rows": 1885,
+  "w": 640,
+  "h": 640,
+  "downloads": 57,
+  "slug": "washroom-rf1fa"
+ },
+ {
+  "id": "Francesco/sign-language-sokdr",
+  "license": "cc",
+  "classes": [
+   "sign-language",
+   "A",
+   "B",
+   "C",
+   "D",
+   "E",
+   "F",
+   "G",
+   "H",
+   "I",
+   "J",
+   "K",
+   "L",
+   "M",
+   "N",
+   "O",
+   "P",
+   "Q",
+   "R",
+   "S",
+   "T",
+   "U",
+   "V",
+   "W",
+   "X",
+   "Y",
+   "Z"
+  ],
+  "train_rows": 504,
+  "w": 640,
+  "h": 640,
+  "downloads": 56,
+  "slug": "sign-language-sokdr"
+ },
+ {
+  "id": "Francesco/aerial-spheres",
+  "license": "cc",
+  "classes": [
+   "aerial-spheres",
+   "green_sphero",
+   "orange-sphero",
+   "orange_sphero",
+   "purple_sphero",
+   "red_sphero",
+   "yellow_sphero"
+  ],
+  "train_rows": 318,
+  "w": 640,
+  "h": 640,
+  "downloads": 55,
+  "slug": "aerial-spheres"
+ },
+ {
+  "id": "Francesco/shark-teeth-5atku",
+  "license": "cc",
+  "classes": [
+   "teeth",
+   "Lower",
+   "Sand Tiger Shark",
+   "Snaggletooth Shark",
+   "Upper"
+  ],
+  "train_rows": 191,
+  "w": 640,
+  "h": 640,
+  "downloads": 53,
+  "slug": "shark-teeth-5atku"
+ },
+ {
+  "id": "Francesco/sedimentary-features-9eosf",
+  "license": "cc",
+  "classes": [
+   "sediment",
+   "Cross bedding",
+   "Low angle",
+   "Massive",
+   "Parallel lamination",
+   "mud drape"
+  ],
+  "train_rows": 156,
+  "w": 640,
+  "h": 640,
+  "downloads": 52,
+  "slug": "sedimentary-features-9eosf"
+ },
+ {
+  "id": "Francesco/avatar-recognition-nuexe",
+  "license": "cc",
+  "classes": [
+   "avatar",
+   "Character"
+  ],
+  "train_rows": 225,
+  "w": 640,
+  "h": 640,
+  "downloads": 50,
+  "slug": "avatar-recognition-nuexe"
+ },
+ {
+  "id": "Francesco/open-omniparser-dataset",
+  "license": "",
+  "classes": [
+   "interactive_element"
+  ],
+  "train_rows": 2136,
+  "w": 1280,
+  "h": 800,
+  "downloads": 27,
+  "slug": "open-omniparser-dataset"
+ }
+]

@@ -1,0 +1,4555 @@
+{
+ "version": 1,
+ "entries": [
+  {
+   "id": "coco8",
+   "task": "detect",
+   "title": {
+    "ru": "COCO8: 8 картинок",
+    "en": "COCO8: 8 pictures"
+   },
+   "what": {
+    "ru": "8 фото из COCO, 80 классов: самый маленький набор для проверки всего пути за минуту.",
+    "en": "8 COCO photos, 80 classes: the smallest set for trying the whole workflow in a minute."
+   },
+   "learn": {
+    "ru": "Быстрая проверка экспорта и обучения.",
+    "en": "A quick check of export and training."
+   },
+   "domain": "everyday",
+   "license": "AGPL-3.0 (Ultralytics)",
+   "size_mb": 0.4,
+   "classes": [
+    "person",
+    "bicycle",
+    "car",
+    "motorcycle",
+    "airplane",
+    "bus",
+    "train",
+    "truck",
+    "boat",
+    "traffic_light",
+    "fire_hydrant",
+    "stop_sign",
+    "parking_meter",
+    "bench",
+    "bird",
+    "cat",
+    "dog",
+    "horse",
+    "sheep",
+    "cow",
+    "elephant",
+    "bear",
+    "zebra",
+    "giraffe",
+    "backpack",
+    "umbrella",
+    "handbag",
+    "tie",
+    "suitcase",
+    "frisbee",
+    "skis",
+    "snowboard",
+    "sports_ball",
+    "kite",
+    "baseball_bat",
+    "baseball_glove",
+    "skateboard",
+    "surfboard",
+    "tennis_racket",
+    "bottle",
+    "wine_glass",
+    "cup",
+    "fork",
+    "knife",
+    "spoon",
+    "bowl",
+    "banana",
+    "apple",
+    "sandwich",
+    "orange",
+    "broccoli",
+    "carrot",
+    "hot_dog",
+    "pizza",
+    "donut",
+    "cake",
+    "chair",
+    "couch",
+    "potted_plant",
+    "bed",
+    "dining_table",
+    "toilet",
+    "tv",
+    "laptop",
+    "mouse",
+    "remote",
+    "keyboard",
+    "cell_phone",
+    "microwave",
+    "oven",
+    "toaster",
+    "sink",
+    "refrigerator",
+    "book",
+    "clock",
+    "vase",
+    "scissors",
+    "teddy_bear",
+    "hair_drier",
+    "toothbrush"
+   ],
+   "source": "ultralytics",
+   "fetch": {
+    "type": "zip",
+    "url": "https://github.com/ultralytics/assets/releases/download/v0.0.0/coco8.zip"
+   }
+  },
+  {
+   "id": "coco32",
+   "task": "detect",
+   "title": {
+    "ru": "COCO32: 32 картинки",
+    "en": "COCO32: 32 pictures"
+   },
+   "what": {
+    "ru": "32 фото из COCO с разметкой людей, машин, предметов быта.",
+    "en": "32 COCO photos with people, vehicles and household objects labeled."
+   },
+   "learn": {
+    "ru": "Мало данных: как это видно в графиках.",
+    "en": "Little data: how it shows up in the charts."
+   },
+   "domain": "everyday",
+   "license": "AGPL-3.0 (Ultralytics)",
+   "size_mb": 2,
+   "classes": [
+    "person",
+    "bicycle",
+    "car",
+    "motorcycle",
+    "airplane",
+    "bus",
+    "train",
+    "truck",
+    "boat",
+    "traffic_light",
+    "fire_hydrant",
+    "stop_sign",
+    "parking_meter",
+    "bench",
+    "bird",
+    "cat",
+    "dog",
+    "horse",
+    "sheep",
+    "cow",
+    "elephant",
+    "bear",
+    "zebra",
+    "giraffe",
+    "backpack",
+    "umbrella",
+    "handbag",
+    "tie",
+    "suitcase",
+    "frisbee",
+    "skis",
+    "snowboard",
+    "sports_ball",
+    "kite",
+    "baseball_bat",
+    "baseball_glove",
+    "skateboard",
+    "surfboard",
+    "tennis_racket",
+    "bottle",
+    "wine_glass",
+    "cup",
+    "fork",
+    "knife",
+    "spoon",
+    "bowl",
+    "banana",
+    "apple",
+    "sandwich",
+    "orange",
+    "broccoli",
+    "carrot",
+    "hot_dog",
+    "pizza",
+    "donut",
+    "cake",
+    "chair",
+    "couch",
+    "potted_plant",
+    "bed",
+    "dining_table",
+    "toilet",
+    "tv",
+    "laptop",
+    "mouse",
+    "remote",
+    "keyboard",
+    "cell_phone",
+    "microwave",
+    "oven",
+    "toaster",
+    "sink",
+    "refrigerator",
+    "book",
+    "clock",
+    "vase",
+    "scissors",
+    "teddy_bear",
+    "hair_drier",
+    "toothbrush"
+   ],
+   "source": "ultralytics",
+   "fetch": {
+    "type": "zip",
+    "url": "https://github.com/ultralytics/assets/releases/download/v0.0.0/coco32.zip"
+   }
+  },
+  {
+   "id": "coco128",
+   "task": "detect",
+   "title": {
+    "ru": "COCO128: 128 картинок",
+    "en": "COCO128: 128 pictures"
+   },
+   "what": {
+    "ru": "128 фото из COCO, 80 классов - классический учебный набор Ultralytics.",
+    "en": "128 COCO photos, 80 classes - the classic Ultralytics learning set."
+   },
+   "learn": {
+    "ru": "Много классов и мало примеров на каждый.",
+    "en": "Many classes with few examples each."
+   },
+   "domain": "everyday",
+   "license": "AGPL-3.0 (Ultralytics)",
+   "size_mb": 7,
+   "classes": [
+    "person",
+    "bicycle",
+    "car",
+    "motorcycle",
+    "airplane",
+    "bus",
+    "train",
+    "truck",
+    "boat",
+    "traffic_light",
+    "fire_hydrant",
+    "stop_sign",
+    "parking_meter",
+    "bench",
+    "bird",
+    "cat",
+    "dog",
+    "horse",
+    "sheep",
+    "cow",
+    "elephant",
+    "bear",
+    "zebra",
+    "giraffe",
+    "backpack",
+    "umbrella",
+    "handbag",
+    "tie",
+    "suitcase",
+    "frisbee",
+    "skis",
+    "snowboard",
+    "sports_ball",
+    "kite",
+    "baseball_bat",
+    "baseball_glove",
+    "skateboard",
+    "surfboard",
+    "tennis_racket",
+    "bottle",
+    "wine_glass",
+    "cup",
+    "fork",
+    "knife",
+    "spoon",
+    "bowl",
+    "banana",
+    "apple",
+    "sandwich",
+    "orange",
+    "broccoli",
+    "carrot",
+    "hot_dog",
+    "pizza",
+    "donut",
+    "cake",
+    "chair",
+    "couch",
+    "potted_plant",
+    "bed",
+    "dining_table",
+    "toilet",
+    "tv",
+    "laptop",
+    "mouse",
+    "remote",
+    "keyboard",
+    "cell_phone",
+    "microwave",
+    "oven",
+    "toaster",
+    "sink",
+    "refrigerator",
+    "book",
+    "clock",
+    "vase",
+    "scissors",
+    "teddy_bear",
+    "hair_drier",
+    "toothbrush"
+   ],
+   "source": "ultralytics",
+   "fetch": {
+    "type": "zip",
+    "url": "https://github.com/ultralytics/assets/releases/download/v0.0.0/coco128.zip"
+   }
+  },
+  {
+   "id": "homeobjects3k",
+   "task": "detect",
+   "title": {
+    "ru": "Предметы дома (3000 фото)",
+    "en": "Home objects (3000 photos)"
+   },
+   "what": {
+    "ru": "Фото интерьеров: кровать, диван, стул, раковина и другие предметы (12 классов).",
+    "en": "Interior photos: bed, sofa, chair, sink and other items (12 classes)."
+   },
+   "learn": {
+    "ru": "Реалистичные сцены с перекрытием предметов.",
+    "en": "Realistic scenes with overlapping objects."
+   },
+   "domain": "everyday",
+   "license": "AGPL-3.0 (Ultralytics)",
+   "size_mb": 120,
+   "classes": [],
+   "source": "ultralytics",
+   "fetch": {
+    "type": "zip_subset",
+    "url": "https://github.com/ultralytics/assets/releases/download/v0.0.0/homeobjects-3K.zip",
+    "subset": 300
+   }
+  },
+  {
+   "id": "construction_ppe",
+   "task": "detect",
+   "title": {
+    "ru": "Стройка: каски и жилеты",
+    "en": "Construction safety gear"
+   },
+   "what": {
+    "ru": "Рабочие на стройке: каски, жилеты, перчатки, очки и нарушения (12 классов).",
+    "en": "Workers on a construction site: helmets, vests, gloves, goggles and violations (12 classes)."
+   },
+   "learn": {
+    "ru": "Задача безопасности: классы «есть» и «нет» средства защиты.",
+    "en": "A safety task: classes for 'has' and 'lacks' protective gear."
+   },
+   "domain": "industrial",
+   "license": "AGPL-3.0 (Ultralytics)",
+   "size_mb": 90,
+   "classes": [],
+   "source": "ultralytics",
+   "fetch": {
+    "type": "zip_subset",
+    "url": "https://github.com/ultralytics/assets/releases/download/v0.0.0/construction-ppe.zip",
+    "subset": 300
+   }
+  },
+  {
+   "id": "kitti",
+   "task": "detect",
+   "title": {
+    "ru": "KITTI: дорожные сцены",
+    "en": "KITTI: road scenes"
+   },
+   "what": {
+    "ru": "Снимки с камеры автомобиля: машины, фургоны, пешеходы, велосипедисты (8 классов).",
+    "en": "Dashcam-style photos: cars, vans, pedestrians, cyclists (8 classes)."
+   },
+   "learn": {
+    "ru": "Вытянутые кадры и много мелких объектов.",
+    "en": "Wide frames with many small objects."
+   },
+   "domain": "everyday",
+   "license": "AGPL-3.0 (Ultralytics)",
+   "size_mb": 120,
+   "classes": [],
+   "source": "ultralytics",
+   "fetch": {
+    "type": "zip_subset",
+    "url": "https://github.com/ultralytics/assets/releases/download/v0.0.0/kitti.zip",
+    "subset": 300
+   }
+  },
+  {
+   "id": "coco8_seg",
+   "task": "seg",
+   "title": {
+    "ru": "COCO8-seg: контуры",
+    "en": "COCO8-seg: outlines"
+   },
+   "what": {
+    "ru": "8 фото из COCO, объекты размечены полигонами (80 классов).",
+    "en": "8 COCO photos with objects labeled as polygons (80 classes)."
+   },
+   "learn": {
+    "ru": "Минимальный пример сегментации.",
+    "en": "A minimal segmentation example."
+   },
+   "domain": "everyday",
+   "license": "AGPL-3.0 (Ultralytics)",
+   "size_mb": 0.4,
+   "classes": [
+    "person",
+    "bicycle",
+    "car",
+    "motorcycle",
+    "airplane",
+    "bus",
+    "train",
+    "truck",
+    "boat",
+    "traffic_light",
+    "fire_hydrant",
+    "stop_sign",
+    "parking_meter",
+    "bench",
+    "bird",
+    "cat",
+    "dog",
+    "horse",
+    "sheep",
+    "cow",
+    "elephant",
+    "bear",
+    "zebra",
+    "giraffe",
+    "backpack",
+    "umbrella",
+    "handbag",
+    "tie",
+    "suitcase",
+    "frisbee",
+    "skis",
+    "snowboard",
+    "sports_ball",
+    "kite",
+    "baseball_bat",
+    "baseball_glove",
+    "skateboard",
+    "surfboard",
+    "tennis_racket",
+    "bottle",
+    "wine_glass",
+    "cup",
+    "fork",
+    "knife",
+    "spoon",
+    "bowl",
+    "banana",
+    "apple",
+    "sandwich",
+    "orange",
+    "broccoli",
+    "carrot",
+    "hot_dog",
+    "pizza",
+    "donut",
+    "cake",
+    "chair",
+    "couch",
+    "potted_plant",
+    "bed",
+    "dining_table",
+    "toilet",
+    "tv",
+    "laptop",
+    "mouse",
+    "remote",
+    "keyboard",
+    "cell_phone",
+    "microwave",
+    "oven",
+    "toaster",
+    "sink",
+    "refrigerator",
+    "book",
+    "clock",
+    "vase",
+    "scissors",
+    "teddy_bear",
+    "hair_drier",
+    "toothbrush"
+   ],
+   "source": "ultralytics",
+   "fetch": {
+    "type": "zip",
+    "url": "https://github.com/ultralytics/assets/releases/download/v0.0.0/coco8-seg.zip"
+   }
+  },
+  {
+   "id": "coco128_seg",
+   "task": "seg",
+   "title": {
+    "ru": "COCO128-seg: контуры",
+    "en": "COCO128-seg: outlines"
+   },
+   "what": {
+    "ru": "128 фото из COCO с контурами объектов (80 классов).",
+    "en": "128 COCO photos with object outlines (80 classes)."
+   },
+   "learn": {
+    "ru": "Сегментация на небольшом наборе.",
+    "en": "Segmentation on a small set."
+   },
+   "domain": "everyday",
+   "license": "AGPL-3.0 (Ultralytics)",
+   "size_mb": 7,
+   "classes": [
+    "person",
+    "bicycle",
+    "car",
+    "motorcycle",
+    "airplane",
+    "bus",
+    "train",
+    "truck",
+    "boat",
+    "traffic_light",
+    "fire_hydrant",
+    "stop_sign",
+    "parking_meter",
+    "bench",
+    "bird",
+    "cat",
+    "dog",
+    "horse",
+    "sheep",
+    "cow",
+    "elephant",
+    "bear",
+    "zebra",
+    "giraffe",
+    "backpack",
+    "umbrella",
+    "handbag",
+    "tie",
+    "suitcase",
+    "frisbee",
+    "skis",
+    "snowboard",
+    "sports_ball",
+    "kite",
+    "baseball_bat",
+    "baseball_glove",
+    "skateboard",
+    "surfboard",
+    "tennis_racket",
+    "bottle",
+    "wine_glass",
+    "cup",
+    "fork",
+    "knife",
+    "spoon",
+    "bowl",
+    "banana",
+    "apple",
+    "sandwich",
+    "orange",
+    "broccoli",
+    "carrot",
+    "hot_dog",
+    "pizza",
+    "donut",
+    "cake",
+    "chair",
+    "couch",
+    "potted_plant",
+    "bed",
+    "dining_table",
+    "toilet",
+    "tv",
+    "laptop",
+    "mouse",
+    "remote",
+    "keyboard",
+    "cell_phone",
+    "microwave",
+    "oven",
+    "toaster",
+    "sink",
+    "refrigerator",
+    "book",
+    "clock",
+    "vase",
+    "scissors",
+    "teddy_bear",
+    "hair_drier",
+    "toothbrush"
+   ],
+   "source": "ultralytics",
+   "fetch": {
+    "type": "zip",
+    "url": "https://github.com/ultralytics/assets/releases/download/v0.0.0/coco128-seg.zip"
+   }
+  },
+  {
+   "id": "carparts_seg",
+   "task": "seg",
+   "title": {
+    "ru": "Детали автомобиля (сегментация)",
+    "en": "Car parts (segmentation)"
+   },
+   "what": {
+    "ru": "Фото автомобилей: бамперы, двери, стёкла, фары и другие детали (23 класса) контурами.",
+    "en": "Car photos: bumpers, doors, glass, lights and other parts (23 classes) as outlines."
+   },
+   "learn": {
+    "ru": "Много классов-деталей одного объекта.",
+    "en": "Many part classes of one object."
+   },
+   "domain": "industrial",
+   "license": "AGPL-3.0 (Ultralytics)",
+   "size_mb": 40,
+   "classes": [],
+   "source": "ultralytics",
+   "fetch": {
+    "type": "zip_subset",
+    "url": "https://github.com/ultralytics/assets/releases/download/v0.0.0/carparts-seg.zip",
+    "subset": 300
+   }
+  },
+  {
+   "id": "package_seg",
+   "task": "seg",
+   "title": {
+    "ru": "Посылки (сегментация)",
+    "en": "Packages (segmentation)"
+   },
+   "what": {
+    "ru": "Фото коробок и посылок с контурами.",
+    "en": "Photos of boxes and parcels with outlines."
+   },
+   "learn": {
+    "ru": "Один класс сложной формы на разном фоне.",
+    "en": "One class of varied shape on varied backgrounds."
+   },
+   "domain": "industrial",
+   "license": "AGPL-3.0 (Ultralytics)",
+   "size_mb": 40,
+   "classes": [],
+   "source": "ultralytics",
+   "fetch": {
+    "type": "zip_subset",
+    "url": "https://github.com/ultralytics/assets/releases/download/v0.0.0/package-seg.zip",
+    "subset": 300
+   }
+  },
+  {
+   "id": "tiger_pose",
+   "task": "pose",
+   "title": {
+    "ru": "Тигры: ключевые точки",
+    "en": "Tigers: keypoints"
+   },
+   "what": {
+    "ru": "Фото тигров с 12 ключевыми точками на теле.",
+    "en": "Tiger photos with 12 keypoints on the body."
+   },
+   "learn": {
+    "ru": "Ключевые точки у животных.",
+    "en": "Keypoints on animals."
+   },
+   "domain": "nature",
+   "license": "AGPL-3.0 (Ultralytics)",
+   "size_mb": 25,
+   "classes": [],
+   "source": "ultralytics",
+   "fetch": {
+    "type": "zip_subset",
+    "url": "https://github.com/ultralytics/assets/releases/download/v0.0.0/tiger-pose.zip",
+    "subset": 263
+   }
+  },
+  {
+   "id": "hand_keypoints",
+   "task": "pose",
+   "title": {
+    "ru": "Руки: 21 точка",
+    "en": "Hands: 21 keypoints"
+   },
+   "what": {
+    "ru": "Фото рук с 21 точкой на каждой (суставы пальцев и запястье).",
+    "en": "Hand photos with 21 keypoints on each (finger joints and wrist)."
+   },
+   "learn": {
+    "ru": "Много точек на небольшом объекте.",
+    "en": "Many points on a small object."
+   },
+   "domain": "everyday",
+   "license": "AGPL-3.0 (Ultralytics)",
+   "size_mb": 60,
+   "classes": [],
+   "source": "ultralytics",
+   "fetch": {
+    "type": "zip_subset",
+    "url": "https://github.com/ultralytics/assets/releases/download/v0.0.0/hand-keypoints.zip",
+    "subset": 300
+   }
+  },
+  {
+   "id": "dog_pose",
+   "task": "pose",
+   "title": {
+    "ru": "Собаки: ключевые точки",
+    "en": "Dogs: keypoints"
+   },
+   "what": {
+    "ru": "Фото собак с 24 ключевыми точками на теле.",
+    "en": "Dog photos with 24 keypoints on the body."
+   },
+   "learn": {
+    "ru": "Ключевые точки у животных разных пород и поз.",
+    "en": "Keypoints on animals of different breeds and poses."
+   },
+   "domain": "nature",
+   "license": "AGPL-3.0 (Ultralytics)",
+   "size_mb": 60,
+   "classes": [],
+   "source": "ultralytics",
+   "fetch": {
+    "type": "zip_subset",
+    "url": "https://github.com/ultralytics/assets/releases/download/v0.0.0/dog-pose.zip",
+    "subset": 300
+   }
+  },
+  {
+   "id": "dota128",
+   "task": "obb",
+   "title": {
+    "ru": "Аэроснимки DOTA128",
+    "en": "Aerial DOTA128"
+   },
+   "what": {
+    "ru": "128 аэроснимков, объекты размечены повёрнутыми рамками (самолёты, корабли, площадки).",
+    "en": "128 aerial images with objects labeled as rotated boxes (planes, ships, courts)."
+   },
+   "learn": {
+    "ru": "Повёрнутые рамки (OBB) на аэроснимках.",
+    "en": "Rotated boxes (OBB) on aerial images."
+   },
+   "domain": "aerial",
+   "license": "AGPL-3.0 (Ultralytics)",
+   "size_mb": 33,
+   "classes": [
+    "plane",
+    "ship",
+    "storage tank",
+    "baseball diamond",
+    "tennis court",
+    "basketball court",
+    "ground track field",
+    "harbor",
+    "bridge",
+    "large vehicle",
+    "small vehicle",
+    "helicopter",
+    "roundabout",
+    "soccer ball field",
+    "swimming pool"
+   ],
+   "source": "ultralytics",
+   "fetch": {
+    "type": "zip",
+    "url": "https://github.com/ultralytics/assets/releases/download/v0.0.0/dota128.zip"
+   }
+  },
+  {
+   "id": "mnist2560",
+   "task": "cls",
+   "title": {
+    "ru": "Цифры MNIST (2560)",
+    "en": "MNIST digits (2560)"
+   },
+   "what": {
+    "ru": "2560 картинок рукописных цифр 0-9: классом помечен весь кадр.",
+    "en": "2560 handwritten digit images 0-9: the whole frame gets the class."
+   },
+   "learn": {
+    "ru": "Классификация: быстрый и лёгкий пример.",
+    "en": "Classification: a fast, light example."
+   },
+   "domain": "everyday",
+   "license": "AGPL-3.0 (Ultralytics)",
+   "size_mb": 1.1,
+   "classes": [],
+   "source": "ultralytics",
+   "fetch": {
+    "type": "cls_zip",
+    "url": "https://github.com/ultralytics/assets/releases/download/v0.0.0/mnist2560.zip",
+    "per_class": 40
+   }
+  },
+  {
+   "id": "imagenet10",
+   "task": "cls",
+   "title": {
+    "ru": "ImageNet-10",
+    "en": "ImageNet-10"
+   },
+   "what": {
+    "ru": "Мини-подборка ImageNet: 10 классов обычных предметов и животных.",
+    "en": "A mini ImageNet subset: 10 classes of everyday objects and animals."
+   },
+   "learn": {
+    "ru": "Классификация фотографий реального мира.",
+    "en": "Classifying real-world photos."
+   },
+   "domain": "everyday",
+   "license": "AGPL-3.0 (Ultralytics)",
+   "size_mb": 0.1,
+   "classes": [],
+   "source": "ultralytics",
+   "fetch": {
+    "type": "cls_zip",
+    "url": "https://github.com/ultralytics/assets/releases/download/v0.0.0/imagenet10.zip",
+    "per_class": 40
+   }
+  },
+  {
+   "id": "imagenet100",
+   "task": "cls",
+   "title": {
+    "ru": "ImageNet-100",
+    "en": "ImageNet-100"
+   },
+   "what": {
+    "ru": "Подборка ImageNet на 100 классов.",
+    "en": "An ImageNet subset with 100 classes."
+   },
+   "learn": {
+    "ru": "Много классов: на что обращать внимание в Советнике.",
+    "en": "Many classes: what to watch for in the Advisor."
+   },
+   "domain": "everyday",
+   "license": "AGPL-3.0 (Ultralytics)",
+   "size_mb": 0.7,
+   "classes": [],
+   "source": "ultralytics",
+   "fetch": {
+    "type": "cls_zip",
+    "url": "https://github.com/ultralytics/assets/releases/download/v0.0.0/imagenet100.zip",
+    "per_class": 10
+   }
+  },
+  {
+   "id": "fashion_mnist",
+   "task": "cls",
+   "title": {
+    "ru": "Fashion-MNIST: одежда",
+    "en": "Fashion-MNIST: clothing"
+   },
+   "what": {
+    "ru": "Чёрно-белые картинки одежды и обуви (10 классов).",
+    "en": "Grayscale pictures of clothing and shoes (10 classes)."
+   },
+   "learn": {
+    "ru": "Классификация похожих между собой классов.",
+    "en": "Classifying look-alike classes."
+   },
+   "domain": "everyday",
+   "license": "AGPL-3.0 (Ultralytics)",
+   "size_mb": 49,
+   "classes": [],
+   "source": "ultralytics",
+   "fetch": {
+    "type": "cls_zip",
+    "url": "https://github.com/ultralytics/assets/releases/download/v0.0.0/fashion-mnist.zip",
+    "per_class": 40
+   }
+  },
+  {
+   "id": "imagenette160",
+   "task": "cls",
+   "title": {
+    "ru": "Imagenette: 10 лёгких классов",
+    "en": "Imagenette: 10 easy classes"
+   },
+   "what": {
+    "ru": "10 хорошо различимых классов ImageNet: рыба, собака, здание, церковь, самолёт и др.",
+    "en": "10 easily distinguishable ImageNet classes: fish, dog, building, church, plane and more."
+   },
+   "learn": {
+    "ru": "Классификация фото: быстрый старт.",
+    "en": "Photo classification: a quick start."
+   },
+   "domain": "everyday",
+   "license": "AGPL-3.0 (Ultralytics)",
+   "size_mb": 107,
+   "classes": [],
+   "source": "ultralytics",
+   "fetch": {
+    "type": "cls_zip",
+    "url": "https://github.com/ultralytics/assets/releases/download/v0.0.0/imagenette160.zip",
+    "per_class": 40
+   }
+  },
+  {
+   "id": "imagewoof160",
+   "task": "cls",
+   "title": {
+    "ru": "Imagewoof: 10 пород собак",
+    "en": "Imagewoof: 10 dog breeds"
+   },
+   "what": {
+    "ru": "10 похожих друг на друга пород собак: трудная классификация.",
+    "en": "10 similar dog breeds: a hard classification task."
+   },
+   "learn": {
+    "ru": "Тонкие различия между классами.",
+    "en": "Subtle differences between classes."
+   },
+   "domain": "nature",
+   "license": "AGPL-3.0 (Ultralytics)",
+   "size_mb": 100,
+   "classes": [],
+   "source": "ultralytics",
+   "fetch": {
+    "type": "cls_zip",
+    "url": "https://github.com/ultralytics/assets/releases/download/v0.0.0/imagewoof160.zip",
+    "per_class": 40
+   }
+  },
+  {
+   "id": "caltech101",
+   "task": "cls",
+   "title": {
+    "ru": "Caltech-101",
+    "en": "Caltech-101"
+   },
+   "what": {
+    "ru": "Фото предметов из 101 категории (самолёты, стулья, лица, мотоциклы...).",
+    "en": "Photos of objects from 101 categories (planes, chairs, faces, motorbikes...)."
+   },
+   "learn": {
+    "ru": "Много категорий, неравное число картинок.",
+    "en": "Many categories with unequal counts."
+   },
+   "domain": "everyday",
+   "license": "AGPL-3.0 (Ultralytics)",
+   "size_mb": 137,
+   "classes": [],
+   "source": "ultralytics",
+   "fetch": {
+    "type": "cls_zip",
+    "url": "https://github.com/ultralytics/assets/releases/download/v0.0.0/caltech101.zip",
+    "per_class": 10
+   }
+  },
+  {
+   "id": "hf_obstacle",
+   "task": "detect",
+   "title": {
+    "ru": "Препятствия на пути (велосипед, человек, машина)",
+    "en": "Obstacles on the road"
+   },
+   "what": {
+    "ru": "Снимки дороги: велосипеды, здания, машины, люди и другие препятствия.",
+    "en": "Road photos: bicycles, buildings, cars, people and other obstacles."
+   },
+   "learn": {
+    "ru": "Крупный набор: берём 300 случайных кадров.",
+    "en": "A large set: 300 random frames are used."
+   },
+   "domain": "everyday",
+   "license": "MIT",
+   "size_mb": 40,
+   "classes": [],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf",
+    "repo": "Abtinzandi/Obstacle-Detection-Dataset-YOLO",
+    "subset": 300
+   }
+  },
+  {
+   "id": "hf_soccer",
+   "task": "detect",
+   "title": {
+    "ru": "Футбол: мяч и игроки",
+    "en": "Football: ball and players"
+   },
+   "what": {
+    "ru": "Кадры футбольных матчей с роботами и мячом (NUbots).",
+    "en": "Football match frames with robots and a ball (NUbots)."
+   },
+   "learn": {
+    "ru": "Мелкие быстрые объекты.",
+    "en": "Small fast objects."
+   },
+   "domain": "game",
+   "license": "MIT",
+   "size_mb": 60,
+   "classes": [],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf",
+    "repo": "NUbots/YOLOSoccer",
+    "subset": 300
+   }
+  },
+  {
+   "id": "hf_pothole",
+   "task": "detect",
+   "title": {
+    "ru": "Ямы на дороге",
+    "en": "Potholes"
+   },
+   "what": {
+    "ru": "Фото дорожного покрытия: ямы отмечены рамками.",
+    "en": "Road surface photos with potholes marked by boxes."
+   },
+   "learn": {
+    "ru": "Один класс на реальных фото дорог.",
+    "en": "One class on real road photos."
+   },
+   "domain": "everyday",
+   "license": "OpenRAIL",
+   "size_mb": 22,
+   "classes": [
+    "pothole"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf",
+    "repo": "Ryukijano/Pothole-detection-Yolov8",
+    "subset": 300
+   }
+  },
+  {
+   "id": "hf_basketball",
+   "task": "pose",
+   "title": {
+    "ru": "Баскетбольная площадка: 48 точек",
+    "en": "Basketball court: 48 keypoints"
+   },
+   "what": {
+    "ru": "Кадры с размеченной площадкой: 48 ключевых точек разметки.",
+    "en": "Frames with the court marked by 48 keypoints."
+   },
+   "learn": {
+    "ru": "Много точек на одной сцене.",
+    "en": "Many points on one scene."
+   },
+   "domain": "everyday",
+   "license": "MIT",
+   "size_mb": 80,
+   "classes": [],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf",
+    "repo": "koppolusameer/basketball-keypoint-detection-yolov8",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_activity_diagrams_qdobr",
+   "task": "detect",
+   "title": {
+    "ru": "Элементы UML-диаграмм",
+    "en": "UML Activity Diagrams"
+   },
+   "what": {
+    "ru": "Изображения диаграмм деятельности; рамками отмечены узлы, действия и потоки управления.",
+    "en": "Images of activity diagrams; boxes mark nodes, actions and control flows."
+   },
+   "learn": {
+    "ru": "Много классов схематичных элементов",
+    "en": "Many classes of schematic elements"
+   },
+   "domain": "document",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 15,
+   "images": 259,
+   "classes": [
+    "activity-diagrams",
+    "action",
+    "activity",
+    "commeent",
+    "control_flow",
+    "control_flowcontrol_flow",
+    "decision_node",
+    "exit_node",
+    "final_flow_node",
+    "final_node",
+    "fork",
+    "merge",
+    "merge_noode",
+    "None",
+    "object",
+    "object_flow",
+    "signal_recept",
+    "signal_send",
+    "start_node",
+    "text"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/activity-diagrams-qdobr",
+    "subset": 259
+   }
+  },
+  {
+   "id": "rf_construction_safety_gsnvb",
+   "task": "detect",
+   "title": {
+    "ru": "Безопасность на стройке",
+    "en": "Construction Safety"
+   },
+   "what": {
+    "ru": "Фото рабочих на стройке; рамками отмечены люди, каски и жилеты, а также их отсутствие.",
+    "en": "Photos of construction workers; boxes mark people, helmets and vests, and their absence."
+   },
+   "learn": {
+    "ru": "Проверка наличия защитной экипировки",
+    "en": "Checking for protective equipment"
+   },
+   "domain": "industrial",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "construction-safety",
+    "helmet",
+    "no-helmet",
+    "no-vest",
+    "person",
+    "vest"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/construction-safety-gsnvb",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_aquarium_qlnqy",
+   "task": "detect",
+   "title": {
+    "ru": "Аквариум: рыбы и пингвины",
+    "en": "Aquarium Animals"
+   },
+   "what": {
+    "ru": "Снимки из аквариума; рамками отмечены рыбы, медузы, пингвины, акулы и другие обитатели.",
+    "en": "Aquarium photos; boxes mark fish, jellyfish, penguins, sharks and other animals."
+   },
+   "learn": {
+    "ru": "Небольшой набор разных животных",
+    "en": "A small set of varied animals"
+   },
+   "domain": "nature",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "aquarium",
+    "fish",
+    "jellyfish",
+    "penguin",
+    "puffin",
+    "shark",
+    "starfish",
+    "stingray"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/aquarium-qlnqy",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_chess_pieces_mjzgj",
+   "task": "detect",
+   "title": {
+    "ru": "Шахматные фигуры",
+    "en": "Chess Pieces"
+   },
+   "what": {
+    "ru": "Фото шахматной доски; рамками отмечены фигуры с учётом цвета и типа.",
+    "en": "Photos of a chessboard; boxes mark pieces by colour and type."
+   },
+   "learn": {
+    "ru": "Много похожих классов, мало снимков",
+    "en": "Many similar classes, few images"
+   },
+   "domain": "everyday",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 12,
+   "images": 202,
+   "classes": [
+    "chess-pieces",
+    "bishop",
+    "black-bishop",
+    "black-king",
+    "black-knight",
+    "black-pawn",
+    "black-queen",
+    "black-rook",
+    "white-bishop",
+    "white-king",
+    "white-knight",
+    "white-pawn",
+    "white-queen",
+    "white-rook"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/chess-pieces-mjzgj",
+    "subset": 202
+   }
+  },
+  {
+   "id": "rf_x_ray_rheumatology",
+   "task": "detect",
+   "title": {
+    "ru": "Рентген кисти",
+    "en": "Hand X-ray Bones"
+   },
+   "what": {
+    "ru": "Рентгеновские снимки кисти; рамками отмечены кости и артефакты.",
+    "en": "X-ray images of a hand; boxes mark individual bones and artefacts."
+   },
+   "learn": {
+    "ru": "Много анатомических классов на малой выборке",
+    "en": "Many anatomical classes on a small sample"
+   },
+   "domain": "medical",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 8,
+   "images": 135,
+   "classes": [
+    "x-ray-rheumatology",
+    "artefact",
+    "distal phalanges",
+    "fifth metacarpal bone",
+    "first metacarpal bone",
+    "fourth metacarpal bone",
+    "intermediate phalanges",
+    "proximal phalanges",
+    "radius",
+    "second metacarpal bone",
+    "soft tissue calcination",
+    "third metacarpal bone",
+    "ulna"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/x-ray-rheumatology",
+    "subset": 135
+   }
+  },
+  {
+   "id": "rf_vehicles_q0x2v",
+   "task": "detect",
+   "title": {
+    "ru": "Транспорт: автобусы и грузовики",
+    "en": "Vehicles"
+   },
+   "what": {
+    "ru": "Снимки дорожного транспорта; рамками отмечены легковые, автобусы и грузовики разных размеров.",
+    "en": "Road traffic images; boxes mark cars, buses and trucks of different sizes."
+   },
+   "learn": {
+    "ru": "Классы различаются только размером",
+    "en": "Classes differ mainly by size"
+   },
+   "domain": "everyday",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "vehicles",
+    "big bus",
+    "big truck",
+    "bus-l-",
+    "bus-s-",
+    "car",
+    "mid truck",
+    "small bus",
+    "small truck",
+    "truck-l-",
+    "truck-m-",
+    "truck-s-",
+    "truck-xl-"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/vehicles-q0x2v",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_cable_damage",
+   "task": "detect",
+   "title": {
+    "ru": "Повреждения кабеля",
+    "en": "Cable Damage"
+   },
+   "what": {
+    "ru": "Снимки кабелей; рамками отмечены обрывы и другие повреждения.",
+    "en": "Images of cables; boxes mark breaks and other damage."
+   },
+   "learn": {
+    "ru": "Поиск дефектов на однотипном фоне",
+    "en": "Defect search on a uniform background"
+   },
+   "domain": "industrial",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "cable-damage",
+    "break",
+    "thunderbolt"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/cable-damage",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_axial_mri",
+   "task": "detect",
+   "title": {
+    "ru": "МРТ: аксиальные срезы",
+    "en": "Axial MRI Slices"
+   },
+   "what": {
+    "ru": "Аксиальные срезы МРТ; рамками отмечены области с положительным или отрицательным признаком.",
+    "en": "Axial MRI slices; boxes mark regions labelled positive or negative."
+   },
+   "learn": {
+    "ru": "Медицинские изображения с минимумом классов",
+    "en": "Medical images with very few classes"
+   },
+   "domain": "medical",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 15,
+   "images": 253,
+   "classes": [
+    "axial-MRI",
+    "negative",
+    "positive"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/axial-mri",
+    "subset": 253
+   }
+  },
+  {
+   "id": "rf_flir_camera_objects",
+   "task": "detect",
+   "title": {
+    "ru": "Тепловизор: люди и машины",
+    "en": "FLIR Thermal Objects"
+   },
+   "what": {
+    "ru": "Кадры тепловизионной камеры; рамками отмечены люди, велосипеды, машины и собаки.",
+    "en": "Thermal camera frames; boxes mark people, bicycles, cars and dogs."
+   },
+   "learn": {
+    "ru": "Большой датасет в тепловом спектре",
+    "en": "A large dataset in the thermal spectrum"
+   },
+   "domain": "thermal",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "flir-camera-objects",
+    "bicycle",
+    "car",
+    "dog",
+    "person"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/flir-camera-objects",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_poker_cards_cxcvz",
+   "task": "detect",
+   "title": {
+    "ru": "Игральные карты",
+    "en": "Poker Cards"
+   },
+   "what": {
+    "ru": "Фото игральных карт; рамками отмечена каждая карта с её достоинством и мастью.",
+    "en": "Photos of playing cards; boxes mark each card by rank and suit."
+   },
+   "learn": {
+    "ru": "Очень много классов (54)",
+    "en": "A very large number of classes (54)"
+   },
+   "domain": "everyday",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "poker-cards",
+    "59",
+    "10 Diamonds",
+    "10 Hearts",
+    "10 Spades",
+    "10 Trefoils",
+    "2 Diamonds",
+    "2 Hearts",
+    "2 Spades",
+    "2 Trefoils",
+    "3 Diamonds",
+    "3 Hearts",
+    "3 Spades",
+    "3 Trefoils",
+    "4 Diamonds",
+    "4 Hearts",
+    "4 Spades",
+    "4 Trefoils",
+    "5 Diamonds",
+    "5 Hearts",
+    "5 Spades",
+    "5 Trefoils",
+    "6 Diamonds",
+    "6 Hearts",
+    "6 Spades",
+    "6 Trefoils",
+    "7 Diamonds",
+    "7 Hearts",
+    "7 Spades",
+    "7 Trefoils",
+    "8 Diamonds",
+    "8 Hearts",
+    "8 Spades",
+    "8 Trefoils",
+    "9 Diamonds",
+    "9 Hearts",
+    "9 Spades",
+    "9 Trefoils",
+    "A Diamonds",
+    "A Hearts",
+    "A Spades",
+    "A Trefoils",
+    "J Diamonds",
+    "J Hearts",
+    "J Spades",
+    "J Trefoils",
+    "K Diamonds",
+    "K Hearts",
+    "K Spades",
+    "K Trefoils",
+    "Q Diamonds",
+    "Q Hearts",
+    "Q Spades",
+    "Q Trefoils"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/poker-cards-cxcvz",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_thermal_dogs_and_people_x6ejw",
+   "task": "detect",
+   "title": {
+    "ru": "Тепловизор: собаки и люди",
+    "en": "Thermal Dogs and People"
+   },
+   "what": {
+    "ru": "Тепловые снимки; рамками отмечены собаки и люди.",
+    "en": "Thermal images; boxes mark dogs and people."
+   },
+   "learn": {
+    "ru": "Съёмка в необычном спектре, мало данных",
+    "en": "Unusual spectrum and little data"
+   },
+   "domain": "thermal",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 8,
+   "images": 142,
+   "classes": [
+    "thermal-dogs-n-people",
+    "dog",
+    "person"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/thermal-dogs-and-people-x6ejw",
+    "subset": 142
+   }
+  },
+  {
+   "id": "rf_apex_videogame",
+   "task": "detect",
+   "title": {
+    "ru": "Apex: игровые кадры",
+    "en": "Apex Legends Frames"
+   },
+   "what": {
+    "ru": "Кадры из шутера; рамками отмечены персонажи и игровые объекты.",
+    "en": "Shooter game frames; boxes mark characters and in-game objects."
+   },
+   "learn": {
+    "ru": "Детекция в динамичных игровых сценах",
+    "en": "Detection in fast-paced game scenes"
+   },
+   "domain": "game",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "apex-game",
+    "avatar",
+    "object"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/apex-videogame",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_solar_panels_taxvb",
+   "task": "detect",
+   "title": {
+    "ru": "Солнечные панели",
+    "en": "Solar Panels"
+   },
+   "what": {
+    "ru": "Снимки солнечных панелей; рамками отмечены ячейки, тени и аномалии.",
+    "en": "Solar panel images; boxes mark cells, shadows and anomalies."
+   },
+   "learn": {
+    "ru": "Поиск дефектов в регулярной структуре",
+    "en": "Finding defects in a regular structure"
+   },
+   "domain": "industrial",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 7,
+   "images": 112,
+   "classes": [
+    "solar-panels",
+    "Cell",
+    "Cell-Multi",
+    "No-Anomaly",
+    "Shadowing",
+    "Unclassified"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/solar-panels-taxvb",
+    "subset": 112
+   }
+  },
+  {
+   "id": "rf_insects_mytwu",
+   "task": "detect",
+   "title": {
+    "ru": "Насекомые-вредители",
+    "en": "Insect Pests"
+   },
+   "what": {
+    "ru": "Фото насекомых на растениях; рамками отмечены виды вредителей.",
+    "en": "Photos of insects on plants; boxes mark pest species."
+   },
+   "learn": {
+    "ru": "Мелкие объекты, похожие виды",
+    "en": "Small objects and similar species"
+   },
+   "domain": "nature",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "insects",
+    "army worm",
+    "legume blister beetle",
+    "red spider",
+    "rice gall midge",
+    "rice leaf roller",
+    "rice leafhopper",
+    "rice water weevil",
+    "wheat phloeothrips",
+    "white backed plant hopper",
+    "yellow rice borer"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/insects-mytwu",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_currency_v4f8j",
+   "task": "detect",
+   "title": {
+    "ru": "Монеты и банкноты",
+    "en": "Coins and Banknotes"
+   },
+   "what": {
+    "ru": "Фото денег; рамками отмечены монеты и банкноты разного номинала.",
+    "en": "Photos of money; boxes mark coins and banknotes of various values."
+   },
+   "learn": {
+    "ru": "Классы различаются номиналом",
+    "en": "Classes differ by denomination"
+   },
+   "domain": "everyday",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "currency",
+    "Dime",
+    "Nickel",
+    "Penny",
+    "Quarter",
+    "fifty",
+    "five",
+    "hundred",
+    "one",
+    "ten",
+    "twenty"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/currency-v4f8j",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_brain_tumor_m2pbp",
+   "task": "detect",
+   "title": {
+    "ru": "МРТ головного мозга",
+    "en": "Brain MRI"
+   },
+   "what": {
+    "ru": "Снимки МРТ головного мозга; рамками отмечены области трёх типов.",
+    "en": "Brain MRI images; boxes mark regions of three types."
+   },
+   "learn": {
+    "ru": "Большой медицинский датасет",
+    "en": "A large medical dataset"
+   },
+   "domain": "medical",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "brain-tumor",
+    "label0",
+    "label1",
+    "label2"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/brain-tumor-m2pbp",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_corrosion_bi3q3",
+   "task": "detect",
+   "title": {
+    "ru": "Коррозия и трещины",
+    "en": "Corrosion and Cracks"
+   },
+   "what": {
+    "ru": "Снимки поверхностей; рамками отмечены коррозия, трещины и смещения.",
+    "en": "Surface images; boxes mark corrosion, cracks and slippage."
+   },
+   "learn": {
+    "ru": "Дефекты неправильной формы",
+    "en": "Irregularly shaped defects"
+   },
+   "domain": "industrial",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "corrosion-0",
+    "Slippage",
+    "corrosion",
+    "crack"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/corrosion-bi3q3",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_signatures_xc8up",
+   "task": "detect",
+   "title": {
+    "ru": "Подписи в документах",
+    "en": "Document Signatures"
+   },
+   "what": {
+    "ru": "Изображения документов; рамками отмечены подписи.",
+    "en": "Document images; boxes mark signatures."
+   },
+   "learn": {
+    "ru": "Один класс на текстовом фоне",
+    "en": "A single class on a text background"
+   },
+   "domain": "document",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 15,
+   "images": 257,
+   "classes": [
+    "signatures",
+    "signature"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/signatures-xc8up",
+    "subset": 257
+   }
+  },
+  {
+   "id": "rf_pests_2xlvx",
+   "task": "detect",
+   "title": {
+    "ru": "Вредители сельского хозяйства",
+    "en": "Agricultural Pests"
+   },
+   "what": {
+    "ru": "Фото насекомых-вредителей; рамками отмечены виды бабочек и жуков.",
+    "en": "Photos of agricultural pest insects; boxes mark moth and beetle species."
+   },
+   "learn": {
+    "ru": "Много близких видов (29 классов)",
+    "en": "Many close species (29 classes)"
+   },
+   "domain": "nature",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "pests",
+    "Agrotis",
+    "Athetis lepigone",
+    "Athetis lineosa",
+    "Chilo suppressalis",
+    "Cnaphalocrocis medinalis Guenee",
+    "Creatonotus transiens",
+    "Diaphania indica",
+    "Endotricha consocia",
+    "Euproctis sparsa",
+    "Gryllidae",
+    "Gryllotalpidae",
+    "Helicoverpa armigera",
+    "Holotrichia oblita Faldermann",
+    "Loxostege sticticalis",
+    "Mamestra brassicae",
+    "Maruca testulalis Geyer",
+    "Mythimna separata",
+    "Naranga aenescens Moore",
+    "Nilaparvata",
+    "Paracymoriza taiwanalis",
+    "Sesamia inferens",
+    "Sirthenea flavipes",
+    "Sogatella furcifera",
+    "Spodoptera exigua",
+    "Spoladea recurvalis",
+    "Staurophora celsia",
+    "Timandra Recompta",
+    "Trichoptera"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/pests-2xlvx",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_csgo_videogame",
+   "task": "detect",
+   "title": {
+    "ru": "CS:GO: игроки",
+    "en": "CS:GO Players"
+   },
+   "what": {
+    "ru": "Кадры из шутера; рамками отмечены игроки двух команд.",
+    "en": "Shooter game frames; boxes mark players of the two teams."
+   },
+   "learn": {
+    "ru": "Различение классов по цвету и форме",
+    "en": "Telling classes apart by colour and shape"
+   },
+   "domain": "game",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "CSGO",
+    "CT",
+    "T"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/csgo-videogame",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_bacteria_ptywi",
+   "task": "detect",
+   "title": {
+    "ru": "Бактерии под микроскопом",
+    "en": "Bacteria Microscopy"
+   },
+   "what": {
+    "ru": "Микроскопические снимки; рамками отмечены бактерии одного вида.",
+    "en": "Microscope images; boxes mark bacteria of a single species."
+   },
+   "learn": {
+    "ru": "Очень малая выборка",
+    "en": "A very small sample"
+   },
+   "domain": "micro",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 2,
+   "images": 30,
+   "classes": [
+    "bacteria",
+    "Str_pne"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/bacteria-ptywi",
+    "subset": 30
+   }
+  },
+  {
+   "id": "rf_bccd_ouzjz",
+   "task": "detect",
+   "title": {
+    "ru": "Клетки крови",
+    "en": "Blood Cells"
+   },
+   "what": {
+    "ru": "Микроснимки мазка крови; рамками отмечены тромбоциты, эритроциты и лейкоциты.",
+    "en": "Blood smear micrographs; boxes mark platelets, red and white cells."
+   },
+   "learn": {
+    "ru": "Много мелких объектов в кадре",
+    "en": "Many small objects per frame"
+   },
+   "domain": "micro",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 15,
+   "images": 255,
+   "classes": [
+    "bccd",
+    "Platelets",
+    "RBC",
+    "WBC"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/bccd-ouzjz",
+    "subset": 255
+   }
+  },
+  {
+   "id": "rf_4_fold_defect",
+   "task": "detect",
+   "title": {
+    "ru": "Дефекты складок",
+    "en": "Fold Defects"
+   },
+   "what": {
+    "ru": "Снимки изделий; рамками отмечены дефекты типа сложения.",
+    "en": "Product images; boxes mark fold-type defects."
+   },
+   "learn": {
+    "ru": "Один редкий тип дефекта",
+    "en": "A single rare defect type"
+   },
+   "domain": "industrial",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "4-fold-defect",
+    "4-fold defect"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/4-fold-defect",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_coins_1apki",
+   "task": "detect",
+   "title": {
+    "ru": "Монеты и крепёж",
+    "en": "Coins and Hardware"
+   },
+   "what": {
+    "ru": "Фото предметов на столе; рамками отмечены монеты, гвозди, гайки и винты.",
+    "en": "Photos of objects on a surface; boxes mark coins, nails, nuts and screws."
+   },
+   "learn": {
+    "ru": "Мелкие предметы одного масштаба",
+    "en": "Small objects at a similar scale"
+   },
+   "domain": "everyday",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "coins",
+    "coin",
+    "nail",
+    "nut",
+    "screw"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/coins-1apki",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_aerial_cows",
+   "task": "detect",
+   "title": {
+    "ru": "Коровы с воздуха",
+    "en": "Aerial Cows"
+   },
+   "what": {
+    "ru": "Аэросъёмка пастбищ; рамками отмечены коровы.",
+    "en": "Aerial pasture images; boxes mark cows."
+   },
+   "learn": {
+    "ru": "Мелкие объекты на снимках сверху",
+    "en": "Small objects in top-down images"
+   },
+   "domain": "aerial",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "aerial-cows",
+    "cow"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/aerial-cows",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_weed_crop_aerial",
+   "task": "detect",
+   "title": {
+    "ru": "Сорняки и посевы",
+    "en": "Weeds and Crops"
+   },
+   "what": {
+    "ru": "Аэроснимки полей; рамками отмечены культурные растения и сорняки.",
+    "en": "Aerial field images; boxes mark crop plants and weeds."
+   },
+   "learn": {
+    "ru": "Похожие по виду классы на однородном фоне",
+    "en": "Similar-looking classes on a uniform background"
+   },
+   "domain": "aerial",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "weed-crop-aerial",
+    "crop",
+    "weed"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/weed-crop-aerial",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_tweeter_posts",
+   "task": "detect",
+   "title": {
+    "ru": "Посты в соцсети",
+    "en": "Social Media Posts"
+   },
+   "what": {
+    "ru": "Скриншоты ленты; рамками отмечены посты и подписи.",
+    "en": "Feed screenshots; boxes mark posts and captions."
+   },
+   "learn": {
+    "ru": "Детекция элементов интерфейса",
+    "en": "Detecting interface elements"
+   },
+   "domain": "document",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 5,
+   "images": 87,
+   "classes": [
+    "tweeter-posts",
+    "caption",
+    "tweet"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/tweeter-posts",
+    "subset": 87
+   }
+  },
+  {
+   "id": "rf_halo_infinite_angel_videogame",
+   "task": "detect",
+   "title": {
+    "ru": "Halo Infinite: враги и союзники",
+    "en": "Halo Infinite"
+   },
+   "what": {
+    "ru": "Кадры из шутера; рамками отмечены враги, союзники и их головы.",
+    "en": "Shooter frames; boxes mark enemies, allies and their heads."
+   },
+   "learn": {
+    "ru": "Мелкие части объектов как отдельные классы",
+    "en": "Small object parts as separate classes"
+   },
+   "domain": "game",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "halo-infinite-angel-videogame",
+    "enemy",
+    "enemy-head",
+    "friendly",
+    "friendly-head"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/halo-infinite-angel-videogame",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_circuit_elements",
+   "task": "detect",
+   "title": {
+    "ru": "Элементы электросхем",
+    "en": "Circuit Elements"
+   },
+   "what": {
+    "ru": "Изображения плат или схем; рамками отмечены электронные компоненты.",
+    "en": "Circuit or board images; boxes mark electronic components."
+   },
+   "learn": {
+    "ru": "Много классов компонентов (32)",
+    "en": "Many component classes (32)"
+   },
+   "domain": "industrial",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "circuit",
+    "Button",
+    "Buzzer",
+    "Capacitor",
+    "Capacitor Jumper",
+    "Capacitor Network",
+    "Clock",
+    "Connector",
+    "Diode",
+    "EM",
+    "Electrolytic Capacitor",
+    "Electrolytic capacitor",
+    "Ferrite Bead",
+    "Flex Cable",
+    "Fuse",
+    "IC",
+    "Inductor",
+    "Jumper",
+    "Led",
+    "Pads",
+    "Pins",
+    "Potentiometer",
+    "RP",
+    "Resistor",
+    "Resistor Jumper",
+    "Resistor Network",
+    "Switch",
+    "Test Point",
+    "Transducer",
+    "Transformer",
+    "Transistor",
+    "Unknown Unlabeled"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/circuit-elements",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_printed_circuit_board",
+   "task": "detect",
+   "title": {
+    "ru": "Печатная плата",
+    "en": "Printed Circuit Board"
+   },
+   "what": {
+    "ru": "Снимки печатных плат; рамками отмечены компоненты вроде конденсаторов и диодов.",
+    "en": "Printed circuit board images; boxes mark components such as capacitors and diodes."
+   },
+   "learn": {
+    "ru": "Много мелких похожих компонентов",
+    "en": "Many small similar components"
+   },
+   "domain": "industrial",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "printed-circuit-board",
+    "Button",
+    "Capacitor",
+    "Capacitor Jumper",
+    "Clock",
+    "Connector",
+    "Diode",
+    "EM",
+    "Electrolytic Capacitor",
+    "Ferrite Bead",
+    "IC",
+    "Inductor",
+    "Jumper",
+    "Led",
+    "Pads",
+    "Pins",
+    "Resistor",
+    "Resistor Jumper",
+    "Resistor Network",
+    "Switch",
+    "Test Point",
+    "Transistor",
+    "Unknown Unlabeled",
+    "iC"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/printed-circuit-board",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_peixos_fish",
+   "task": "detect",
+   "title": {
+    "ru": "Рыбы и пятна",
+    "en": "Fish and Spots"
+   },
+   "what": {
+    "ru": "Снимки рыб; рамками отмечены рыбы и пятна на них.",
+    "en": "Fish images; boxes mark fish and spots."
+   },
+   "learn": {
+    "ru": "Объекты разного масштаба",
+    "en": "Objects at different scales"
+   },
+   "domain": "nature",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "peixos",
+    "peix",
+    "taca"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/peixos-fish",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_animals_ij5d2",
+   "task": "detect",
+   "title": {
+    "ru": "Домашние животные",
+    "en": "Farm and Pet Animals"
+   },
+   "what": {
+    "ru": "Фото животных; рамками отмечены кошки, собаки, коровы, лошади и другие.",
+    "en": "Animal photos; boxes mark cats, dogs, cows, horses and others."
+   },
+   "learn": {
+    "ru": "Классический набор для первого обучения",
+    "en": "A classic set for a first training run"
+   },
+   "domain": "nature",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "animals",
+    "cat",
+    "chicken",
+    "cow",
+    "dog",
+    "fox",
+    "goat",
+    "horse",
+    "person",
+    "racoon",
+    "skunk"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/animals-ij5d2",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_underwater_objects_5v7p8",
+   "task": "detect",
+   "title": {
+    "ru": "Подводные объекты",
+    "en": "Underwater Objects"
+   },
+   "what": {
+    "ru": "Подводные снимки; рамками отмечены морские ежи, голотурии, гребешки и морские звёзды.",
+    "en": "Underwater images; boxes mark sea urchins, sea cucumbers, scallops and starfish."
+   },
+   "learn": {
+    "ru": "Плохая видимость и маскировка объектов",
+    "en": "Poor visibility and camouflaged objects"
+   },
+   "domain": "underwater",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "underwater-objects",
+    "echinus",
+    "holothurian",
+    "scallop",
+    "starfish",
+    "waterweeds"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/underwater-objects-5v7p8",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_digits_t2eg6",
+   "task": "detect",
+   "title": {
+    "ru": "Рукописные цифры",
+    "en": "Digits"
+   },
+   "what": {
+    "ru": "Изображения цифр; рамками отмечены цифры от 0 до 9.",
+    "en": "Images of digits; boxes mark digits from 0 to 9."
+   },
+   "learn": {
+    "ru": "Классификация символов внутри детектора",
+    "en": "Character classification inside a detector"
+   },
+   "domain": "document",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "digits",
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/digits-t2eg6",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_road_traffic",
+   "task": "detect",
+   "title": {
+    "ru": "Дорожная обстановка",
+    "en": "Road Traffic"
+   },
+   "what": {
+    "ru": "Уличные снимки; рамками отмечены автобусы, мотоциклы, светофоры, пешеходные переходы и гидранты.",
+    "en": "Street images; boxes mark buses, motorcycles, traffic lights, crosswalks and hydrants."
+   },
+   "learn": {
+    "ru": "Объекты разного размера в городской сцене",
+    "en": "Objects of different sizes in a city scene"
+   },
+   "domain": "everyday",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "road-traffic",
+    "bicycles",
+    "buses",
+    "crosswalks",
+    "fire hydrants",
+    "motorcycles",
+    "traffic lights",
+    "vehicles"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/road-traffic",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_road_signs_6ih4y",
+   "task": "detect",
+   "title": {
+    "ru": "Дорожные знаки",
+    "en": "Road Signs"
+   },
+   "what": {
+    "ru": "Снимки дорог; рамками отмечены дорожные знаки разных типов.",
+    "en": "Road images; boxes mark traffic signs of various types."
+   },
+   "learn": {
+    "ru": "Много похожих классов знаков",
+    "en": "Many similar sign classes"
+   },
+   "domain": "everyday",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "road-signs",
+    "bus_stop",
+    "do_not_enter",
+    "do_not_stop",
+    "do_not_turn_l",
+    "do_not_turn_r",
+    "do_not_u_turn",
+    "enter_left_lane",
+    "green_light",
+    "left_right_lane",
+    "no_parking",
+    "parking",
+    "ped_crossing",
+    "ped_zebra_cross",
+    "railway_crossing",
+    "red_light",
+    "stop",
+    "t_intersection_l",
+    "traffic_light",
+    "u_turn",
+    "warning",
+    "yellow_light"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/road-signs-6ih4y",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_marbles",
+   "task": "detect",
+   "title": {
+    "ru": "Стеклянные шарики",
+    "en": "Marbles"
+   },
+   "what": {
+    "ru": "Фото шариков; рамками отмечены красные и белые шарики.",
+    "en": "Photos of marbles; boxes mark red and white marbles."
+   },
+   "learn": {
+    "ru": "Очень маленький датасет, различие по цвету",
+    "en": "A tiny dataset where colour is the cue"
+   },
+   "domain": "everyday",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 3,
+   "images": 54,
+   "classes": [
+    "marbles",
+    "red",
+    "white"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/marbles",
+    "subset": 54
+   }
+  },
+  {
+   "id": "rf_gynecology_mri",
+   "task": "detect",
+   "title": {
+    "ru": "МРТ малого таза",
+    "en": "Pelvic MRI"
+   },
+   "what": {
+    "ru": "Срезы МРТ органов малого таза; рамками отмечены области нескольких типов.",
+    "en": "Pelvic MRI slices; boxes mark regions of several types."
+   },
+   "learn": {
+    "ru": "Крупный медицинский набор с редкими метками",
+    "en": "A large medical set with sparse labels"
+   },
+   "domain": "medical",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "gynecology-MRI",
+    "6W",
+    "7W",
+    "EH"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/gynecology-mri",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_abdomen_mri",
+   "task": "detect",
+   "title": {
+    "ru": "МРТ брюшной полости",
+    "en": "Abdominal MRI"
+   },
+   "what": {
+    "ru": "Срезы МРТ брюшной полости; рамками отмечены области интереса.",
+    "en": "Abdominal MRI slices; boxes mark regions of interest."
+   },
+   "learn": {
+    "ru": "Один класс при большом числе снимков",
+    "en": "One class with many images"
+   },
+   "domain": "medical",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "abdomen-MRI",
+    "0"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/abdomen-mri",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_document_parts",
+   "task": "detect",
+   "title": {
+    "ru": "Части документа",
+    "en": "Document Parts"
+   },
+   "what": {
+    "ru": "Изображения страниц; рамками отмечены таблицы и заголовки.",
+    "en": "Page images; boxes mark tables and titles."
+   },
+   "learn": {
+    "ru": "Структура документа как задача детекции",
+    "en": "Document layout as a detection task"
+   },
+   "domain": "document",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "document-parts",
+    "table",
+    "title"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/document-parts",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_acl_x_ray",
+   "task": "detect",
+   "title": {
+    "ru": "Рентген колена",
+    "en": "Knee X-ray"
+   },
+   "what": {
+    "ru": "Рентгеновские снимки колена; рамками отмечена область связки.",
+    "en": "Knee X-ray images; boxes mark the ligament region."
+   },
+   "learn": {
+    "ru": "Один класс, медицинские снимки",
+    "en": "A single class on medical images"
+   },
+   "domain": "medical",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 13,
+   "images": 300,
+   "classes": [
+    "acl-x-ray",
+    "acl"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/acl-x-ray",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_soda_bottles",
+   "task": "detect",
+   "title": {
+    "ru": "Бутылки газировки",
+    "en": "Soda Bottles"
+   },
+   "what": {
+    "ru": "Фото бутылок; рамками отмечены бутылки по бренду напитка.",
+    "en": "Bottle photos; boxes mark bottles by drink brand."
+   },
+   "learn": {
+    "ru": "Классы различаются этикеткой",
+    "en": "Classes differ by label"
+   },
+   "domain": "everyday",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "soda-bottles",
+    "coca-cola",
+    "fanta",
+    "sprite"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/soda-bottles",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_mitosis_gjs3g",
+   "task": "detect",
+   "title": {
+    "ru": "Деление клеток",
+    "en": "Cell Mitosis"
+   },
+   "what": {
+    "ru": "Микроснимки тканей; рамками отмечены клетки в стадии митоза.",
+    "en": "Tissue micrographs; boxes mark cells in mitosis."
+   },
+   "learn": {
+    "ru": "Редкие мелкие объекты",
+    "en": "Rare small objects"
+   },
+   "domain": "micro",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 12,
+   "images": 213,
+   "classes": [
+    "mitosis",
+    "Mitosis"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/mitosis-gjs3g",
+    "subset": 213
+   }
+  },
+  {
+   "id": "rf_wine_labels",
+   "task": "detect",
+   "title": {
+    "ru": "Винные этикетки",
+    "en": "Wine Labels"
+   },
+   "what": {
+    "ru": "Фото этикеток; рамками отмечены текстовые и графические элементы этикетки.",
+    "en": "Label photos; boxes mark text and graphic elements of the label."
+   },
+   "learn": {
+    "ru": "Разметка блоков текста на изображении",
+    "en": "Labelling text blocks within an image"
+   },
+   "domain": "document",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "wine-labels",
+    "AlcoholPercentage",
+    "Appellation AOC DOC AVARegion",
+    "Appellation QualityLevel",
+    "CountryCountry",
+    "Distinct Logo",
+    "Established YearYear",
+    "Maker-Name",
+    "Organic",
+    "Sustainable",
+    "Sweetness-Brut-SecSweetness-Brut-Sec",
+    "TypeWine Type",
+    "VintageYear"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/wine-labels",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_pills_sxdht",
+   "task": "detect",
+   "title": {
+    "ru": "Таблетки",
+    "en": "Pills"
+   },
+   "what": {
+    "ru": "Фото таблеток; рамками отмечены разные виды таблеток.",
+    "en": "Photos of pills; boxes mark different kinds of pills."
+   },
+   "learn": {
+    "ru": "Различение по цвету и надписи",
+    "en": "Telling classes apart by colour and print"
+   },
+   "domain": "everyday",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "pills",
+    "Cipro 500",
+    "Ibuphil 600 mg",
+    "Ibuphil Cold 400-60",
+    "Xyzall 5mg",
+    "blue",
+    "pink",
+    "red",
+    "white"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/pills-sxdht",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_grass_weeds",
+   "task": "detect",
+   "title": {
+    "ru": "Сорняки в траве",
+    "en": "Weeds in Grass"
+   },
+   "what": {
+    "ru": "Снимки газонов; рамками отмечены сорняки.",
+    "en": "Lawn images; boxes mark weeds."
+   },
+   "learn": {
+    "ru": "Объект сливается с фоном",
+    "en": "The object blends into the background"
+   },
+   "domain": "nature",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "grass-weeds",
+    "0 ridderzuring"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/grass-weeds",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_paper_parts",
+   "task": "detect",
+   "title": {
+    "ru": "Части научной статьи",
+    "en": "Paper Parts"
+   },
+   "what": {
+    "ru": "Страницы научных статей; рамками отмечены авторы, формулы, рисунки и сноски.",
+    "en": "Scientific paper pages; boxes mark authors, equations, figures and footnotes."
+   },
+   "learn": {
+    "ru": "Большой набор для анализа вёрстки",
+    "en": "A large set for page layout analysis"
+   },
+   "domain": "document",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "paper-parts",
+    "author",
+    "chapter",
+    "equation",
+    "equation number",
+    "figure",
+    "figure caption",
+    "footnote",
+    "list of content heading",
+    "list of content text",
+    "page number",
+    "paragraph",
+    "reference text",
+    "section",
+    "subsection",
+    "subsubsection",
+    "table",
+    "table caption",
+    "table of contents text",
+    "title"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/paper-parts",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_bone_fracture_7fylg",
+   "task": "detect",
+   "title": {
+    "ru": "Переломы костей",
+    "en": "Bone Fractures"
+   },
+   "what": {
+    "ru": "Рентгеновские снимки; рамками отмечены переломы и связанные линии.",
+    "en": "X-ray images; boxes mark fractures and related lines."
+   },
+   "learn": {
+    "ru": "Тонкие признаки на малой выборке",
+    "en": "Subtle cues in a small sample"
+   },
+   "domain": "medical",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "bone-fracture",
+    "angle",
+    "fracture",
+    "line",
+    "messed_up_angle"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/bone-fracture-7fylg",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_cells_uyemf",
+   "task": "detect",
+   "title": {
+    "ru": "Клетки",
+    "en": "Cells"
+   },
+   "what": {
+    "ru": "Микроснимки; рамками отмечены клетки.",
+    "en": "Micrographs; boxes mark cells."
+   },
+   "learn": {
+    "ru": "Минимальный датасет для быстрого теста",
+    "en": "A minimal dataset for a quick test"
+   },
+   "domain": "micro",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 1,
+   "images": 16,
+   "classes": [
+    "cells",
+    "celula"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/cells-uyemf",
+    "subset": 16
+   }
+  },
+  {
+   "id": "rf_aerial_pool",
+   "task": "detect",
+   "title": {
+    "ru": "Бассейн с воздуха",
+    "en": "Aerial Pool"
+   },
+   "what": {
+    "ru": "Снимки сверху у бассейна; рамками отмечены люди в шапочках, тела и судья.",
+    "en": "Top-down pool images; boxes mark people in caps, bodies and the umpire."
+   },
+   "learn": {
+    "ru": "Нестандартный ракурс сверху",
+    "en": "An unusual top-down viewpoint"
+   },
+   "domain": "aerial",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "aerial-pool",
+    "black-hat",
+    "bodysurface",
+    "bodyunder",
+    "umpire",
+    "white-hat"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/aerial-pool",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_street_work",
+   "task": "detect",
+   "title": {
+    "ru": "Дорожные работы и защита",
+    "en": "Street Work Safety"
+   },
+   "what": {
+    "ru": "Снимки рабочих на дороге; рамками отмечены конусы, каски, перчатки и очки.",
+    "en": "Road worker images; boxes mark cones, helmets, gloves and goggles."
+   },
+   "learn": {
+    "ru": "Мелкие предметы экипировки",
+    "en": "Small items of equipment"
+   },
+   "domain": "industrial",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "street-work-items",
+    "Cone",
+    "Face_Shield",
+    "Gloves",
+    "Goggles",
+    "Head",
+    "Helmet",
+    "No glasses",
+    "No gloves"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/street-work",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_thermal_cheetah_my4dp",
+   "task": "detect",
+   "title": {
+    "ru": "Тепловизор: гепарды и люди",
+    "en": "Thermal Cheetahs"
+   },
+   "what": {
+    "ru": "Тепловые снимки; рамками отмечены гепарды и люди.",
+    "en": "Thermal images; boxes mark cheetahs and people."
+   },
+   "learn": {
+    "ru": "Тепловой спектр и малая выборка",
+    "en": "Thermal spectrum and a small sample"
+   },
+   "domain": "thermal",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 5,
+   "images": 90,
+   "classes": [
+    "thermal-cheetah",
+    "cheetah",
+    "human"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/thermal-cheetah-my4dp",
+    "subset": 90
+   }
+  },
+  {
+   "id": "rf_trail_camera",
+   "task": "detect",
+   "title": {
+    "ru": "Фотоловушка: олени и кабаны",
+    "en": "Trail Camera Animals"
+   },
+   "what": {
+    "ru": "Кадры фотоловушки; рамками отмечены олени и кабаны.",
+    "en": "Trail camera frames; boxes mark deer and hogs."
+   },
+   "learn": {
+    "ru": "Дикая природа и ночная съёмка",
+    "en": "Wildlife and low-light capture"
+   },
+   "domain": "nature",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "game",
+    "Deer",
+    "Hog"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/trail-camera",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_asbestos",
+   "task": "detect",
+   "title": {
+    "ru": "Асбест под микроскопом",
+    "en": "Asbestos Fibres"
+   },
+   "what": {
+    "ru": "Микроснимки; рамками отмечены волокна и отметки разной толщины и тона.",
+    "en": "Micrographs; boxes mark marks of different thickness and tone."
+   },
+   "learn": {
+    "ru": "Классы различаются тонкими признаками",
+    "en": "Classes differ by subtle features"
+   },
+   "domain": "micro",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "asbestos",
+    "thick-dark-mark",
+    "thick-light-mark",
+    "thin-dark-mark",
+    "thin-light-mark"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/asbestos",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_circuit_voltages",
+   "task": "detect",
+   "title": {
+    "ru": "Электросхемы: напряжения",
+    "en": "Circuit Voltages"
+   },
+   "what": {
+    "ru": "Изображения схем; рамками отмечены источники, резисторы и земля.",
+    "en": "Circuit diagram images; boxes mark sources, resistors and ground."
+   },
+   "learn": {
+    "ru": "Символы схем на малой выборке",
+    "en": "Schematic symbols in a small sample"
+   },
+   "domain": "industrial",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 5,
+   "images": 92,
+   "classes": [
+    "circuit-voltages",
+    "GND",
+    "IDC",
+    "IDC_I",
+    "R",
+    "VDC",
+    "VDC_I"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/circuit-voltages",
+    "subset": 92
+   }
+  },
+  {
+   "id": "rf_lettuce_pallets",
+   "task": "detect",
+   "title": {
+    "ru": "Салат на поддонах",
+    "en": "Lettuce Pallets"
+   },
+   "what": {
+    "ru": "Снимки гидропонных поддонов; рамками отмечены ростки, пустые ячейки и зрелые растения.",
+    "en": "Hydroponic tray images; boxes mark seedlings, empty pods and mature plants."
+   },
+   "learn": {
+    "ru": "Стадии роста как классы",
+    "en": "Growth stages as classes"
+   },
+   "domain": "nature",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "lettuce",
+    "Ready",
+    "empty_pod",
+    "germination",
+    "pod",
+    "young"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/lettuce-pallets",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_wall_damage",
+   "task": "detect",
+   "title": {
+    "ru": "Повреждения стен",
+    "en": "Wall Damage"
+   },
+   "what": {
+    "ru": "Снимки стен; рамками отмечены повреждения разной степени.",
+    "en": "Wall images; boxes mark damage of different severity."
+   },
+   "learn": {
+    "ru": "Классы - это степень, а не вид объекта",
+    "en": "Classes describe severity, not object type"
+   },
+   "domain": "industrial",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "wall-damage",
+    "Minorrotation",
+    "Moderaterotation",
+    "Severerotation"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/wall-damage",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_furniture_ngpea",
+   "task": "detect",
+   "title": {
+    "ru": "Мебель",
+    "en": "Furniture"
+   },
+   "what": {
+    "ru": "Фото интерьеров; рамками отмечены стулья, диваны и столы.",
+    "en": "Interior photos; boxes mark chairs, sofas and tables."
+   },
+   "learn": {
+    "ru": "Простой набор для старта",
+    "en": "A simple set to get started"
+   },
+   "domain": "everyday",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "furniture",
+    "Chair",
+    "Sofa",
+    "Table"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/furniture-ngpea",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_cotton_plant_disease",
+   "task": "detect",
+   "title": {
+    "ru": "Болезни хлопка",
+    "en": "Cotton Plant Disease"
+   },
+   "what": {
+    "ru": "Снимки хлопчатника; рамками отмечены поражённые участки.",
+    "en": "Cotton plant images; boxes mark affected areas."
+   },
+   "learn": {
+    "ru": "Один класс, природный фон",
+    "en": "One class on a natural background"
+   },
+   "domain": "nature",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "cotton-plant-disease",
+    "dc"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/cotton-plant-disease",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_tweeter_profile",
+   "task": "detect",
+   "title": {
+    "ru": "Профили в соцсети",
+    "en": "Social Profiles"
+   },
+   "what": {
+    "ru": "Скриншоты профилей; рамками отмечены блоки информации профиля.",
+    "en": "Profile screenshots; boxes mark profile information blocks."
+   },
+   "learn": {
+    "ru": "Элементы интерфейса как объекты",
+    "en": "Interface elements as objects"
+   },
+   "domain": "document",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "tweeter-profile",
+    "profile_info"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/tweeter-profile",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_cloud_types",
+   "task": "detect",
+   "title": {
+    "ru": "Типы облаков",
+    "en": "Cloud Types"
+   },
+   "what": {
+    "ru": "Спутниковые снимки облаков; рамками отмечены образования типа Fish, Flower, Gravel и Sugar.",
+    "en": "Satellite cloud images; boxes mark Fish, Flower, Gravel and Sugar patterns."
+   },
+   "learn": {
+    "ru": "Крупные размытые объекты без чётких границ",
+    "en": "Large fuzzy objects with no sharp edges"
+   },
+   "domain": "aerial",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "cloud-types",
+    "Fish",
+    "Flower",
+    "Gravel",
+    "Sugar"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/cloud-types",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_cables_nl42k",
+   "task": "detect",
+   "title": {
+    "ru": "Кабели и оборудование",
+    "en": "Cables and Equipment"
+   },
+   "what": {
+    "ru": "Фото телеком-оборудования; рамками отмечены блоки и разъёмы.",
+    "en": "Telecom equipment photos; boxes mark units and connectors."
+   },
+   "learn": {
+    "ru": "Много узкоспециальных классов",
+    "en": "Many specialised classes"
+   },
+   "domain": "industrial",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "cables",
+    "Antenne",
+    "BBS",
+    "BFU",
+    "Batterie",
+    "DDF",
+    "PCF",
+    "PCU AC",
+    "PCU DC",
+    "PDU",
+    "PSU",
+    "RBS"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/cables-nl42k",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_leaf_disease_nsdsr",
+   "task": "detect",
+   "title": {
+    "ru": "Болезни листьев роз",
+    "en": "Rose Leaf Disease"
+   },
+   "what": {
+    "ru": "Снимки листьев; рамками отмечены признаки болезней, например мучнистая роса.",
+    "en": "Leaf images; boxes mark disease signs such as mildew."
+   },
+   "learn": {
+    "ru": "Распознавание болезней растений",
+    "en": "Recognising plant diseases"
+   },
+   "domain": "nature",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "leaf-disease",
+    "mildew",
+    "rose_P01",
+    "rose_R02"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/leaf-disease-nsdsr",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_cavity_rs0uf",
+   "task": "detect",
+   "title": {
+    "ru": "Кариес на снимках",
+    "en": "Dental Cavities"
+   },
+   "what": {
+    "ru": "Стоматологические снимки; рамками отмечены полости и здоровые зубы.",
+    "en": "Dental images; boxes mark cavities and normal teeth."
+   },
+   "learn": {
+    "ru": "Небольшие области на медицинских снимках",
+    "en": "Small regions in medical images"
+   },
+   "domain": "medical",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 17,
+   "images": 287,
+   "classes": [
+    "cavity-0",
+    "cavity",
+    "normal"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/cavity-rs0uf",
+    "subset": 287
+   }
+  },
+  {
+   "id": "rf_soccer_players_5fuqs",
+   "task": "detect",
+   "title": {
+    "ru": "Футбол: игроки",
+    "en": "Soccer Players"
+   },
+   "what": {
+    "ru": "Кадры футбольных матчей; рамками отмечены мяч, игроки и судья.",
+    "en": "Soccer match frames; boxes mark the ball, players and referee."
+   },
+   "learn": {
+    "ru": "Очень мелкий мяч среди игроков",
+    "en": "A tiny ball among many players"
+   },
+   "domain": "everyday",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 7,
+   "images": 114,
+   "classes": [
+    "soccer-players",
+    "football",
+    "player",
+    "referee"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/soccer-players-5fuqs",
+    "subset": 114
+   }
+  },
+  {
+   "id": "rf_hand_gestures_jps7z",
+   "task": "detect",
+   "title": {
+    "ru": "Жесты рук",
+    "en": "Hand Gestures"
+   },
+   "what": {
+    "ru": "Фото рук; рамками отмечены жесты, соответствующие цифрам.",
+    "en": "Hand photos; boxes mark gestures that stand for numbers."
+   },
+   "learn": {
+    "ru": "Много похожих классов (жесты)",
+    "en": "Many similar gesture classes"
+   },
+   "domain": "everyday",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "hand-gestures",
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "11",
+    "12",
+    "13"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/hand-gestures-jps7z",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_excavators_czvg9",
+   "task": "detect",
+   "title": {
+    "ru": "Строительная техника",
+    "en": "Construction Machines"
+   },
+   "what": {
+    "ru": "Снимки стройплощадок; рамками отмечены экскаваторы, самосвалы и погрузчики.",
+    "en": "Construction site images; boxes mark excavators, dump trucks and loaders."
+   },
+   "learn": {
+    "ru": "Крупные объекты сложной формы",
+    "en": "Large objects with complex shapes"
+   },
+   "domain": "industrial",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "excavators",
+    "EXCAVATORS",
+    "dump truck",
+    "wheel loader"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/excavators-czvg9",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_cell_towers",
+   "task": "detect",
+   "title": {
+    "ru": "Вышки связи",
+    "en": "Cell Tower Parts"
+   },
+   "what": {
+    "ru": "Снимки вышек; рамками отмечены стыки и боковые элементы конструкции.",
+    "en": "Tower images; boxes mark joints and side elements of the structure."
+   },
+   "learn": {
+    "ru": "Тонкие конструкции на небе",
+    "en": "Thin structures against the sky"
+   },
+   "domain": "industrial",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "pieces",
+    "joint",
+    "side"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/cell-towers",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_apples_fvpl5",
+   "task": "detect",
+   "title": {
+    "ru": "Яблоки",
+    "en": "Apples"
+   },
+   "what": {
+    "ru": "Фото яблок; рамками отмечены целые и повреждённые яблоки.",
+    "en": "Apple photos; boxes mark intact and damaged apples."
+   },
+   "learn": {
+    "ru": "Контроль качества по внешнему виду",
+    "en": "Quality control by appearance"
+   },
+   "domain": "nature",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "apples",
+    "apple",
+    "damaged_apple"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/apples-fvpl5",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_people_in_paintings",
+   "task": "detect",
+   "title": {
+    "ru": "Люди на картинах",
+    "en": "People in Paintings"
+   },
+   "what": {
+    "ru": "Фото картин; рамками отмечены нарисованные люди.",
+    "en": "Photos of paintings; boxes mark painted people."
+   },
+   "learn": {
+    "ru": "Нестандартный стиль изображений",
+    "en": "Unusual image style"
+   },
+   "domain": "everyday",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "people-in-paintings",
+    "Human"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/people-in-paintings",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_bees_jt5in",
+   "task": "detect",
+   "title": {
+    "ru": "Пчёлы",
+    "en": "Bees"
+   },
+   "what": {
+    "ru": "Фото пчёл; рамками отмечены отдельные пчёлы.",
+    "en": "Photos of bees; boxes mark individual bees."
+   },
+   "learn": {
+    "ru": "Много мелких объектов, большой датасет",
+    "en": "Many small objects and a large dataset"
+   },
+   "domain": "nature",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "bees-0",
+    "bees"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/bees-jt5in",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_truck_movement",
+   "task": "detect",
+   "title": {
+    "ru": "Движение грузовиков в порту",
+    "en": "Truck Movement"
+   },
+   "what": {
+    "ru": "Снимки терминала; рамками отмечены шасси, люди и штабелёры.",
+    "en": "Terminal images; boxes mark chassis, people and stackers."
+   },
+   "learn": {
+    "ru": "Состояние объекта как отдельный класс",
+    "en": "Object state as a separate class"
+   },
+   "domain": "industrial",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "truck-movement",
+    "otr_chassis_loaded",
+    "otr_chassis_unloaded",
+    "otr_chassis_working",
+    "person",
+    "stacker"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/truck-movement",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_liver_disease",
+   "task": "detect",
+   "title": {
+    "ru": "Печень: гистология",
+    "en": "Liver Histology"
+   },
+   "what": {
+    "ru": "Гистологические снимки печени; рамками отмечены морфологические признаки.",
+    "en": "Liver histology images; boxes mark morphological features."
+   },
+   "learn": {
+    "ru": "Крупная выборка, специфичные классы",
+    "en": "A large sample with specialised classes"
+   },
+   "domain": "micro",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "diseases",
+    "ballooning",
+    "fibrosis",
+    "inflammation",
+    "steatosis"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/liver-disease",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_parasites_1s07h",
+   "task": "detect",
+   "title": {
+    "ru": "Паразиты под микроскопом",
+    "en": "Parasites Microscopy"
+   },
+   "what": {
+    "ru": "Микроснимки; рамками отмечены яйца и формы паразитов разных видов.",
+    "en": "Micrographs; boxes mark eggs and forms of different parasite species."
+   },
+   "learn": {
+    "ru": "Редкие похожие классы",
+    "en": "Rare and similar classes"
+   },
+   "domain": "micro",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "parasites",
+    "Ancylostoma Spp",
+    "Ascaris Lumbricoides",
+    "Enterobius Vermicularis",
+    "Fasciola Hepatica",
+    "Hymenolepis",
+    "Schistosoma",
+    "Taenia Sp",
+    "Trichuris Trichiura"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/parasites-1s07h",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_farcry6_videogame",
+   "task": "detect",
+   "title": {
+    "ru": "Far Cry 6: объекты",
+    "en": "Far Cry 6"
+   },
+   "what": {
+    "ru": "Кадры из игры; рамками отмечены персонажи, транспорт, оружие и элементы интерфейса.",
+    "en": "Game frames; boxes mark characters, vehicles, weapons and interface items."
+   },
+   "learn": {
+    "ru": "Разные объекты на малой выборке",
+    "en": "Varied objects in a small sample"
+   },
+   "domain": "game",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 5,
+   "images": 82,
+   "classes": [
+    "farcry6",
+    "assassin",
+    "atv",
+    "car",
+    "gun",
+    "gun menu",
+    "healthbar",
+    "horse",
+    "hud",
+    "map",
+    "person",
+    "surroundings"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/farcry6-videogame",
+    "subset": 82
+   }
+  },
+  {
+   "id": "rf_stomata_cells",
+   "task": "detect",
+   "title": {
+    "ru": "Устьица растений",
+    "en": "Plant Stomata"
+   },
+   "what": {
+    "ru": "Микроснимки листа; рамками отмечены открытые и закрытые устьица.",
+    "en": "Leaf micrographs; boxes mark open and closed stomata."
+   },
+   "learn": {
+    "ru": "Состояние объекта как класс",
+    "en": "Object state as the class"
+   },
+   "domain": "micro",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "stomata-cells",
+    "close",
+    "open"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/stomata-cells",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_fish_market_ggjso",
+   "task": "detect",
+   "title": {
+    "ru": "Рыбный рынок",
+    "en": "Fish Market"
+   },
+   "what": {
+    "ru": "Фото рыб на рынке; рамками отмечены виды рыб.",
+    "en": "Photos of fish at a market; boxes mark fish species."
+   },
+   "learn": {
+    "ru": "Большой датасет, много видов",
+    "en": "A large dataset with many species"
+   },
+   "domain": "nature",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "fish",
+    "aair",
+    "boal",
+    "chapila",
+    "deshi puti",
+    "foli",
+    "ilish",
+    "kal baush",
+    "katla",
+    "koi",
+    "magur",
+    "mrigel",
+    "pabda",
+    "pangas",
+    "puti",
+    "rui",
+    "shol",
+    "taki",
+    "tara baim",
+    "telapiya"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/fish-market-ggjso",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_team_fight_tactics",
+   "task": "detect",
+   "title": {
+    "ru": "Team Fight Tactics: персонажи",
+    "en": "Team Fight Tactics"
+   },
+   "what": {
+    "ru": "Кадры игры; рамками отмечены персонажи.",
+    "en": "Game frames; boxes mark characters."
+   },
+   "learn": {
+    "ru": "Очень много классов (60)",
+    "en": "A very large number of classes (60)"
+   },
+   "domain": "game",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "characters",
+    "Akali",
+    "Blitzcrank",
+    "Braum",
+    "Caitlyn",
+    "Camille",
+    "Cho-Gath",
+    "Darius",
+    "Dr- Mundo",
+    "Ekko",
+    "Ezreal",
+    "Fiora",
+    "Galio",
+    "Gankplank",
+    "Garen",
+    "Graves",
+    "Heimerdinger",
+    "Illaoi",
+    "Janna",
+    "Jayce",
+    "Jhin",
+    "Jinx",
+    "Kai-Sa",
+    "Kassadin",
+    "Katarina",
+    "Kog-Maw",
+    "Leona",
+    "Lissandra",
+    "Lulu",
+    "Lux",
+    "Malzahar",
+    "Miss Fortune",
+    "Orianna",
+    "Poppy",
+    "Quinn",
+    "Samira",
+    "Seraphine",
+    "Shaco",
+    "Singed",
+    "Sion",
+    "Swain",
+    "Tahm Kench",
+    "Talon",
+    "Taric",
+    "Tristana",
+    "Trundle",
+    "Twisted Fate",
+    "Twitch",
+    "Urgot",
+    "Veigar",
+    "Vex",
+    "Vi",
+    "Viktor",
+    "Warwick",
+    "Yone",
+    "Yuumi",
+    "Zac",
+    "Ziggs",
+    "Zilean",
+    "Zyra"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/team-fight-tactics",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_robomasters_285km",
+   "task": "detect",
+   "title": {
+    "ru": "Роботы RoboMaster",
+    "en": "RoboMaster Robots"
+   },
+   "what": {
+    "ru": "Кадры соревнований роботов; рамками отмечены роботы, броня и цели.",
+    "en": "Robot competition frames; boxes mark robots, armour and targets."
+   },
+   "learn": {
+    "ru": "Быстрые объекты и несколько типов целей",
+    "en": "Fast-moving objects and several target types"
+   },
+   "domain": "everyday",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "robots",
+    "armor",
+    "base",
+    "car",
+    "rune",
+    "rune-blue",
+    "rune-gray",
+    "rune-grey",
+    "rune-red",
+    "watcher"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/robomasters-285km",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_smoke_uvylj",
+   "task": "detect",
+   "title": {
+    "ru": "Дым",
+    "en": "Smoke"
+   },
+   "what": {
+    "ru": "Снимки местности; рамками отмечен дым.",
+    "en": "Scene images; boxes mark smoke."
+   },
+   "learn": {
+    "ru": "Объект без чёткой формы",
+    "en": "An object without a clear shape"
+   },
+   "domain": "nature",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "smoke-0",
+    "smoke"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/smoke-uvylj",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_cotton_20xz5",
+   "task": "detect",
+   "title": {
+    "ru": "Виды хлопчатника",
+    "en": "Cotton Species"
+   },
+   "what": {
+    "ru": "Снимки растений; рамками отмечены виды хлопчатника.",
+    "en": "Plant images; boxes mark cotton species."
+   },
+   "learn": {
+    "ru": "Близкие виды растений",
+    "en": "Closely related plant species"
+   },
+   "domain": "nature",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "cotton",
+    "G-arboreum",
+    "G-barbadense",
+    "G-herbaceum",
+    "G-hirsitum"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/cotton-20xz5",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_number_ops",
+   "task": "detect",
+   "title": {
+    "ru": "Числа и операции",
+    "en": "Numbers and Operations"
+   },
+   "what": {
+    "ru": "Изображения выражений; рамками отмечены цифры и знаки операций.",
+    "en": "Expression images; boxes mark digits and operation symbols."
+   },
+   "learn": {
+    "ru": "Символы в строке, много классов",
+    "en": "Symbols in a line, many classes"
+   },
+   "domain": "document",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "number-ops",
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "div",
+    "eqv",
+    "minus",
+    "mult",
+    "plus"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/number-ops",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_phages",
+   "task": "detect",
+   "title": {
+    "ru": "Фаги под микроскопом",
+    "en": "Phages Microscopy"
+   },
+   "what": {
+    "ru": "Микроснимки; рамками отмечены активированные и неактивированные объекты.",
+    "en": "Micrographs; boxes mark activated and non-activated objects."
+   },
+   "learn": {
+    "ru": "Два близких класса на микроснимках",
+    "en": "Two close classes in micrographs"
+   },
+   "domain": "micro",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "phages",
+    "activated",
+    "non-activated"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/phages",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_valentines_chocolate",
+   "task": "detect",
+   "title": {
+    "ru": "Шоколадные конфеты",
+    "en": "Chocolates"
+   },
+   "what": {
+    "ru": "Фото коробки конфет; рамками отмечены конфеты разных видов.",
+    "en": "Photos of a chocolate box; boxes mark different kinds of chocolates."
+   },
+   "learn": {
+    "ru": "Много похожих классов, очень мало снимков",
+    "en": "Many similar classes, very few images"
+   },
+   "domain": "everyday",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 4,
+   "images": 68,
+   "classes": [
+    "valentines-chocolate",
+    "sees-dark-almond-nougat",
+    "sees-dark-almonds",
+    "sees-dark-bordeaux",
+    "sees-dark-caramel-patties",
+    "sees-dark-chocolate-buttercream",
+    "sees-dark-marzipan",
+    "sees-dark-normandie",
+    "sees-dark-scotchmallow",
+    "sees-dark-walnut-square",
+    "sees-milk-almond-caramel",
+    "sees-milk-almonds",
+    "sees-milk-beverly",
+    "sees-milk-bordeaux",
+    "sees-milk-butterscotch-square",
+    "sees-milk-california-brittle",
+    "sees-milk-chelsea",
+    "sees-milk-chocolate-buttercream",
+    "sees-milk-coconut-cream",
+    "sees-milk-mayfair",
+    "sees-milk-mocha",
+    "sees-milk-molasses-chips",
+    "sees-milk-rum-nougat"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/valentines-chocolate",
+    "subset": 68
+   }
+  },
+  {
+   "id": "rf_underwater_pipes_4ng4t",
+   "task": "detect",
+   "title": {
+    "ru": "Подводные трубы",
+    "en": "Underwater Pipes"
+   },
+   "what": {
+    "ru": "Подводные снимки; рамками отмечены трубы.",
+    "en": "Underwater images; boxes mark pipes."
+   },
+   "learn": {
+    "ru": "Один класс, подводные условия",
+    "en": "One class in underwater conditions"
+   },
+   "domain": "underwater",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "underwater-pipes",
+    "pipe"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/underwater-pipes-4ng4t",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_coral_lwptl",
+   "task": "detect",
+   "title": {
+    "ru": "Формы кораллов",
+    "en": "Coral Forms"
+   },
+   "what": {
+    "ru": "Подводные снимки; рамками отмечены кораллы разных форм роста.",
+    "en": "Underwater images; boxes mark corals of different growth forms."
+   },
+   "learn": {
+    "ru": "Много близких классов под водой",
+    "en": "Many similar classes underwater"
+   },
+   "domain": "underwater",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "coral",
+    "Arborescent",
+    "Caespitose-a",
+    "Caespitose-b",
+    "Columnar",
+    "Corymbose",
+    "Digitate",
+    "Encrusting",
+    "Foliose",
+    "Massive-Faviidae",
+    "Massive-Merulinidae",
+    "Massive-Mussidae",
+    "Massive-Poritidae",
+    "Solitary",
+    "Tabular"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/coral-lwptl",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_mask_wearing_608pr",
+   "task": "detect",
+   "title": {
+    "ru": "Маски на лицах",
+    "en": "Mask Wearing"
+   },
+   "what": {
+    "ru": "Фото людей; рамками отмечены лица в масках и без масок.",
+    "en": "Photos of people; boxes mark faces with and without masks."
+   },
+   "learn": {
+    "ru": "Простая задача для быстрого старта",
+    "en": "A simple task for a quick start"
+   },
+   "domain": "everyday",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 6,
+   "images": 105,
+   "classes": [
+    "mask-wearing",
+    "mask",
+    "no-mask"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/mask-wearing-608pr",
+    "subset": 105
+   }
+  },
+  {
+   "id": "rf_secondary_chains",
+   "task": "detect",
+   "title": {
+    "ru": "Цепи",
+    "en": "Chains"
+   },
+   "what": {
+    "ru": "Снимки оборудования; рамками отмечены цепи.",
+    "en": "Equipment images; boxes mark chains."
+   },
+   "learn": {
+    "ru": "Один класс, малая выборка",
+    "en": "One class, small sample"
+   },
+   "domain": "industrial",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 6,
+   "images": 103,
+   "classes": [
+    "secondary-chains",
+    "chain"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/secondary-chains",
+    "subset": 103
+   }
+  },
+  {
+   "id": "rf_peanuts_sd4kf",
+   "task": "detect",
+   "title": {
+    "ru": "Арахис: плесень",
+    "en": "Peanuts and Mould"
+   },
+   "what": {
+    "ru": "Фото арахиса; рамками отмечены орехи с плесенью и без.",
+    "en": "Peanut photos; boxes mark nuts with and without mould."
+   },
+   "learn": {
+    "ru": "Контроль качества продуктов",
+    "en": "Food quality control"
+   },
+   "domain": "nature",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 16,
+   "images": 268,
+   "classes": [
+    "peanuts",
+    "with mold",
+    "without mold"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/peanuts-sd4kf",
+    "subset": 268
+   }
+  },
+  {
+   "id": "rf_washroom_rf1fa",
+   "task": "detect",
+   "title": {
+    "ru": "Санузел",
+    "en": "Washroom Fixtures"
+   },
+   "what": {
+    "ru": "Фото ванных комнат; рамками отмечены ванны, раковины, унитазы и зеркала.",
+    "en": "Bathroom photos; boxes mark bathtubs, sinks, toilets and mirrors."
+   },
+   "learn": {
+    "ru": "Предметы интерьера в разных ракурсах",
+    "en": "Interior items from various viewpoints"
+   },
+   "domain": "everyday",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "washroom",
+    "bathtub",
+    "c",
+    "geyser",
+    "mirror",
+    "showerhead",
+    "sink",
+    "toilet",
+    "towel",
+    "washbasin",
+    "wc"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/washroom-rf1fa",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_sign_language_sokdr",
+   "task": "detect",
+   "title": {
+    "ru": "Язык жестов",
+    "en": "Sign Language"
+   },
+   "what": {
+    "ru": "Фото рук; рамками отмечены жесты, соответствующие буквам.",
+    "en": "Hand photos; boxes mark gestures that stand for letters."
+   },
+   "learn": {
+    "ru": "Много похожих классов (27)",
+    "en": "Many similar classes (27)"
+   },
+   "domain": "everyday",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "sign-language",
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "H",
+    "I",
+    "J",
+    "K",
+    "L",
+    "M",
+    "N",
+    "O",
+    "P",
+    "Q",
+    "R",
+    "S",
+    "T",
+    "U",
+    "V",
+    "W",
+    "X",
+    "Y",
+    "Z"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/sign-language-sokdr",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_aerial_spheres",
+   "task": "detect",
+   "title": {
+    "ru": "Шары с воздуха",
+    "en": "Aerial Spheres"
+   },
+   "what": {
+    "ru": "Снимки сверху; рамками отмечены цветные шары.",
+    "en": "Top-down images; boxes mark coloured spheres."
+   },
+   "learn": {
+    "ru": "Классы различаются только цветом",
+    "en": "Classes differ only by colour"
+   },
+   "domain": "aerial",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 18,
+   "images": 300,
+   "classes": [
+    "aerial-spheres",
+    "green_sphero",
+    "orange-sphero",
+    "orange_sphero",
+    "purple_sphero",
+    "red_sphero",
+    "yellow_sphero"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/aerial-spheres",
+    "subset": 300
+   }
+  },
+  {
+   "id": "rf_shark_teeth_5atku",
+   "task": "detect",
+   "title": {
+    "ru": "Зубы акул",
+    "en": "Shark Teeth"
+   },
+   "what": {
+    "ru": "Фото зубов; рамками отмечены зубы разных видов акул и их положение.",
+    "en": "Tooth photos; boxes mark teeth of different shark species and position."
+   },
+   "learn": {
+    "ru": "Небольшая выборка, близкие классы",
+    "en": "Small sample, close classes"
+   },
+   "domain": "nature",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 11,
+   "images": 191,
+   "classes": [
+    "teeth",
+    "Lower",
+    "Sand Tiger Shark",
+    "Snaggletooth Shark",
+    "Upper"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/shark-teeth-5atku",
+    "subset": 191
+   }
+  },
+  {
+   "id": "rf_sedimentary_features_9eosf",
+   "task": "detect",
+   "title": {
+    "ru": "Осадочные структуры",
+    "en": "Sedimentary Features"
+   },
+   "what": {
+    "ru": "Снимки породы; рамками отмечены слоистость и другие осадочные структуры.",
+    "en": "Rock images; boxes mark bedding and other sedimentary structures."
+   },
+   "learn": {
+    "ru": "Текстуры вместо отдельных объектов",
+    "en": "Textures instead of distinct objects"
+   },
+   "domain": "nature",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 9,
+   "images": 156,
+   "classes": [
+    "sediment",
+    "Cross bedding",
+    "Low angle",
+    "Massive",
+    "Parallel lamination",
+    "mud drape"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/sedimentary-features-9eosf",
+    "subset": 156
+   }
+  },
+  {
+   "id": "rf_avatar_recognition_nuexe",
+   "task": "detect",
+   "title": {
+    "ru": "Игровые аватары",
+    "en": "Game Avatars"
+   },
+   "what": {
+    "ru": "Игровые кадры; рамками отмечены персонажи.",
+    "en": "Game frames; boxes mark characters."
+   },
+   "learn": {
+    "ru": "Один класс в игровой сцене",
+    "en": "One class in a game scene"
+   },
+   "domain": "game",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 13,
+   "images": 225,
+   "classes": [
+    "avatar",
+    "Character"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/avatar-recognition-nuexe",
+    "subset": 225
+   }
+  },
+  {
+   "id": "rf_open_omniparser_dataset",
+   "task": "detect",
+   "title": {
+    "ru": "Элементы интерфейса",
+    "en": "UI Elements"
+   },
+   "what": {
+    "ru": "Скриншоты интерфейсов; рамками отмечены интерактивные элементы.",
+    "en": "Interface screenshots; boxes mark interactive elements."
+   },
+   "learn": {
+    "ru": "Много мелких объектов на экране",
+    "en": "Many small objects on screen"
+   },
+   "domain": "document",
+   "license": "CC BY 4.0 (Roboflow 100)",
+   "size_mb": 44,
+   "images": 300,
+   "classes": [
+    "interactive_element"
+   ],
+   "source": "huggingface",
+   "fetch": {
+    "type": "hf_rows",
+    "dataset": "Francesco/open-omniparser-dataset",
+    "subset": 300
+   }
+  }
+ ]
+}

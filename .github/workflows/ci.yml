@@ -23,6 +23,15 @@ jobs:
         env:
           PYTHONIOENCODING: utf-8
         run: python tests/test_tools.py
+      - name: Portable mode and language test
+        env:
+          PYTHONIOENCODING: utf-8
+          QT_QPA_PLATFORM: offscreen
+        run: python tests/test_portable.py
+      - name: Dataset catalog test
+        env:
+          PYTHONIOENCODING: utf-8
+        run: python tests/test_catalog.py
       - name: Netron viewer server test
         env:
           PYTHONIOENCODING: utf-8

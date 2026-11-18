@@ -1,0 +1,866 @@
+{
+ "activity-diagrams-qdobr": {
+  "title_ru": "Элементы UML-диаграмм",
+  "title_en": "UML Activity Diagrams",
+  "what_ru": "Изображения диаграмм деятельности; рамками отмечены узлы, действия и потоки управления.",
+  "what_en": "Images of activity diagrams; boxes mark nodes, actions and control flows.",
+  "learn_ru": "Много классов схематичных элементов",
+  "learn_en": "Many classes of schematic elements",
+  "domain": "document"
+ },
+ "construction-safety-gsnvb": {
+  "title_ru": "Безопасность на стройке",
+  "title_en": "Construction Safety",
+  "what_ru": "Фото рабочих на стройке; рамками отмечены люди, каски и жилеты, а также их отсутствие.",
+  "what_en": "Photos of construction workers; boxes mark people, helmets and vests, and their absence.",
+  "learn_ru": "Проверка наличия защитной экипировки",
+  "learn_en": "Checking for protective equipment",
+  "domain": "industrial"
+ },
+ "aquarium-qlnqy": {
+  "title_ru": "Аквариум: рыбы и пингвины",
+  "title_en": "Aquarium Animals",
+  "what_ru": "Снимки из аквариума; рамками отмечены рыбы, медузы, пингвины, акулы и другие обитатели.",
+  "what_en": "Aquarium photos; boxes mark fish, jellyfish, penguins, sharks and other animals.",
+  "learn_ru": "Небольшой набор разных животных",
+  "learn_en": "A small set of varied animals",
+  "domain": "nature"
+ },
+ "chess-pieces-mjzgj": {
+  "title_ru": "Шахматные фигуры",
+  "title_en": "Chess Pieces",
+  "what_ru": "Фото шахматной доски; рамками отмечены фигуры с учётом цвета и типа.",
+  "what_en": "Photos of a chessboard; boxes mark pieces by colour and type.",
+  "learn_ru": "Много похожих классов, мало снимков",
+  "learn_en": "Many similar classes, few images",
+  "domain": "everyday"
+ },
+ "x-ray-rheumatology": {
+  "title_ru": "Рентген кисти",
+  "title_en": "Hand X-ray Bones",
+  "what_ru": "Рентгеновские снимки кисти; рамками отмечены кости и артефакты.",
+  "what_en": "X-ray images of a hand; boxes mark individual bones and artefacts.",
+  "learn_ru": "Много анатомических классов на малой выборке",
+  "learn_en": "Many anatomical classes on a small sample",
+  "domain": "medical"
+ },
+ "vehicles-q0x2v": {
+  "title_ru": "Транспорт: автобусы и грузовики",
+  "title_en": "Vehicles",
+  "what_ru": "Снимки дорожного транспорта; рамками отмечены легковые, автобусы и грузовики разных размеров.",
+  "what_en": "Road traffic images; boxes mark cars, buses and trucks of different sizes.",
+  "learn_ru": "Классы различаются только размером",
+  "learn_en": "Classes differ mainly by size",
+  "domain": "everyday"
+ },
+ "cable-damage": {
+  "title_ru": "Повреждения кабеля",
+  "title_en": "Cable Damage",
+  "what_ru": "Снимки кабелей; рамками отмечены обрывы и другие повреждения.",
+  "what_en": "Images of cables; boxes mark breaks and other damage.",
+  "learn_ru": "Поиск дефектов на однотипном фоне",
+  "learn_en": "Defect search on a uniform background",
+  "domain": "industrial"
+ },
+ "axial-mri": {
+  "title_ru": "МРТ: аксиальные срезы",
+  "title_en": "Axial MRI Slices",
+  "what_ru": "Аксиальные срезы МРТ; рамками отмечены области с положительным или отрицательным признаком.",
+  "what_en": "Axial MRI slices; boxes mark regions labelled positive or negative.",
+  "learn_ru": "Медицинские изображения с минимумом классов",
+  "learn_en": "Medical images with very few classes",
+  "domain": "medical"
+ },
+ "flir-camera-objects": {
+  "title_ru": "Тепловизор: люди и машины",
+  "title_en": "FLIR Thermal Objects",
+  "what_ru": "Кадры тепловизионной камеры; рамками отмечены люди, велосипеды, машины и собаки.",
+  "what_en": "Thermal camera frames; boxes mark people, bicycles, cars and dogs.",
+  "learn_ru": "Большой датасет в тепловом спектре",
+  "learn_en": "A large dataset in the thermal spectrum",
+  "domain": "thermal"
+ },
+ "poker-cards-cxcvz": {
+  "title_ru": "Игральные карты",
+  "title_en": "Poker Cards",
+  "what_ru": "Фото игральных карт; рамками отмечена каждая карта с её достоинством и мастью.",
+  "what_en": "Photos of playing cards; boxes mark each card by rank and suit.",
+  "learn_ru": "Очень много классов (54)",
+  "learn_en": "A very large number of classes (54)",
+  "domain": "everyday"
+ },
+ "thermal-dogs-and-people-x6ejw": {
+  "title_ru": "Тепловизор: собаки и люди",
+  "title_en": "Thermal Dogs and People",
+  "what_ru": "Тепловые снимки; рамками отмечены собаки и люди.",
+  "what_en": "Thermal images; boxes mark dogs and people.",
+  "learn_ru": "Съёмка в необычном спектре, мало данных",
+  "learn_en": "Unusual spectrum and little data",
+  "domain": "thermal"
+ },
+ "apex-videogame": {
+  "title_ru": "Apex: игровые кадры",
+  "title_en": "Apex Legends Frames",
+  "what_ru": "Кадры из шутера; рамками отмечены персонажи и игровые объекты.",
+  "what_en": "Shooter game frames; boxes mark characters and in-game objects.",
+  "learn_ru": "Детекция в динамичных игровых сценах",
+  "learn_en": "Detection in fast-paced game scenes",
+  "domain": "game"
+ },
+ "solar-panels-taxvb": {
+  "title_ru": "Солнечные панели",
+  "title_en": "Solar Panels",
+  "what_ru": "Снимки солнечных панелей; рамками отмечены ячейки, тени и аномалии.",
+  "what_en": "Solar panel images; boxes mark cells, shadows and anomalies.",
+  "learn_ru": "Поиск дефектов в регулярной структуре",
+  "learn_en": "Finding defects in a regular structure",
+  "domain": "industrial"
+ },
+ "insects-mytwu": {
+  "title_ru": "Насекомые-вредители",
+  "title_en": "Insect Pests",
+  "what_ru": "Фото насекомых на растениях; рамками отмечены виды вредителей.",
+  "what_en": "Photos of insects on plants; boxes mark pest species.",
+  "learn_ru": "Мелкие объекты, похожие виды",
+  "learn_en": "Small objects and similar species",
+  "domain": "nature"
+ },
+ "currency-v4f8j": {
+  "title_ru": "Монеты и банкноты",
+  "title_en": "Coins and Banknotes",
+  "what_ru": "Фото денег; рамками отмечены монеты и банкноты разного номинала.",
+  "what_en": "Photos of money; boxes mark coins and banknotes of various values.",
+  "learn_ru": "Классы различаются номиналом",
+  "learn_en": "Classes differ by denomination",
+  "domain": "everyday"
+ },
+ "brain-tumor-m2pbp": {
+  "title_ru": "МРТ головного мозга",
+  "title_en": "Brain MRI",
+  "what_ru": "Снимки МРТ головного мозга; рамками отмечены области трёх типов.",
+  "what_en": "Brain MRI images; boxes mark regions of three types.",
+  "learn_ru": "Большой медицинский датасет",
+  "learn_en": "A large medical dataset",
+  "domain": "medical"
+ },
+ "corrosion-bi3q3": {
+  "title_ru": "Коррозия и трещины",
+  "title_en": "Corrosion and Cracks",
+  "what_ru": "Снимки поверхностей; рамками отмечены коррозия, трещины и смещения.",
+  "what_en": "Surface images; boxes mark corrosion, cracks and slippage.",
+  "learn_ru": "Дефекты неправильной формы",
+  "learn_en": "Irregularly shaped defects",
+  "domain": "industrial"
+ },
+ "signatures-xc8up": {
+  "title_ru": "Подписи в документах",
+  "title_en": "Document Signatures",
+  "what_ru": "Изображения документов; рамками отмечены подписи.",
+  "what_en": "Document images; boxes mark signatures.",
+  "learn_ru": "Один класс на текстовом фоне",
+  "learn_en": "A single class on a text background",
+  "domain": "document"
+ },
+ "pests-2xlvx": {
+  "title_ru": "Вредители сельского хозяйства",
+  "title_en": "Agricultural Pests",
+  "what_ru": "Фото насекомых-вредителей; рамками отмечены виды бабочек и жуков.",
+  "what_en": "Photos of agricultural pest insects; boxes mark moth and beetle species.",
+  "learn_ru": "Много близких видов (29 классов)",
+  "learn_en": "Many close species (29 classes)",
+  "domain": "nature"
+ },
+ "csgo-videogame": {
+  "title_ru": "CS:GO: игроки",
+  "title_en": "CS:GO Players",
+  "what_ru": "Кадры из шутера; рамками отмечены игроки двух команд.",
+  "what_en": "Shooter game frames; boxes mark players of the two teams.",
+  "learn_ru": "Различение классов по цвету и форме",
+  "learn_en": "Telling classes apart by colour and shape",
+  "domain": "game"
+ },
+ "bacteria-ptywi": {
+  "title_ru": "Бактерии под микроскопом",
+  "title_en": "Bacteria Microscopy",
+  "what_ru": "Микроскопические снимки; рамками отмечены бактерии одного вида.",
+  "what_en": "Microscope images; boxes mark bacteria of a single species.",
+  "learn_ru": "Очень малая выборка",
+  "learn_en": "A very small sample",
+  "domain": "micro"
+ },
+ "bccd-ouzjz": {
+  "title_ru": "Клетки крови",
+  "title_en": "Blood Cells",
+  "what_ru": "Микроснимки мазка крови; рамками отмечены тромбоциты, эритроциты и лейкоциты.",
+  "what_en": "Blood smear micrographs; boxes mark platelets, red and white cells.",
+  "learn_ru": "Много мелких объектов в кадре",
+  "learn_en": "Many small objects per frame",
+  "domain": "micro"
+ },
+ "4-fold-defect": {
+  "title_ru": "Дефекты складок",
+  "title_en": "Fold Defects",
+  "what_ru": "Снимки изделий; рамками отмечены дефекты типа сложения.",
+  "what_en": "Product images; boxes mark fold-type defects.",
+  "learn_ru": "Один редкий тип дефекта",
+  "learn_en": "A single rare defect type",
+  "domain": "industrial"
+ },
+ "coins-1apki": {
+  "title_ru": "Монеты и крепёж",
+  "title_en": "Coins and Hardware",
+  "what_ru": "Фото предметов на столе; рамками отмечены монеты, гвозди, гайки и винты.",
+  "what_en": "Photos of objects on a surface; boxes mark coins, nails, nuts and screws.",
+  "learn_ru": "Мелкие предметы одного масштаба",
+  "learn_en": "Small objects at a similar scale",
+  "domain": "everyday"
+ },
+ "aerial-cows": {
+  "title_ru": "Коровы с воздуха",
+  "title_en": "Aerial Cows",
+  "what_ru": "Аэросъёмка пастбищ; рамками отмечены коровы.",
+  "what_en": "Aerial pasture images; boxes mark cows.",
+  "learn_ru": "Мелкие объекты на снимках сверху",
+  "learn_en": "Small objects in top-down images",
+  "domain": "aerial"
+ },
+ "weed-crop-aerial": {
+  "title_ru": "Сорняки и посевы",
+  "title_en": "Weeds and Crops",
+  "what_ru": "Аэроснимки полей; рамками отмечены культурные растения и сорняки.",
+  "what_en": "Aerial field images; boxes mark crop plants and weeds.",
+  "learn_ru": "Похожие по виду классы на однородном фоне",
+  "learn_en": "Similar-looking classes on a uniform background",
+  "domain": "aerial"
+ },
+ "tweeter-posts": {
+  "title_ru": "Посты в соцсети",
+  "title_en": "Social Media Posts",
+  "what_ru": "Скриншоты ленты; рамками отмечены посты и подписи.",
+  "what_en": "Feed screenshots; boxes mark posts and captions.",
+  "learn_ru": "Детекция элементов интерфейса",
+  "learn_en": "Detecting interface elements",
+  "domain": "document"
+ },
+ "halo-infinite-angel-videogame": {
+  "title_ru": "Halo Infinite: враги и союзники",
+  "title_en": "Halo Infinite",
+  "what_ru": "Кадры из шутера; рамками отмечены враги, союзники и их головы.",
+  "what_en": "Shooter frames; boxes mark enemies, allies and their heads.",
+  "learn_ru": "Мелкие части объектов как отдельные классы",
+  "learn_en": "Small object parts as separate classes",
+  "domain": "game"
+ },
+ "circuit-elements": {
+  "title_ru": "Элементы электросхем",
+  "title_en": "Circuit Elements",
+  "what_ru": "Изображения плат или схем; рамками отмечены электронные компоненты.",
+  "what_en": "Circuit or board images; boxes mark electronic components.",
+  "learn_ru": "Много классов компонентов (32)",
+  "learn_en": "Many component classes (32)",
+  "domain": "industrial"
+ },
+ "printed-circuit-board": {
+  "title_ru": "Печатная плата",
+  "title_en": "Printed Circuit Board",
+  "what_ru": "Снимки печатных плат; рамками отмечены компоненты вроде конденсаторов и диодов.",
+  "what_en": "Printed circuit board images; boxes mark components such as capacitors and diodes.",
+  "learn_ru": "Много мелких похожих компонентов",
+  "learn_en": "Many small similar components",
+  "domain": "industrial"
+ },
+ "peixos-fish": {
+  "title_ru": "Рыбы и пятна",
+  "title_en": "Fish and Spots",
+  "what_ru": "Снимки рыб; рамками отмечены рыбы и пятна на них.",
+  "what_en": "Fish images; boxes mark fish and spots.",
+  "learn_ru": "Объекты разного масштаба",
+  "learn_en": "Objects at different scales",
+  "domain": "nature"
+ },
+ "animals-ij5d2": {
+  "title_ru": "Домашние животные",
+  "title_en": "Farm and Pet Animals",
+  "what_ru": "Фото животных; рамками отмечены кошки, собаки, коровы, лошади и другие.",
+  "what_en": "Animal photos; boxes mark cats, dogs, cows, horses and others.",
+  "learn_ru": "Классический набор для первого обучения",
+  "learn_en": "A classic set for a first training run",
+  "domain": "nature"
+ },
+ "underwater-objects-5v7p8": {
+  "title_ru": "Подводные объекты",
+  "title_en": "Underwater Objects",
+  "what_ru": "Подводные снимки; рамками отмечены морские ежи, голотурии, гребешки и морские звёзды.",
+  "what_en": "Underwater images; boxes mark sea urchins, sea cucumbers, scallops and starfish.",
+  "learn_ru": "Плохая видимость и маскировка объектов",
+  "learn_en": "Poor visibility and camouflaged objects",
+  "domain": "underwater"
+ },
+ "digits-t2eg6": {
+  "title_ru": "Рукописные цифры",
+  "title_en": "Digits",
+  "what_ru": "Изображения цифр; рамками отмечены цифры от 0 до 9.",
+  "what_en": "Images of digits; boxes mark digits from 0 to 9.",
+  "learn_ru": "Классификация символов внутри детектора",
+  "learn_en": "Character classification inside a detector",
+  "domain": "document"
+ },
+ "road-traffic": {
+  "title_ru": "Дорожная обстановка",
+  "title_en": "Road Traffic",
+  "what_ru": "Уличные снимки; рамками отмечены автобусы, мотоциклы, светофоры, пешеходные переходы и гидранты.",
+  "what_en": "Street images; boxes mark buses, motorcycles, traffic lights, crosswalks and hydrants.",
+  "learn_ru": "Объекты разного размера в городской сцене",
+  "learn_en": "Objects of different sizes in a city scene",
+  "domain": "everyday"
+ },
+ "road-signs-6ih4y": {
+  "title_ru": "Дорожные знаки",
+  "title_en": "Road Signs",
+  "what_ru": "Снимки дорог; рамками отмечены дорожные знаки разных типов.",
+  "what_en": "Road images; boxes mark traffic signs of various types.",
+  "learn_ru": "Много похожих классов знаков",
+  "learn_en": "Many similar sign classes",
+  "domain": "everyday"
+ },
+ "marbles": {
+  "title_ru": "Стеклянные шарики",
+  "title_en": "Marbles",
+  "what_ru": "Фото шариков; рамками отмечены красные и белые шарики.",
+  "what_en": "Photos of marbles; boxes mark red and white marbles.",
+  "learn_ru": "Очень маленький датасет, различие по цвету",
+  "learn_en": "A tiny dataset where colour is the cue",
+  "domain": "everyday"
+ },
+ "gynecology-mri": {
+  "title_ru": "МРТ малого таза",
+  "title_en": "Pelvic MRI",
+  "what_ru": "Срезы МРТ органов малого таза; рамками отмечены области нескольких типов.",
+  "what_en": "Pelvic MRI slices; boxes mark regions of several types.",
+  "learn_ru": "Крупный медицинский набор с редкими метками",
+  "learn_en": "A large medical set with sparse labels",
+  "domain": "medical"
+ },
+ "abdomen-mri": {
+  "title_ru": "МРТ брюшной полости",
+  "title_en": "Abdominal MRI",
+  "what_ru": "Срезы МРТ брюшной полости; рамками отмечены области интереса.",
+  "what_en": "Abdominal MRI slices; boxes mark regions of interest.",
+  "learn_ru": "Один класс при большом числе снимков",
+  "learn_en": "One class with many images",
+  "domain": "medical"
+ },
+ "document-parts": {
+  "title_ru": "Части документа",
+  "title_en": "Document Parts",
+  "what_ru": "Изображения страниц; рамками отмечены таблицы и заголовки.",
+  "what_en": "Page images; boxes mark tables and titles.",
+  "learn_ru": "Структура документа как задача детекции",
+  "learn_en": "Document layout as a detection task",
+  "domain": "document"
+ },
+ "acl-x-ray": {
+  "title_ru": "Рентген колена",
+  "title_en": "Knee X-ray",
+  "what_ru": "Рентгеновские снимки колена; рамками отмечена область связки.",
+  "what_en": "Knee X-ray images; boxes mark the ligament region.",
+  "learn_ru": "Один класс, медицинские снимки",
+  "learn_en": "A single class on medical images",
+  "domain": "medical"
+ },
+ "soda-bottles": {
+  "title_ru": "Бутылки газировки",
+  "title_en": "Soda Bottles",
+  "what_ru": "Фото бутылок; рамками отмечены бутылки по бренду напитка.",
+  "what_en": "Bottle photos; boxes mark bottles by drink brand.",
+  "learn_ru": "Классы различаются этикеткой",
+  "learn_en": "Classes differ by label",
+  "domain": "everyday"
+ },
+ "mitosis-gjs3g": {
+  "title_ru": "Деление клеток",
+  "title_en": "Cell Mitosis",
+  "what_ru": "Микроснимки тканей; рамками отмечены клетки в стадии митоза.",
+  "what_en": "Tissue micrographs; boxes mark cells in mitosis.",
+  "learn_ru": "Редкие мелкие объекты",
+  "learn_en": "Rare small objects",
+  "domain": "micro"
+ },
+ "wine-labels": {
+  "title_ru": "Винные этикетки",
+  "title_en": "Wine Labels",
+  "what_ru": "Фото этикеток; рамками отмечены текстовые и графические элементы этикетки.",
+  "what_en": "Label photos; boxes mark text and graphic elements of the label.",
+  "learn_ru": "Разметка блоков текста на изображении",
+  "learn_en": "Labelling text blocks within an image",
+  "domain": "document"
+ },
+ "pills-sxdht": {
+  "title_ru": "Таблетки",
+  "title_en": "Pills",
+  "what_ru": "Фото таблеток; рамками отмечены разные виды таблеток.",
+  "what_en": "Photos of pills; boxes mark different kinds of pills.",
+  "learn_ru": "Различение по цвету и надписи",
+  "learn_en": "Telling classes apart by colour and print",
+  "domain": "everyday"
+ },
+ "grass-weeds": {
+  "title_ru": "Сорняки в траве",
+  "title_en": "Weeds in Grass",
+  "what_ru": "Снимки газонов; рамками отмечены сорняки.",
+  "what_en": "Lawn images; boxes mark weeds.",
+  "learn_ru": "Объект сливается с фоном",
+  "learn_en": "The object blends into the background",
+  "domain": "nature"
+ },
+ "paper-parts": {
+  "title_ru": "Части научной статьи",
+  "title_en": "Paper Parts",
+  "what_ru": "Страницы научных статей; рамками отмечены авторы, формулы, рисунки и сноски.",
+  "what_en": "Scientific paper pages; boxes mark authors, equations, figures and footnotes.",
+  "learn_ru": "Большой набор для анализа вёрстки",
+  "learn_en": "A large set for page layout analysis",
+  "domain": "document"
+ },
+ "bone-fracture-7fylg": {
+  "title_ru": "Переломы костей",
+  "title_en": "Bone Fractures",
+  "what_ru": "Рентгеновские снимки; рамками отмечены переломы и связанные линии.",
+  "what_en": "X-ray images; boxes mark fractures and related lines.",
+  "learn_ru": "Тонкие признаки на малой выборке",
+  "learn_en": "Subtle cues in a small sample",
+  "domain": "medical"
+ },
+ "cells-uyemf": {
+  "title_ru": "Клетки",
+  "title_en": "Cells",
+  "what_ru": "Микроснимки; рамками отмечены клетки.",
+  "what_en": "Micrographs; boxes mark cells.",
+  "learn_ru": "Минимальный датасет для быстрого теста",
+  "learn_en": "A minimal dataset for a quick test",
+  "domain": "micro"
+ },
+ "aerial-pool": {
+  "title_ru": "Бассейн с воздуха",
+  "title_en": "Aerial Pool",
+  "what_ru": "Снимки сверху у бассейна; рамками отмечены люди в шапочках, тела и судья.",
+  "what_en": "Top-down pool images; boxes mark people in caps, bodies and the umpire.",
+  "learn_ru": "Нестандартный ракурс сверху",
+  "learn_en": "An unusual top-down viewpoint",
+  "domain": "aerial"
+ },
+ "street-work": {
+  "title_ru": "Дорожные работы и защита",
+  "title_en": "Street Work Safety",
+  "what_ru": "Снимки рабочих на дороге; рамками отмечены конусы, каски, перчатки и очки.",
+  "what_en": "Road worker images; boxes mark cones, helmets, gloves and goggles.",
+  "learn_ru": "Мелкие предметы экипировки",
+  "learn_en": "Small items of equipment",
+  "domain": "industrial"
+ },
+ "thermal-cheetah-my4dp": {
+  "title_ru": "Тепловизор: гепарды и люди",
+  "title_en": "Thermal Cheetahs",
+  "what_ru": "Тепловые снимки; рамками отмечены гепарды и люди.",
+  "what_en": "Thermal images; boxes mark cheetahs and people.",
+  "learn_ru": "Тепловой спектр и малая выборка",
+  "learn_en": "Thermal spectrum and a small sample",
+  "domain": "thermal"
+ },
+ "trail-camera": {
+  "title_ru": "Фотоловушка: олени и кабаны",
+  "title_en": "Trail Camera Animals",
+  "what_ru": "Кадры фотоловушки; рамками отмечены олени и кабаны.",
+  "what_en": "Trail camera frames; boxes mark deer and hogs.",
+  "learn_ru": "Дикая природа и ночная съёмка",
+  "learn_en": "Wildlife and low-light capture",
+  "domain": "nature"
+ },
+ "asbestos": {
+  "title_ru": "Асбест под микроскопом",
+  "title_en": "Asbestos Fibres",
+  "what_ru": "Микроснимки; рамками отмечены волокна и отметки разной толщины и тона.",
+  "what_en": "Micrographs; boxes mark marks of different thickness and tone.",
+  "learn_ru": "Классы различаются тонкими признаками",
+  "learn_en": "Classes differ by subtle features",
+  "domain": "micro"
+ },
+ "circuit-voltages": {
+  "title_ru": "Электросхемы: напряжения",
+  "title_en": "Circuit Voltages",
+  "what_ru": "Изображения схем; рамками отмечены источники, резисторы и земля.",
+  "what_en": "Circuit diagram images; boxes mark sources, resistors and ground.",
+  "learn_ru": "Символы схем на малой выборке",
+  "learn_en": "Schematic symbols in a small sample",
+  "domain": "industrial"
+ },
+ "lettuce-pallets": {
+  "title_ru": "Салат на поддонах",
+  "title_en": "Lettuce Pallets",
+  "what_ru": "Снимки гидропонных поддонов; рамками отмечены ростки, пустые ячейки и зрелые растения.",
+  "what_en": "Hydroponic tray images; boxes mark seedlings, empty pods and mature plants.",
+  "learn_ru": "Стадии роста как классы",
+  "learn_en": "Growth stages as classes",
+  "domain": "nature"
+ },
+ "wall-damage": {
+  "title_ru": "Повреждения стен",
+  "title_en": "Wall Damage",
+  "what_ru": "Снимки стен; рамками отмечены повреждения разной степени.",
+  "what_en": "Wall images; boxes mark damage of different severity.",
+  "learn_ru": "Классы - это степень, а не вид объекта",
+  "learn_en": "Classes describe severity, not object type",
+  "domain": "industrial"
+ },
+ "furniture-ngpea": {
+  "title_ru": "Мебель",
+  "title_en": "Furniture",
+  "what_ru": "Фото интерьеров; рамками отмечены стулья, диваны и столы.",
+  "what_en": "Interior photos; boxes mark chairs, sofas and tables.",
+  "learn_ru": "Простой набор для старта",
+  "learn_en": "A simple set to get started",
+  "domain": "everyday"
+ },
+ "cotton-plant-disease": {
+  "title_ru": "Болезни хлопка",
+  "title_en": "Cotton Plant Disease",
+  "what_ru": "Снимки хлопчатника; рамками отмечены поражённые участки.",
+  "what_en": "Cotton plant images; boxes mark affected areas.",
+  "learn_ru": "Один класс, природный фон",
+  "learn_en": "One class on a natural background",
+  "domain": "nature"
+ },
+ "tweeter-profile": {
+  "title_ru": "Профили в соцсети",
+  "title_en": "Social Profiles",
+  "what_ru": "Скриншоты профилей; рамками отмечены блоки информации профиля.",
+  "what_en": "Profile screenshots; boxes mark profile information blocks.",
+  "learn_ru": "Элементы интерфейса как объекты",
+  "learn_en": "Interface elements as objects",
+  "domain": "document"
+ },
+ "cloud-types": {
+  "title_ru": "Типы облаков",
+  "title_en": "Cloud Types",
+  "what_ru": "Спутниковые снимки облаков; рамками отмечены образования типа Fish, Flower, Gravel и Sugar.",
+  "what_en": "Satellite cloud images; boxes mark Fish, Flower, Gravel and Sugar patterns.",
+  "learn_ru": "Крупные размытые объекты без чётких границ",
+  "learn_en": "Large fuzzy objects with no sharp edges",
+  "domain": "aerial"
+ },
+ "cables-nl42k": {
+  "title_ru": "Кабели и оборудование",
+  "title_en": "Cables and Equipment",
+  "what_ru": "Фото телеком-оборудования; рамками отмечены блоки и разъёмы.",
+  "what_en": "Telecom equipment photos; boxes mark units and connectors.",
+  "learn_ru": "Много узкоспециальных классов",
+  "learn_en": "Many specialised classes",
+  "domain": "industrial"
+ },
+ "leaf-disease-nsdsr": {
+  "title_ru": "Болезни листьев роз",
+  "title_en": "Rose Leaf Disease",
+  "what_ru": "Снимки листьев; рамками отмечены признаки болезней, например мучнистая роса.",
+  "what_en": "Leaf images; boxes mark disease signs such as mildew.",
+  "learn_ru": "Распознавание болезней растений",
+  "learn_en": "Recognising plant diseases",
+  "domain": "nature"
+ },
+ "cavity-rs0uf": {
+  "title_ru": "Кариес на снимках",
+  "title_en": "Dental Cavities",
+  "what_ru": "Стоматологические снимки; рамками отмечены полости и здоровые зубы.",
+  "what_en": "Dental images; boxes mark cavities and normal teeth.",
+  "learn_ru": "Небольшие области на медицинских снимках",
+  "learn_en": "Small regions in medical images",
+  "domain": "medical"
+ },
+ "soccer-players-5fuqs": {
+  "title_ru": "Футбол: игроки",
+  "title_en": "Soccer Players",
+  "what_ru": "Кадры футбольных матчей; рамками отмечены мяч, игроки и судья.",
+  "what_en": "Soccer match frames; boxes mark the ball, players and referee.",
+  "learn_ru": "Очень мелкий мяч среди игроков",
+  "learn_en": "A tiny ball among many players",
+  "domain": "everyday"
+ },
+ "hand-gestures-jps7z": {
+  "title_ru": "Жесты рук",
+  "title_en": "Hand Gestures",
+  "what_ru": "Фото рук; рамками отмечены жесты, соответствующие цифрам.",
+  "what_en": "Hand photos; boxes mark gestures that stand for numbers.",
+  "learn_ru": "Много похожих классов (жесты)",
+  "learn_en": "Many similar gesture classes",
+  "domain": "everyday"
+ },
+ "excavators-czvg9": {
+  "title_ru": "Строительная техника",
+  "title_en": "Construction Machines",
+  "what_ru": "Снимки стройплощадок; рамками отмечены экскаваторы, самосвалы и погрузчики.",
+  "what_en": "Construction site images; boxes mark excavators, dump trucks and loaders.",
+  "learn_ru": "Крупные объекты сложной формы",
+  "learn_en": "Large objects with complex shapes",
+  "domain": "industrial"
+ },
+ "cell-towers": {
+  "title_ru": "Вышки связи",
+  "title_en": "Cell Tower Parts",
+  "what_ru": "Снимки вышек; рамками отмечены стыки и боковые элементы конструкции.",
+  "what_en": "Tower images; boxes mark joints and side elements of the structure.",
+  "learn_ru": "Тонкие конструкции на небе",
+  "learn_en": "Thin structures against the sky",
+  "domain": "industrial"
+ },
+ "apples-fvpl5": {
+  "title_ru": "Яблоки",
+  "title_en": "Apples",
+  "what_ru": "Фото яблок; рамками отмечены целые и повреждённые яблоки.",
+  "what_en": "Apple photos; boxes mark intact and damaged apples.",
+  "learn_ru": "Контроль качества по внешнему виду",
+  "learn_en": "Quality control by appearance",
+  "domain": "nature"
+ },
+ "people-in-paintings": {
+  "title_ru": "Люди на картинах",
+  "title_en": "People in Paintings",
+  "what_ru": "Фото картин; рамками отмечены нарисованные люди.",
+  "what_en": "Photos of paintings; boxes mark painted people.",
+  "learn_ru": "Нестандартный стиль изображений",
+  "learn_en": "Unusual image style",
+  "domain": "everyday"
+ },
+ "bees-jt5in": {
+  "title_ru": "Пчёлы",
+  "title_en": "Bees",
+  "what_ru": "Фото пчёл; рамками отмечены отдельные пчёлы.",
+  "what_en": "Photos of bees; boxes mark individual bees.",
+  "learn_ru": "Много мелких объектов, большой датасет",
+  "learn_en": "Many small objects and a large dataset",
+  "domain": "nature"
+ },
+ "truck-movement": {
+  "title_ru": "Движение грузовиков в порту",
+  "title_en": "Truck Movement",
+  "what_ru": "Снимки терминала; рамками отмечены шасси, люди и штабелёры.",
+  "what_en": "Terminal images; boxes mark chassis, people and stackers.",
+  "learn_ru": "Состояние объекта как отдельный класс",
+  "learn_en": "Object state as a separate class",
+  "domain": "industrial"
+ },
+ "liver-disease": {
+  "title_ru": "Печень: гистология",
+  "title_en": "Liver Histology",
+  "what_ru": "Гистологические снимки печени; рамками отмечены морфологические признаки.",
+  "what_en": "Liver histology images; boxes mark morphological features.",
+  "learn_ru": "Крупная выборка, специфичные классы",
+  "learn_en": "A large sample with specialised classes",
+  "domain": "micro"
+ },
+ "parasites-1s07h": {
+  "title_ru": "Паразиты под микроскопом",
+  "title_en": "Parasites Microscopy",
+  "what_ru": "Микроснимки; рамками отмечены яйца и формы паразитов разных видов.",
+  "what_en": "Micrographs; boxes mark eggs and forms of different parasite species.",
+  "learn_ru": "Редкие похожие классы",
+  "learn_en": "Rare and similar classes",
+  "domain": "micro"
+ },
+ "farcry6-videogame": {
+  "title_ru": "Far Cry 6: объекты",
+  "title_en": "Far Cry 6",
+  "what_ru": "Кадры из игры; рамками отмечены персонажи, транспорт, оружие и элементы интерфейса.",
+  "what_en": "Game frames; boxes mark characters, vehicles, weapons and interface items.",
+  "learn_ru": "Разные объекты на малой выборке",
+  "learn_en": "Varied objects in a small sample",
+  "domain": "game"
+ },
+ "stomata-cells": {
+  "title_ru": "Устьица растений",
+  "title_en": "Plant Stomata",
+  "what_ru": "Микроснимки листа; рамками отмечены открытые и закрытые устьица.",
+  "what_en": "Leaf micrographs; boxes mark open and closed stomata.",
+  "learn_ru": "Состояние объекта как класс",
+  "learn_en": "Object state as the class",
+  "domain": "micro"
+ },
+ "fish-market-ggjso": {
+  "title_ru": "Рыбный рынок",
+  "title_en": "Fish Market",
+  "what_ru": "Фото рыб на рынке; рамками отмечены виды рыб.",
+  "what_en": "Photos of fish at a market; boxes mark fish species.",
+  "learn_ru": "Большой датасет, много видов",
+  "learn_en": "A large dataset with many species",
+  "domain": "nature"
+ },
+ "team-fight-tactics": {
+  "title_ru": "Team Fight Tactics: персонажи",
+  "title_en": "Team Fight Tactics",
+  "what_ru": "Кадры игры; рамками отмечены персонажи.",
+  "what_en": "Game frames; boxes mark characters.",
+  "learn_ru": "Очень много классов (60)",
+  "learn_en": "A very large number of classes (60)",
+  "domain": "game"
+ },
+ "robomasters-285km": {
+  "title_ru": "Роботы RoboMaster",
+  "title_en": "RoboMaster Robots",
+  "what_ru": "Кадры соревнований роботов; рамками отмечены роботы, броня и цели.",
+  "what_en": "Robot competition frames; boxes mark robots, armour and targets.",
+  "learn_ru": "Быстрые объекты и несколько типов целей",
+  "learn_en": "Fast-moving objects and several target types",
+  "domain": "everyday"
+ },
+ "smoke-uvylj": {
+  "title_ru": "Дым",
+  "title_en": "Smoke",
+  "what_ru": "Снимки местности; рамками отмечен дым.",
+  "what_en": "Scene images; boxes mark smoke.",
+  "learn_ru": "Объект без чёткой формы",
+  "learn_en": "An object without a clear shape",
+  "domain": "nature"
+ },
+ "cotton-20xz5": {
+  "title_ru": "Виды хлопчатника",
+  "title_en": "Cotton Species",
+  "what_ru": "Снимки растений; рамками отмечены виды хлопчатника.",
+  "what_en": "Plant images; boxes mark cotton species.",
+  "learn_ru": "Близкие виды растений",
+  "learn_en": "Closely related plant species",
+  "domain": "nature"
+ },
+ "number-ops": {
+  "title_ru": "Числа и операции",
+  "title_en": "Numbers and Operations",
+  "what_ru": "Изображения выражений; рамками отмечены цифры и знаки операций.",
+  "what_en": "Expression images; boxes mark digits and operation symbols.",
+  "learn_ru": "Символы в строке, много классов",
+  "learn_en": "Symbols in a line, many classes",
+  "domain": "document"
+ },
+ "phages": {
+  "title_ru": "Фаги под микроскопом",
+  "title_en": "Phages Microscopy",
+  "what_ru": "Микроснимки; рамками отмечены активированные и неактивированные объекты.",
+  "what_en": "Micrographs; boxes mark activated and non-activated objects.",
+  "learn_ru": "Два близких класса на микроснимках",
+  "learn_en": "Two close classes in micrographs",
+  "domain": "micro"
+ },
+ "valentines-chocolate": {
+  "title_ru": "Шоколадные конфеты",
+  "title_en": "Chocolates",
+  "what_ru": "Фото коробки конфет; рамками отмечены конфеты разных видов.",
+  "what_en": "Photos of a chocolate box; boxes mark different kinds of chocolates.",
+  "learn_ru": "Много похожих классов, очень мало снимков",
+  "learn_en": "Many similar classes, very few images",
+  "domain": "everyday"
+ },
+ "underwater-pipes-4ng4t": {
+  "title_ru": "Подводные трубы",
+  "title_en": "Underwater Pipes",
+  "what_ru": "Подводные снимки; рамками отмечены трубы.",
+  "what_en": "Underwater images; boxes mark pipes.",
+  "learn_ru": "Один класс, подводные условия",
+  "learn_en": "One class in underwater conditions",
+  "domain": "underwater"
+ },
+ "coral-lwptl": {
+  "title_ru": "Формы кораллов",
+  "title_en": "Coral Forms",
+  "what_ru": "Подводные снимки; рамками отмечены кораллы разных форм роста.",
+  "what_en": "Underwater images; boxes mark corals of different growth forms.",
+  "learn_ru": "Много близких классов под водой",
+  "learn_en": "Many similar classes underwater",
+  "domain": "underwater"
+ },
+ "mask-wearing-608pr": {
+  "title_ru": "Маски на лицах",
+  "title_en": "Mask Wearing",
+  "what_ru": "Фото людей; рамками отмечены лица в масках и без масок.",
+  "what_en": "Photos of people; boxes mark faces with and without masks.",
+  "learn_ru": "Простая задача для быстрого старта",
+  "learn_en": "A simple task for a quick start",
+  "domain": "everyday"
+ },
+ "secondary-chains": {
+  "title_ru": "Цепи",
+  "title_en": "Chains",
+  "what_ru": "Снимки оборудования; рамками отмечены цепи.",
+  "what_en": "Equipment images; boxes mark chains.",
+  "learn_ru": "Один класс, малая выборка",
+  "learn_en": "One class, small sample",
+  "domain": "industrial"
+ },
+ "peanuts-sd4kf": {
+  "title_ru": "Арахис: плесень",
+  "title_en": "Peanuts and Mould",
+  "what_ru": "Фото арахиса; рамками отмечены орехи с плесенью и без.",
+  "what_en": "Peanut photos; boxes mark nuts with and without mould.",
+  "learn_ru": "Контроль качества продуктов",
+  "learn_en": "Food quality control",
+  "domain": "nature"
+ },
+ "washroom-rf1fa": {
+  "title_ru": "Санузел",
+  "title_en": "Washroom Fixtures",
+  "what_ru": "Фото ванных комнат; рамками отмечены ванны, раковины, унитазы и зеркала.",
+  "what_en": "Bathroom photos; boxes mark bathtubs, sinks, toilets and mirrors.",
+  "learn_ru": "Предметы интерьера в разных ракурсах",
+  "learn_en": "Interior items from various viewpoints",
+  "domain": "everyday"
+ },
+ "sign-language-sokdr": {
+  "title_ru": "Язык жестов",
+  "title_en": "Sign Language",
+  "what_ru": "Фото рук; рамками отмечены жесты, соответствующие буквам.",
+  "what_en": "Hand photos; boxes mark gestures that stand for letters.",
+  "learn_ru": "Много похожих классов (27)",
+  "learn_en": "Many similar classes (27)",
+  "domain": "everyday"
+ },
+ "aerial-spheres": {
+  "title_ru": "Шары с воздуха",
+  "title_en": "Aerial Spheres",
+  "what_ru": "Снимки сверху; рамками отмечены цветные шары.",
+  "what_en": "Top-down images; boxes mark coloured spheres.",
+  "learn_ru": "Классы различаются только цветом",
+  "learn_en": "Classes differ only by colour",
+  "domain": "aerial"
+ },
+ "shark-teeth-5atku": {
+  "title_ru": "Зубы акул",
+  "title_en": "Shark Teeth",
+  "what_ru": "Фото зубов; рамками отмечены зубы разных видов акул и их положение.",
+  "what_en": "Tooth photos; boxes mark teeth of different shark species and position.",
+  "learn_ru": "Небольшая выборка, близкие классы",
+  "learn_en": "Small sample, close classes",
+  "domain": "nature"
+ },
+ "sedimentary-features-9eosf": {
+  "title_ru": "Осадочные структуры",
+  "title_en": "Sedimentary Features",
+  "what_ru": "Снимки породы; рамками отмечены слоистость и другие осадочные структуры.",
+  "what_en": "Rock images; boxes mark bedding and other sedimentary structures.",
+  "learn_ru": "Текстуры вместо отдельных объектов",
+  "learn_en": "Textures instead of distinct objects",
+  "domain": "nature"
+ },
+ "avatar-recognition-nuexe": {
+  "title_ru": "Игровые аватары",
+  "title_en": "Game Avatars",
+  "what_ru": "Игровые кадры; рамками отмечены персонажи.",
+  "what_en": "Game frames; boxes mark characters.",
+  "learn_ru": "Один класс в игровой сцене",
+  "learn_en": "One class in a game scene",
+  "domain": "game"
+ },
+ "open-omniparser-dataset": {
+  "title_ru": "Элементы интерфейса",
+  "title_en": "UI Elements",
+  "what_ru": "Скриншоты интерфейсов; рамками отмечены интерактивные элементы.",
+  "what_en": "Interface screenshots; boxes mark interactive elements.",
+  "learn_ru": "Много мелких объектов на экране",
+  "learn_en": "Many small objects on screen",
+  "domain": "document"
+ }
+}

@@ -53,7 +53,7 @@ a ready-made `train.py`, the right dataset format and augmentation presets are c
 | **Language and theme** | interface in **Russian and English**, **dark and light** theme, one vector icon set (View → Language / Theme) |
 | **Tasks** | **detection**, **segmentation**, **rotated boxes (OBB)**, **keypoints (pose)**, **image classification** - with YOLO export |
 | **Updates and GPU** | new-version check on GitHub (only on a button press), PyTorch with CUDA installed for your graphics card |
-| **Examples and tour** | 6 learning datasets with one button and an interactive tour of the interface |
+| **Examples and tour** | a catalog of 130+ learning datasets (no registration, with search and filters) and an interactive tour of the interface |
 
 ## Screenshots
 
@@ -101,8 +101,12 @@ a ready-made `train.py`, the right dataset format and augmentation presets are c
 
 ### Option 1. Ready-made `.exe` (Windows)
 
-Download the `ML-IDE-windows.zip` archive from the [Releases](https://github.com/Serzh2000/ML-IDE/releases/latest) page, unpack **the whole folder** and run `ML IDE.exe`.
-No Python needed. *(Windows SmartScreen may show a warning for an unsigned program — "More info → Run anyway".)*
+The [Releases](https://github.com/Serzh2000/ML-IDE/releases/latest) page has two files:
+
+- **`ML-IDE-<version>-setup.exe`** — the installer (Russian and English wizard; the app interface language follows the installer language);
+- **`ML-IDE-<version>-portable.zip`** — the portable version: unpack **the whole folder** anywhere (even a USB stick) and run `ML IDE.exe`. Settings and downloaded examples are kept in the `data` folder next to the program; the registry is not used.
+
+No Python needed. The interface language (Russian / English) is chosen on first launch from the system language and can be changed in **View → Language**. *(Windows SmartScreen may show a warning for an unsigned program — "More info → Run anyway".)*
 
 ### Option 2. From source
 
@@ -115,7 +119,7 @@ python -m mlide
 
 Python 3.10+ is required. On Windows you can simply run `run.bat`.
 
-### Installer
+### Building the installer
 
 `installer/ML-IDE.iss` (Inno Setup 6) builds `ML-IDE-<version>-setup.exe` from `dist\ML IDE\`; GitHub releases build it automatically.
 
@@ -195,7 +199,15 @@ after quantization. Espressif documentation: [How to deploy YOLO11n](https://doc
 
 ## Examples (learning datasets)
 
-Downloaded with a button from the official Ultralytics GitHub; not included in the repository.
+The catalog has **130+ datasets** (detection, segmentation, rotated boxes, keypoints, classification) with search and filters by task and topic. Everything downloads **without registration or keys** and is not part of the repository:
+
+- **Ultralytics** (GitHub): COCO8/32/128, KITTI, construction, home objects, car parts, hands, dogs, tigers, DOTA, MNIST, CIFAR, Imagenette and more;
+- **Roboflow 100** on Hugging Face: 96 varied datasets (medicine, aerial, documents, video games, microscopy, industry);
+- single Hugging Face datasets and **any dataset of your own** with pictures and boxes (the "Your own dataset from Hugging Face..." button).
+
+From large datasets a sample of frames is taken (usually up to 300): megabytes are downloaded, not gigabytes. The "Update catalog" button pulls a fresh list from the repository. Each dataset's license is shown in the window.
+
+A selection of the main examples:
 
 | Dataset | Type | Classes | Download | What it teaches |
 |---|---|---|---|---|
@@ -286,7 +298,7 @@ The test runs in GitHub Actions on every push (`.github/workflows/ci.yml`); a `v
 - [`ultralytics`](https://github.com/ultralytics/ultralytics) (AGPL-3.0) is **not included** in the program and is not packed into the `.exe`: it is installed
   separately, only if you run training or `.pt` models. Take its license into account if you use trained models in products.
 - The model diagram opens in [Netron](https://github.com/lutzroeder/netron) (MIT, © Lutz Roeder): its files are in `assets/netron`, it runs locally, without sending the model or any statistics.
-- Learning datasets are downloaded from the official Ultralytics GitHub under the AGPL-3.0 license and are not part of this repository.
+- Learning datasets are not part of this repository and are downloaded from Ultralytics (AGPL-3.0) and Hugging Face (Roboflow 100: CC BY 4.0, others under the author's license shown in the Examples window).
 
 ## FAQ
 

@@ -1,6 +1,6 @@
 name: Release (Windows exe + installer)
 
-# Запуск: создайте тег вида v0.5.2 -> на GitHub появится релиз с ML-IDE-windows.zip и установщиком
+# Запуск: создайте тег вида v0.5.3 -> на GitHub появится релиз с установщиком и портативным zip
 on:
   push:
     tags: ["v*"]
@@ -32,9 +32,16 @@ jobs:
           Start-Sleep -Seconds 5
           Get-Content st.txt
           if (Select-String -Path st.txt -Pattern "FAIL") { throw "selftest failed" }
-      - name: Zip
+      - name: Portable zip
         shell: pwsh
-        run: Compress-Archive -Path "dist/ML IDE" -DestinationPath ML-IDE-windows.zip
+        run: |
+          # portable.flag: настройки и скачанные примеры хранятся в папке data рядом с программой (ничего не пишется в реестр)
+          Set-Content -Path "dist/ML IDE/portable.flag" -Value "ML IDE portable mode: settings and examples are stored in the data folder next to the program." -Encoding utf8
+          Copy-Item README.md "dist/ML IDE/README.md"
+          Copy-Item README.en.md "dist/ML IDE/README.en.md"
+          $name = "ML-IDE-$($env:GITHUB_REF_NAME.TrimStart('v'))-portable.zip"
+          Compress-Archive -Path "dist/ML IDE" -DestinationPath $name
+          Remove-Item "dist/ML IDE/portable.flag"
       - name: Installer (Inno Setup)
         shell: pwsh
         run: |
@@ -44,6 +51,6 @@ jobs:
       - uses: softprops/action-gh-release@v2
         with:
           files: |
-            ML-IDE-windows.zip
+            ML-IDE-*-portable.zip
             dist/ML-IDE-*-setup.exe
           generate_release_notes: true

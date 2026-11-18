@@ -1,6 +1,7 @@
 """Пути к ресурсам (работает и из исходников, и из собранного .exe)."""
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -10,8 +11,24 @@ def resource(rel: str) -> Path:
     return base / rel
 
 
+def portable_root() -> Path | None:
+    """Портативный режим: рядом с ML IDE.exe лежит файл portable.flag - тогда настройки и примеры хранятся в папке data рядом
+    с программой (её можно носить на флешке), а не в реестре и профиле пользователя. MLIDE_PORTABLE_DIR - для тестов."""
+    env = os.environ.get("MLIDE_PORTABLE_DIR")
+    if env:
+        return Path(env)
+    if getattr(sys, "frozen", False):
+        exe_dir = Path(sys.executable).resolve().parent
+        if (exe_dir / "portable.flag").exists():
+            return exe_dir / "data"
+    return None
+
+
 def examples_dir() -> Path:
-    """Куда скачиваются примеры (папка пользователя, вне репозитория)."""
+    """Куда скачиваются примеры (папка пользователя, вне репозитория; в портативном режиме - data/examples рядом с программой)."""
+    pr = portable_root()
+    if pr is not None:
+        return pr / "examples"
     return Path.home() / "ML IDE" / "examples"
 
 
