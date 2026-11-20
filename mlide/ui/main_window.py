@@ -20,6 +20,7 @@ from .dialogs import AutoLabelDialog, ExportDialog, PresetDialog, StatsDialog
 from .learn import AdvisorDialog, HelpDialog, TrainDialog
 from .model_export import ModelExportDialog
 from .model_viewer import ModelViewerDialog, show_in_netron
+from .import_dialog import ImportDialog
 from .results import ResultsDialog
 from .tour import TourOverlay, rect_of
 from .examples_dialog import ExamplesDialog
@@ -250,6 +251,7 @@ class MainWindow(QMainWindow):
         self.a_modelexp = A("Экспорт модели (ONNX, ESP32…)…", self.export_model, "Ctrl+Shift+M")
         self.a_viewer = A("Просмотр модели (как в Netron)…", self.view_model, "Ctrl+Shift+G")
         self.a_viewer2 = A("Сводка модели: слои простыми словами…", self.view_model_summary)
+        self.a_imp_ann = A("Импорт разметки (любой формат)…", self.import_annotations, "Ctrl+Shift+L")
         self.a_imp_coco = A("Импорт разметки COCO (JSON)…", self.import_coco)
         self.a_imp_voc = A("Импорт разметки Pascal VOC…", self.import_voc)
         self.a_video = A("Кадры из видео…", self.extract_video, "Ctrl+Shift+V")
@@ -318,7 +320,7 @@ class MainWindow(QMainWindow):
             m.addAction(a)
         self.recent_menu = m.addMenu("Недавние проекты")
         for a in (self.a_save, self.a_saveas, self.a_snap, self.a_opensnap, None, self.a_imp, self.a_impf, self.a_video, None,
-                  self.a_imp_coco, self.a_imp_voc, None, self.a_export, None, self.a_exit):
+                  self.a_imp_ann, None, self.a_export, None, self.a_exit):
             m.addSeparator() if a is None else m.addAction(a)
         self._fill_recent()
         m = mb.addMenu("&Правка")
@@ -779,32 +781,37 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(f"Импортировано изображений: {n}", 4000)
 
     def _offer_label_import(self, new, roots):
-        with_labels = [e for e in new if formats.find_label_file(e.path)]
-        if not with_labels:
+        """После добавления картинок: если рядом нашлась разметка в известном формате - предлагаем открыть мастер импорта."""
+        if not new:
             return
+        try:
+            from .. import annimport as AI
+            ctx = AI.SourceContext([str(r) for r in roots])
+            dets = [d for d in AI.detect(ctx) if d.score >= 0.75]
+        except Exception:  # noqa
+            return
+        if not dets:
+            return
+        top = dets[0]
         if QMessageBox.question(self, "Найдена готовая разметка",
-                                f"Найдены файлы разметки YOLO для {len(with_labels)} изображений. Импортировать?") != QMessageBox.Yes:
+                                f"Рядом с картинками найдена разметка: {AI.title_of(top.parser, 'ru')} ({top.summary}). "
+                                "Открыть мастер импорта?") != QMessageBox.Yes:
             return
-        if not self.project.classes:
-            names = None
-            for r in map(Path, roots):
-                base = r if r.is_dir() else r.parent
-                for up in [base, base.parent, base.parent.parent]:
-                    for fn in ("data.yaml", "dataset.yaml", "classes.txt", "obj.names", "labels.txt"):
-                        if (up / fn).exists() and names is None:
-                            try:
-                                names = formats.read_class_names(up / fn)
-                            except Exception:
-                                pass
-            if names is None:
-                p, _ = QFileDialog.getOpenFileName(self, "Названия классов для этой разметки (txt / names / yaml)", "",
-                                                   "Файлы классов (*.txt *.names *.yaml *.yml)")
-                names = formats.read_class_names(p) if p else []
-            for n in names:
-                self.project.add_class(str(n))
-        total = sum(formats.import_yolo_labels(e, len(self.project.classes), len(self.project.keypoints)) for e in with_labels)
-        self.project.dirty = True
-        self.statusBar().showMessage(f"Импортировано объектов: {total}", 4000)
+        self.import_annotations([str(r) for r in roots])
+
+    def import_annotations(self, paths=None, images_dir=None):
+        if not isinstance(paths, (list, tuple)):
+            paths = None
+        dlg = ImportDialog(self.project, self, paths=paths, images_dir=images_dir)
+        if dlg.exec() and dlg.report is not None:
+            self.undo_stack.clear()
+            self.redo_stack.clear()
+            cur = self.entry.path if self.entry else None
+            self.idx = next((i for i, e in enumerate(self.project.images) if e.path == cur), -1)
+            self.refresh_all()
+            if self.idx < 0 and self.project.images:
+                self.load_image(0)
+            self.canvas.update()
 
     def dragEnterEvent(self, e):
         if e.mimeData().hasUrls():
@@ -1340,6 +1347,9 @@ def selftest(out_path):
         lines.append("onnxruntime providers: " + ",".join(ort.get_available_providers()))
         from .. import sam, examples, onnxparse, importers, dedupe, video, modelexport  # noqa
         lines.append("mlide modules: OK; icon: " + str(paths.resource("assets/icon.png").exists()))
+        from .. import annimport
+        n_parsers = len(annimport.get_parsers())
+        lines.append(f"annotation import parsers: {n_parsers}" + ("" if n_parsers >= 12 else " FAIL"))
         from .. import netron_view
         lines.append(f"netron assets: {netron_view.available()}" + ("" if netron_view.available() else " FAIL"))
         from .. import i18n

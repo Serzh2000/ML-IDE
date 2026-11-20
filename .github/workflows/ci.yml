@@ -28,6 +28,15 @@ jobs:
           PYTHONIOENCODING: utf-8
           QT_QPA_PLATFORM: offscreen
         run: python tests/test_portable.py
+      - name: Annotation import tests
+        env:
+          PYTHONIOENCODING: utf-8
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          python tests/test_annimport_core.py
+          python tests/test_annimport_json.py
+          python tests/test_annimport_xmltxt.py
+          python tests/test_import_dialog.py
       - name: Dataset catalog test
         env:
           PYTHONIOENCODING: utf-8

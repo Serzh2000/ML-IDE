@@ -30,6 +30,7 @@ from mlide.ui.compare_dialog import CompareDialog
 from mlide.ui.dedupe_dialog import DedupeDialog
 from mlide.ui.dialogs import AutoLabelDialog, ExportDialog, PresetDialog, StatsDialog
 from mlide.ui.examples_dialog import ExamplesDialog
+from mlide.ui.import_dialog import ImportDialog
 from mlide.ui.help_dialogs import CodeSnippetsDialog, GpuHelpDialog, UpdateDialog
 from mlide.ui.keypoints_dialog import KeypointsDialog
 from mlide.ui.learn import AdvisorDialog, HelpDialog, TrainDialog
@@ -98,7 +99,7 @@ def main():
     app.processEvents()
     wins = {
         "main window": w, "advisor": AdvisorDialog(pr, w), "export": ExportDialog(pr, w), "autolabel": AutoLabelDialog(pr, pr.images[0], w),
-        "presets": PresetDialog(pr, pr.images[0], w), "stats": StatsDialog(pr, w), "examples": ExamplesDialog(w),
+        "presets": PresetDialog(pr, pr.images[0], w), "stats": StatsDialog(pr, w), "examples": ExamplesDialog(w), "import": ImportDialog(pr, w),
         "help": HelpDialog(SHORTCUTS_HTML, w), "train": TrainDialog(pr, w), "results": ResultsDialog(pr, w),
         "model export": ModelExportDialog(pr, w), "model viewer": ModelViewerDialog(w), "video": VideoDialog(w),
         "duplicates": DedupeDialog(pr, w), "review": ReviewDialog(pr, w), "compare": CompareDialog(pr, w),

@@ -97,6 +97,24 @@ a ready-made `train.py`, the right dataset format and augmentation presets are c
 </tr>
 </table>
 
+## Importing existing annotations (any format)
+
+**File → Import annotations (any format)...** (`Ctrl+Shift+L`): choose a folder or files; the format is detected automatically and the images are
+found by the names and paths written in the annotation files. The window shows how many images were found and lets you map the classes (rename, skip).
+
+| What it understands | Details |
+|---|---|
+| **YOLO / Ultralytics / Darknet** | one txt per image (boxes, polygons, rotated boxes, keypoints), `data.yaml` / `classes.txt` / `obj.names`; labels can be in any folder |
+| **COCO** | boxes, polygons (all parts), keypoints, several json files at once; result files with `score` |
+| **Pascal VOC / LabelImg**, **CVAT**, **LabelMe**, **VIA**, **Label Studio**, **CreateML** | boxes, polygons, rotated boxes, image classes |
+| **DOTA, KITTI** and txt with pixel coordinates | `x1 y1 ... class`, `class x1 y1 x2 y2` and other layouts |
+| **CSV / TSV / JSON / JSONL tables** | columns are detected by name and by content (`filename, class, xmin, ymin, xmax, ymax`, `bbox`, `polygon`, fractions or pixels); the column mapping can be corrected by hand |
+| **Mapping file** | a list "image -> annotation file" (`pairs.csv`, a JSON dictionary, a text list): the annotation files themselves are read by the matching parser |
+| **Folders = classes** | classification: `cat/1.jpg`, `dog/2.jpg` |
+
+Annotations can be added to images that are already loaded (append, replace or skip the already annotated ones). When you add a folder of images with
+annotations next to them, the app offers to open the import wizard by itself.
+
 ### New tasks and the examples catalog
 
 <table>
