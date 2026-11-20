@@ -134,6 +134,9 @@ class GpuHelpDialog(QDialog):
 
     def reject(self):
         if self.proc is not None and self.proc.state() != QProcess.NotRunning:
+            if QMessageBox.question(self, "Установка идёт", "Установка ещё не завершена. Прерывание может оставить окружение Python в "
+                                    "неполном состоянии (потом пригодится повторная установка). Прервать?") != QMessageBox.Yes:
+                return
             self.proc.kill()
             self.proc.waitForFinished(2000)
         super().reject()

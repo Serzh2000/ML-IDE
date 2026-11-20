@@ -254,11 +254,11 @@ def analyze(project):
 
     # --- amount of data
     if n < 30:
-        adv.append(Advice("warn", f"Very little data ({n} images)",
+        adv.append(Advice("warn", f"Very little data (images: {n})",
                           "This is only enough to test an idea. Label 100+ images. Auto-annotate will help next: "
                           "train a first model on what you have and let it label the rest."))
     elif n < 200:
-        adv.append(Advice("info", f"Small dataset ({n} images)",
+        adv.append(Advice("info", f"Small dataset (images: {n})",
                           "Enough for simple tasks with uniform conditions. Strong augmentation and a "
                           "small model are enabled to avoid overfitting."))
     else:

@@ -1314,5 +1314,20 @@
 "Открыть папку журнала ошибок": "Open error log folder",
 "Добавляю изображения…": "Adding images...",
 "Новых изображений не добавлено: файлы уже в проекте или не читаются": "No new images added: the files are already in the project or cannot be read",
-"Этот проект не открылся. Убрать его из списка недавних?": "This project did not open. Remove it from the recent list?"
+"Этот проект не открылся. Убрать его из списка недавних?": "This project did not open. Remove it from the recent list?",
+"Очень мало данных (изображений: ": "Very little data (images: ",
+"Небольшой датасет (изображений: ": "Small dataset (images: ",
+"Размер датасета нормальный (изображений: ": "Dataset size is fine (images: ",
+"папок-классов: ": "class folders: ",
+", картинок: ": ", images: ",
+"Готово, картинок: ": "Done, images: ",
+", папка: ": ", folder: ",
+"Убрать из проекта лишние изображения (": "Remove extra images from the project (",
+") вместе с их разметкой?\n": ") together with their labels?\n",
+"Остановить обучение?": "Stop training?",
+"Обучение будет прервано. Уже сохранённые эпохи останутся в папке runs (weights/last.pt и best.pt), продолжить с того же места нельзя без повторного запуска. Остановить?": "Training will be interrupted. Already saved epochs stay in the runs folder (weights/last.pt and best.pt); continuing from the same point needs a new launch. Stop?",
+"Установка идёт": "Installation in progress",
+"Установка ещё не завершена. Прерывание может оставить окружение Python в неполном состоянии (потом пригодится повторная установка). Прервать?": "The installation has not finished. Interrupting may leave the Python environment in an incomplete state (you may need to install again). Interrupt?",
+"Путь к папке экспорта слишком длинный для Windows (больше 260 знаков вместе с именами файлов). Выберите папку ближе к корню диска, например C:/dataset.": "The export folder path is too long for Windows (over 260 characters including file names). Choose a folder closer to the drive root, for example C:/dataset.",
+") вместе с их разметкой?\nСами файлы на диске останутся.": ") together with their labels?\nThe files on disk will stay."
 }

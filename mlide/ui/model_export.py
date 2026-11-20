@@ -218,7 +218,7 @@ class ModelExportDialog(QDialog):
             return
         n = ME.export_calibration([e.path for e in self.project.images], Path(d) / "calibration",
                                   self.imgsz.value(), 100)
-        self.status.setText(f"Готово: {n} картинок в {Path(d) / 'calibration'}")
+        self.status.setText(f"Готово, картинок: {n}, папка: {Path(d) / 'calibration'}")
 
     def _code(self):
         from .help_dialogs import CodeSnippetsDialog

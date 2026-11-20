@@ -138,7 +138,7 @@ class DedupeDialog(QDialog):
             drop |= {e.path for e in ents if e is not best}
         if not drop:
             return
-        if QMessageBox.question(self, "Удаление копий", f"Убрать из проекта {len(drop)} лишних изображений вместе с их разметкой?\n"
+        if QMessageBox.question(self, "Удаление копий", f"Убрать из проекта лишние изображения ({len(drop)}) вместе с их разметкой?\n"
                                 "Сами файлы на диске останутся.") != QMessageBox.Yes:
             return
         self.project.images = [e for e in self.project.images if e.path not in drop]

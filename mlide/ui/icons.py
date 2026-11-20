@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import base64
+import math
 from functools import lru_cache
 
 from PySide6.QtCore import QBuffer, QByteArray, QIODevice, Qt
@@ -24,8 +25,12 @@ def _svg(name: str) -> str:
     return p.read_text(encoding="utf-8")
 
 
-def pixmap(name: str, color: str | None = None, size: int = 18, dpr: float = 2.0, stroke: float | None = None) -> QPixmap:
-    color = color or style.TEXT
+def pixmap(name: str, color: str | None = None, size: int = 18, dpr: float | None = None, stroke: float | None = None) -> QPixmap:
+    if dpr is None:                                           # чёткость на любом масштабе экрана (125%, 150%, 200%...)
+        from PySide6.QtWidgets import QApplication
+        scr = QApplication.primaryScreen()
+        dpr = max(2.0, float(math.ceil(scr.devicePixelRatio()))) if scr else 2.0
+    color = style.chart_color(color) if color else style.TEXT
     svg = _svg(name).replace("currentColor", color)
     if stroke is not None:
         svg = svg.replace('stroke-width="2"', f'stroke-width="{stroke}"')
@@ -71,7 +76,7 @@ def data_uri(name: str, color: str, size: int = 16) -> str:
     return "data:image/png;base64," + base64.b64encode(bytes(buf.data())).decode("ascii")
 
 
-STATUS_COLOR = {"ok": "#3fb950", "warn": "#f0a030", "info": "#58a6ff"}
+STATUS_COLOR = {"ok": "#3fb950", "warn": "#f0a030", "info": "#58a6ff"}          # в светлой теме темнеют через style.chart_color
 
 
 def status_img(level: str, size: int = 16) -> str:

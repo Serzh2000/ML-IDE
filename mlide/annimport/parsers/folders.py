@@ -37,7 +37,7 @@ def sniff(ctx):
     total = sum(len(v) for v in by.values())
     if len(classes) < 2 or total < 4:
         return None
-    return Detection(NAME, 0.45, [], f"{len(classes)} папок-классов, {total} картинок", {"classes": len(classes)})
+    return Detection(NAME, 0.45, [], f"папок-классов: {len(classes)}, картинок: {total}", {"classes": len(classes)})
 
 
 def parse(ctx, det, opt) -> Parsed:

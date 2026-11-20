@@ -1,8 +1,8 @@
-PySide6>=6.6
-numpy
-pillow
-pyyaml
-opencv-python-headless
-onnxruntime
+PySide6==6.12.0
+numpy==2.5.4
+pillow==13.0.0
+pyyaml==6.0.3
+opencv-python-headless==5.0.0.93
+onnxruntime==1.31.1
 # optional: only needed for .pt models in Auto-annotate and for training
 # ultralytics

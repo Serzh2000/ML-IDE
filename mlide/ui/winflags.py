@@ -78,6 +78,7 @@ def install():
     QDialog.__init__ = init
     QDialog._mlide_flags = True
 
+    _install_recolor()
     start = QThread.start
 
     def tstart(self, *a):
@@ -97,3 +98,30 @@ def wait_threads(ms: int = 2500):
             t.wait(ms)
         except RuntimeError:
             pass
+
+
+def _install_recolor():
+    """Светлая тема: цвета в setText/setHtml/setStyleSheet и конструкторах подставляются через style.recolor (см. LIGHT_FIX)."""
+    from PySide6.QtWidgets import QLabel, QPlainTextEdit, QTextBrowser, QTextEdit, QWidget
+    from . import style
+
+    def wrap(cls, name):
+        orig = getattr(cls, name)
+
+        def f(self, text, *a, **k):
+            return orig(self, style.recolor(text) if isinstance(text, str) else text, *a, **k)
+        setattr(cls, name, f)
+
+    for cls, names in ((QLabel, ("setText",)), (QTextEdit, ("setHtml", "setText")), (QTextBrowser, ("setHtml", "setText")),
+                       (QWidget, ("setStyleSheet", "setToolTip"))):
+        for n in names:
+            try:
+                wrap(cls, n)
+            except Exception:  # noqa
+                pass
+    init = QLabel.__init__
+
+    def label_init(self, *a, **k):
+        a = tuple(style.recolor(x) if isinstance(x, str) else x for x in a)
+        init(self, *a, **k)
+    QLabel.__init__ = label_init

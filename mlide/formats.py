@@ -5,6 +5,7 @@ import json
 import math
 import random
 import shutil
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from xml.sax.saxutils import escape
@@ -119,19 +120,38 @@ def _owned_dirs(out: Path, fmt):
     raise ValueError(fmt)
 
 
-def _clean_previous(project: Project, out: Path, fmt):
+def _check_previous(project: Project, out: Path, fmt):
     owned = [d.resolve() for d in _owned_dirs(out, fmt)]
     for e in project.images:
         src = Path(e.path).resolve()
         if any(d in src.parents for d in owned):
             raise ValueError("Папка экспорта содержит исходные изображения проекта "
                              f"({src.parent}). Выберите для экспорта другую папку.")
-    for d in owned:
+
+
+def _rm_readonly(func, path, _exc):
+    """Файлы с атрибутом «только чтение» (и занятые проводником) не должны оставлять папку наполовину удалённой."""
+    import os
+    import stat
+    try:
+        os.chmod(path, stat.S_IWRITE)
+        func(path)
+    except OSError:
+        pass
+
+
+def _remove_previous(out: Path, fmt):
+    for d in _owned_dirs(out, fmt):
         if d.is_dir():
-            shutil.rmtree(d)
+            shutil.rmtree(d, onerror=_rm_readonly)
     if fmt == "darknet":
         for n in ("train.txt", "valid.txt", "test.txt"):
             (out / n).unlink(missing_ok=True)
+
+
+def _clean_previous(project: Project, out: Path, fmt):
+    _check_previous(project, out, fmt)
+    _remove_previous(out, fmt)
 
 
 def _finite_ann(a) -> bool:
@@ -302,8 +322,49 @@ def _copy_image(src: str, dst: Path):
         shutil.copyfile(src, dst)
 
 
+def _long_paths_enabled() -> bool:
+    if sys.platform != "win32":
+        return True
+    try:
+        import winreg
+        with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r"SYSTEM\CurrentControlSet\Control\FileSystem") as k:
+            return int(winreg.QueryValueEx(k, "LongPathsEnabled")[0]) == 1
+    except OSError:
+        return False
+
+
 def export_dataset(project: Project, o: ExportOptions, progress=lambda i, n, m: True):
-    """Returns a short report string."""
+    """Экспорт «всё или ничего»: набор собирается во временной папке рядом, и только после полного успеха заменяет прежний экспорт.
+    Отмена, ошибка или нехватка места оставляют предыдущий экспорт нетронутым. Returns a short report string."""
+    import dataclasses
+    real = Path(o.out_dir)
+    real.mkdir(parents=True, exist_ok=True)
+    _check_previous(project, real, o.fmt)
+    longest = max([len(e.name) for e in project.images] or [20]) + 12
+    if len(str(real.resolve())) + 16 + longest > 250 and not _long_paths_enabled():
+        raise ValueError("Путь к папке экспорта слишком длинный для Windows (больше 260 знаков вместе с именами файлов). "
+                         "Выберите папку ближе к корню диска, например C:/dataset.")
+    tmp = real.parent / f".{real.name}.mlide_tmp"
+    shutil.rmtree(tmp, ignore_errors=True)
+    tmp.mkdir(parents=True)
+    o2 = dataclasses.replace(o, out_dir=str(tmp))
+    try:
+        report = _export_core(project, o2, progress)
+        o._warn = getattr(o2, "_warn", "")
+        _remove_previous(real, o.fmt)
+        for item in sorted(tmp.iterdir()):
+            dest = real / item.name
+            if dest.is_dir() and not dest.is_symlink():
+                shutil.rmtree(dest, ignore_errors=True)
+            elif dest.exists():
+                dest.unlink()
+            shutil.move(str(item), str(dest))
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+    return report.replace(str(tmp), str(real))
+
+
+def _export_core(project: Project, o: ExportOptions, progress=lambda i, n, m: True):
     o._warn = ""
     out = Path(o.out_dir)
     out.mkdir(parents=True, exist_ok=True)

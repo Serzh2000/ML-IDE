@@ -182,7 +182,7 @@ class LineChart(QWidget):
         x = 10
         p.setFont(QFont("Segoe UI", 8))
         for key, label, col in self.series:
-            p.setPen(QPen(QColor(col), 3))
+            p.setPen(QPen(QColor(style.chart_color(col)), 3))
             p.drawLine(x, 30, x + 14, 30)
             p.setPen(QColor(style.MUTED))
             p.drawText(x + 18, 34, label)
@@ -217,10 +217,10 @@ class LineChart(QWidget):
                            r.bottom() - (yv - lo) / (hi - lo) * r.height())
                    for xv, yv in zip(self.xs, ys) if yv is not None and np.isfinite(yv)]
             if len(pts) >= 2:
-                p.setPen(QPen(QColor(col), 2))
+                p.setPen(QPen(QColor(style.chart_color(col)), 2))
                 p.drawPolyline(QPolygonF(pts))
             elif pts:
-                p.setBrush(QColor(col))
+                p.setBrush(QColor(style.chart_color(col)))
                 p.drawEllipse(pts[0], 3, 3)
 
 
@@ -316,7 +316,7 @@ class TrainDialog(QDialog):
         self.start_btn.clicked.connect(self.start)
         self.stop_btn = QPushButton("Остановить")
         self.stop_btn.setIcon(icons.icon("stop"))
-        self.stop_btn.clicked.connect(self.stop)
+        self.stop_btn.clicked.connect(self._stop_clicked)
         self.stop_btn.setEnabled(False)
         ob = QPushButton("Открыть папку результатов")
         ob.clicked.connect(self.open_results)
@@ -527,6 +527,13 @@ class TrainDialog(QDialog):
         with paths.child_launch():           # без каталога DLL приложения (иначе Python падает с 0xC0000005)
             self.proc.start(py, ["-u", "train.py"])
             self.proc.waitForStarted(8000)
+
+    def _stop_clicked(self):
+        if not self.running:
+            return
+        if QMessageBox.question(self, "Остановить обучение?", "Обучение будет прервано. Уже сохранённые эпохи останутся в папке runs "
+                                "(weights/last.pt и best.pt), продолжить с того же места нельзя без повторного запуска. Остановить?") == QMessageBox.Yes:
+            self.stop()
 
     def stop(self, wait=False):
         if not self.running:

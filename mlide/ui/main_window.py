@@ -233,6 +233,7 @@ class MainWindow(QMainWindow):
         self.a_export = A("Экспорт датасета…", self.export, "Ctrl+E")
         self.a_undo = A("Отменить", self.undo, "Ctrl+Z")
         self.a_redo = A("Повторить", self.redo, "Ctrl+Shift+Z")
+        self.a_redo.setShortcuts([QKeySequence("Ctrl+Shift+Z"), QKeySequence("Ctrl+Y")])         # Ctrl+Y - привычное в Windows
         self.a_del = A("Удалить выбранное", lambda: self.canvas.delete_selected(), "Delete")
         self.a_copyprev = A("Копировать разметку с предыдущего изображения", self.copy_prev, "Ctrl+D")
         self.a_accept = A("Принять подсказки на этом изображении", self.accept_suggestions, "Y")
@@ -1559,6 +1560,9 @@ def run(argv):
         return selftest(argv[1] if len(argv) > 1 else "selftest.txt")
     from .. import i18n
     i18n.set_language(i18n.detect_language())
+    if i18n.lang() == "en":                                  # десятичная точка и разделители в английском интерфейсе
+        from PySide6.QtCore import QLocale
+        QLocale.setDefault(QLocale(QLocale.English, QLocale.UnitedStates))
     from .. import applog
     applog.install()
     from . import winflags
