@@ -3,6 +3,7 @@ import os
 import sys
 import tempfile
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -29,9 +30,22 @@ def main():
     assert "consent=1" in hd.get("Set-Cookie", ""), "cookie согласия должен выставляться (иначе Netron обращается к ipinfo.io)"
     st, body, _ = get(base + "/index.js")
     assert st == 200 and len(body) > 100
-    st, body, _ = get(base + "/model/best.onnx")
+    mpath = urllib.parse.unquote(url.split("?url=")[1])
+    st, body, hd2 = get(base + mpath)
     assert body == model.read_bytes(), "модель должна отдаваться как есть"
-    for bad in ("/../mlide/__init__.py", "/..%2f..%2fREADME.md", "/model/nope.onnx", "/nope.js"):
+    assert "connect-src 'self'" in hd2.get("Content-Security-Policy", ""), "нужен CSP без внешних подключений"
+    other = Path(tempfile.mkdtemp()) / "best.onnx"                       # второй файл с тем же именем: свой адрес
+    other.write_bytes(b"other")
+    url2 = N.url_for(str(other))
+    assert url2 != url and get(base + urllib.parse.unquote(url2.split("?url=")[1]))[1] == b"other"
+    assert get(base + mpath)[1] == model.read_bytes(), "первая модель не должна быть перезаписана второй"
+    req = urllib.request.Request(base + mpath, headers={"Host": "evil.example.com"})        # DNS-rebinding: чужой Host
+    try:
+        urllib.request.urlopen(req, timeout=10)
+        raise AssertionError("запрос с чужим Host должен отклоняться")
+    except urllib.error.HTTPError as e:
+        assert e.code == 403
+    for bad in ("/../mlide/__init__.py", "/..%2f..%2fREADME.md", "/model/nope.onnx", "/model/x/y.onnx", "/nope.js"):
         try:
             get(base + bad)
             raise AssertionError(f"{bad} не должен отдаваться")

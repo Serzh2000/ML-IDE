@@ -24,7 +24,8 @@ from pathlib import Path
 
 from . import paths
 from . import examples as EX
-from .formats import import_yolo_labels
+from . import textio
+from .formats import find_label_file, import_yolo_labels
 from .importers import import_class_folders
 from .model import Project
 
@@ -103,7 +104,10 @@ def text_of(e: dict, field: str, lang: str) -> str:
 
 
 def project_path(e: dict) -> Path:
-    return paths.examples_dir() / e["id"] / f"{e['id']}.mlide.json"
+    eid = str(e["id"])
+    if not re.fullmatch(r"[A-Za-z0-9_\-]{1,80}", eid):              # id идёт в имя папки: «../x» из чужого каталога недопустим
+        raise CatalogError(f"Недопустимый идентификатор набора: {eid!r}")
+    return paths.examples_dir() / eid / f"{eid}.mlide.json"
 
 
 def is_ready(e: dict) -> bool:
@@ -112,33 +116,51 @@ def is_ready(e: dict) -> bool:
 
 # --------------------------------------------------------------------------- сеть
 def _open(url, headers=None, timeout=60):
+    from . import netsafe
     last = None
     for i in range(4):
         try:
-            return urllib.request.urlopen(urllib.request.Request(url, headers={**UA, **(headers or {})}), timeout=timeout)
+            return netsafe.urlopen(urllib.request.Request(url, headers={**UA, **(headers or {})}), timeout=timeout)
         except urllib.error.HTTPError as ex:
             last = ex
             if ex.code not in (429, 500, 502, 503, 504):
                 raise
+        except urllib.error.URLError as ex:
+            last = ex
+            if "неразрешён" in str(ex.reason) or "перенаправление" in str(ex.reason):
+                raise CatalogError(f"Источник отклонён политикой безопасности: {ex.reason}")
         except Exception as ex:  # noqa
             last = ex
         time.sleep(2 * (i + 1))
-    raise CatalogError(f"Не удалось связаться с сервером ({last}). Проверьте интернет и повторите.")
+    raise CatalogError(f"Не удалось связаться с сервером: {netsafe.explain(last)}.")
 
 
-def _get_bytes(url, headers=None, timeout=60) -> bytes:
-    """Скачивает файл целиком; обрыв посреди чтения (IncompleteRead, сброс соединения) повторяется."""
+MAX_FILE = 300 * 1024 * 1024           # один файл выборки больше 300 МБ не принимаем
+
+
+def _get_bytes(url, headers=None, timeout=60, max_bytes: int = MAX_FILE) -> bytes:
+    """Скачивает файл целиком (с ограничением размера); обрыв посреди чтения повторяется."""
+    from . import netsafe
     last = None
     for i in range(4):
         try:
             with _open(url, headers, timeout) as r:
-                return r.read()
-        except urllib.error.HTTPError:
+                out, total = [], 0
+                while True:
+                    chunk = r.read(1 << 20)
+                    if not chunk:
+                        break
+                    total += len(chunk)
+                    if total > max_bytes:
+                        raise CatalogError("Файл слишком большой для выборки: загрузка отменена")
+                    out.append(chunk)
+                return b"".join(out)
+        except (urllib.error.HTTPError, CatalogError):
             raise
         except Exception as ex:  # noqa
             last = ex
             time.sleep(1.5 * (i + 1))
-    raise CatalogError(f"Не удалось скачать файл ({last}). Проверьте интернет и повторите.")
+    raise CatalogError(f"Не удалось скачать файл: {netsafe.explain(last)}.")
 
 
 class RangeFile(io.RawIOBase):
@@ -222,7 +244,9 @@ def _choose(pairs, limit, seed=0):
 
 
 def _safe_name(s: str) -> str:
-    return re.sub(r"[^\w.\-]+", "_", s, flags=re.A)[:60] or "x"
+    """Имя файла/папки без символов, недопустимых в Windows; кириллица и прочий юникод сохраняются."""
+    s = re.sub(r'[<>:"/\\|?*\x00-\x1f]+', "_", str(s)).strip().rstrip(". ")
+    return s[:60] or "x"
 
 
 # --------------------------------------------------------------------------- загрузчики
@@ -242,7 +266,13 @@ def _read_member(url: str, zi: zipfile.ZipInfo) -> bytes:
     if method == 0:
         return data
     if method == 8:
-        return zlib.decompress(data, -15)
+        if zi.file_size > MAX_FILE:
+            raise CatalogError("Файл в архиве слишком большой для выборки")
+        dec = zlib.decompressobj(-15)
+        out = dec.decompress(data, zi.file_size + 1)                  # распаковка с потолком: «бомба» не раздует память
+        if dec.unconsumed_tail or len(out) > zi.file_size:
+            raise CatalogError("Повреждённый или подозрительный архив: размер файла не совпадает с заголовком")
+        return out
     raise CatalogError(f"Неподдерживаемое сжатие в архиве ({method})")
 
 
@@ -502,9 +532,9 @@ def _infer_names(raw: Path, entry: dict, imgs):
         names = ynames
     mx = -1                                         # классы по самим меткам: хотя бы class_0..N, чтобы ничего не потерять
     for p in imgs[:400]:
-        lf = p.with_suffix(".txt") if p.with_suffix(".txt").exists() else Path(str(p).replace("images", "labels", 1)).with_suffix(".txt")
-        if lf.exists():
-            for ln in lf.read_text(encoding="utf-8", errors="replace").splitlines():
+        lf = find_label_file(str(p))
+        if lf is not None:
+            for ln in textio.read_text(lf).splitlines():
                 try:
                     mx = max(mx, int(float(ln.split()[0])))
                 except (ValueError, IndexError):
@@ -515,7 +545,21 @@ def _infer_names(raw: Path, entry: dict, imgs):
 
 
 def build_project(entry: dict, progress=lambda stage, done, total: True) -> Path:
-    """Скачивает набор (если нужно) и собирает проект ML IDE. Возвращает путь к .mlide.json."""
+    """Скачивает набор (если нужно) и собирает проект ML IDE. Возвращает путь к .mlide.json.
+    Если сборка не удалась, распакованные данные удаляются: следующая попытка начнёт заново, а не упрётся в ту же ошибку."""
+    try:
+        return _build_project(entry, progress)
+    except BaseException:
+        try:
+            pf = project_path(entry)
+            if not pf.exists():
+                shutil.rmtree(pf.parent / "raw", ignore_errors=True)
+        except Exception:  # noqa
+            pass
+        raise
+
+
+def _build_project(entry: dict, progress) -> Path:
     legacy = EX.BY_ID.get(entry["id"])
     if legacy and entry.get("legacy"):
         return EX.build_example(legacy, progress)
@@ -541,6 +585,8 @@ def build_project(entry: dict, progress=lambda stage, done, total: True) -> Path
                 _fetch_zip_subset(fetch["url"], tmp, limit, progress)
             elif kind in ("zip", "cls_zip"):
                 zp = root / "download.zip"
+                if zp.exists() and not zipfile.is_zipfile(zp):      # остаток прерванной загрузки прежних версий
+                    zp.unlink()
                 if not zp.exists():
                     _fetch_zip(fetch["url"], zp, progress)
                 progress("Распаковка", 0, 0)
@@ -564,7 +610,7 @@ def build_project(entry: dict, progress=lambda stage, done, total: True) -> Path
             e.reviewed = True
         pr.save(proj_file)
         return proj_file
-    imgs = sorted(p for p in raw.rglob("*") if p.suffix.lower() in IMG and "labels" not in p.parts)
+    imgs = sorted(p for p in raw.rglob("*") if p.suffix.lower() in IMG and "labels" not in p.relative_to(raw).parts)
     random.Random(0).shuffle(imgs)
     imgs = imgs[:limit] if limit and kind == "zip" else imgs
     names, cfg = _infer_names(raw, entry, imgs)

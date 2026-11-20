@@ -13,8 +13,11 @@ import numpy as np
 
 from . import paths
 
-REPO = "https://huggingface.co/Acly/MobileSAM/resolve/main/"
+# закреплённая версия репозитория (не «main»): содержимое файлов нельзя подменить после выхода релиза, плюс проверка SHA-256
+REPO = "https://huggingface.co/Acly/MobileSAM/resolve/0d3b403339b4674a82493d5e97964dd78089ddc8/"
 FILES = {"mobile_sam_image_encoder.onnx": 26_000_000, "sam_mask_decoder_single.onnx": 15_000_000}   # минимальные размеры
+SHA256 = {"mobile_sam_image_encoder.onnx": "580f5fb648ea1062c0aabc26217aed56921985f03f0cbbd852bba81d760cc749",
+          "sam_mask_decoder_single.onnx": "93915fc7c993ab9d59ab8c9ccd3bce37f7509c81ab4150a74abd4d2abbd8570d"}
 LICENSE_NOTE = "MobileSAM (Apache-2.0), экспорт в ONNX: Acly/MobileSAM на Hugging Face."
 
 
@@ -48,9 +51,12 @@ def download_models(progress=lambda stage, done, total: True):
         last = None
         for attempt in range(3):
             try:
+                from . import netsafe
+                import hashlib
                 req = urllib.request.Request(REPO + name, headers={"User-Agent": "mlide-model-downloader"})
                 tmp = dest.with_suffix(".part")
-                with urllib.request.urlopen(req, timeout=60) as r, open(tmp, "wb") as f:
+                h = hashlib.sha256()
+                with netsafe.urlopen(req, timeout=60) as r, open(tmp, "wb") as f:
                     total = int(r.headers.get("Content-Length") or 0)
                     done = 0
                     while True:
@@ -58,11 +64,16 @@ def download_models(progress=lambda stage, done, total: True):
                         if not chunk:
                             break
                         f.write(chunk)
+                        h.update(chunk)
                         done += len(chunk)
                         if not progress(name, done, total):
+                            tmp.unlink(missing_ok=True)
                             raise RuntimeError("Отменено")
-                if tmp.stat().st_size < min_size:
+                if tmp.stat().st_size < min_size or (total and tmp.stat().st_size != total):
                     raise IOError("файл скачан не полностью")
+                if h.hexdigest() != SHA256[name]:
+                    tmp.unlink(missing_ok=True)
+                    raise RuntimeError(f"Контрольная сумма файла {name} не совпала: файл повреждён или подменён")
                 tmp.replace(dest)
                 last = None
                 break
@@ -70,9 +81,14 @@ def download_models(progress=lambda stage, done, total: True):
                 raise
             except Exception as e:  # noqa
                 last = e
+                try:
+                    dest.with_suffix(".part").unlink(missing_ok=True)
+                except OSError:
+                    pass
                 time.sleep(2 * (attempt + 1))
         if last:
-            raise RuntimeError(f"Не удалось скачать {name}: {last}")
+            from . import netsafe
+            raise RuntimeError(f"Не удалось скачать {name}: {netsafe.explain(last)}")
 
 
 class SamModel:

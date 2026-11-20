@@ -141,10 +141,14 @@ def parse(ctx, det, opt):
                 cat_global.setdefault(k, v)
             recs = {}
             order = []
+            import re as _re
+            hint = _re.search(r"(train|val|valid|validation|test)", p.stem, _re.I)        # instances_train.json -> картинки из папки train
+            hint = hint.group(1).lower() if hint else ""
             for im in d.get("images") or []:
                 if not isinstance(im, dict) or not im.get("file_name"):
                     continue
-                rec = Record(str(im["file_name"]))
+                fn = str(im["file_name"])
+                rec = Record(f"{hint}/{fn}" if hint and "/" not in fn.replace("\\", "/") else fn)
                 w, h = _num(im.get("width")), _num(im.get("height"))
                 rec.width = int(w) if w else None
                 rec.height = int(h) if h else None
@@ -153,7 +157,7 @@ def parse(ctx, det, opt):
                     if isinstance(v, str) and v.strip() and v != rec.ref and v not in rec.extra_refs:
                         rec.extra_refs.append(v)
                 if "id" in im:
-                    rec.extra_refs.append(str(im["id"]))
+                    pass                                              # id картинки как имя файла не используем: он совпал бы с чужим 7.jpg
                     recs[str(im["id"])] = rec
                     img_index.setdefault(str(im["id"]), []).append((p.parent, rec))
                 order.append(rec)

@@ -13,6 +13,7 @@ import cv2
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+os.environ["MLIDE_ALLOW_LOCAL_HTTP"] = "1"
 os.environ["MLIDE_SETTINGS_FILE"] = os.path.join(tempfile.gettempdir(), "mlide_test_catalog.ini")
 from mlide import catalog as C  # noqa: E402
 from mlide import paths  # noqa: E402

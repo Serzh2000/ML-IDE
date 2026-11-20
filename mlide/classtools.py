@@ -20,6 +20,9 @@ def remap_classes(project: Project, mapping: dict) -> None:
     no object-mapping targets and that is itself remapped/deleted is removed from the class list,
     and the remaining classes are renumbered keeping their order."""
     n = len(project.classes)
+    for k, v in mapping.items():                      # проверяем до изменений: иначе ошибка оставит проект наполовину переделанным
+        if not (isinstance(k, int) and 0 <= k < n) or (v is not None and not (isinstance(v, int) and 0 <= v < n)):
+            raise ValueError(f"Неверный номер класса в сопоставлении: {k} -> {v}")
     full = {i: mapping.get(i, i) for i in range(n)}
     _dropped = {i for i in range(n) if full[i] != i}
     if any(t is not None and t in _dropped for t in full.values()):
@@ -33,6 +36,8 @@ def remap_classes(project: Project, mapping: dict) -> None:
             a.cls = t
             new.append(a)
         im.anns = new
+        if im.tag is not None:                        # класс кадра (классификация): та же замена
+            im.tag = full.get(im.tag, im.tag)
     # classes that were mapped away (src != dst) are dropped
     dropped = {i for i in range(n) if full[i] != i}
     keep = [i for i in range(n) if i not in dropped]
@@ -40,6 +45,8 @@ def remap_classes(project: Project, mapping: dict) -> None:
     for im in project.images:
         for a in im.anns:
             a.cls = renum[a.cls]
+        if im.tag is not None:
+            im.tag = renum.get(im.tag)
     project.classes = [project.classes[i] for i in keep]
     project.dirty = True
 
@@ -74,4 +81,6 @@ def move_class(project: Project, idx: int, new_pos: int) -> None:
     for im in project.images:
         for a in im.anns:
             a.cls = renum[a.cls]
+        if im.tag is not None:
+            im.tag = renum[im.tag]
     project.dirty = True

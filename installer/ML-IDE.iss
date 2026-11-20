@@ -1,6 +1,6 @@
 ; Установщик ML IDE (Inno Setup 6). Сборка:  iscc installer\ML-IDE.iss   (после build_exe.bat -> dist\ML IDE\)
 #define MyAppName "ML IDE"
-#define MyAppVersion "0.5.5"
+#define MyAppVersion "0.5.6"
 #define MyAppExe "ML IDE.exe"
 
 [Setup]
@@ -19,6 +19,9 @@ WizardStyle=modern
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 PrivilegesRequiredOverridesAllowed=dialog
+LicenseFile=..\LICENSE
+CloseApplications=yes
+RestartApplications=no
 
 [Languages]
 Name: "russian"; MessagesFile: "compiler:Languages\Russian.isl"
@@ -30,7 +33,7 @@ english.AppLang=en
 
 [Registry]
 ; язык интерфейса приложения по умолчанию = язык установщика (дальше меняется в меню Вид -> Язык)
-Root: HKCU; Subkey: "Software\MLIDE\MLIDE"; ValueType: string; ValueName: "lang"; ValueData: "{cm:AppLang}"; Flags: createvalueifdoesntexist uninsdeletekeyifempty
+Root: HKCU; Subkey: "Software\MLIDE\MLIDE"; ValueType: string; ValueName: "lang"; ValueData: "{cm:AppLang}"; Flags: createvalueifdoesntexist uninsdeletekey
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked

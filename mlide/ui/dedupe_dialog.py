@@ -1,6 +1,8 @@
 """Поиск дублей и очень похожих кадров."""
 from __future__ import annotations
 
+from . import winflags
+
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QThread, Signal
@@ -42,7 +44,7 @@ class DedupeDialog(QDialog):
         self.groups: list[list[str]] = []
         self.worker = None
         self.changed = False
-        lay = QVBoxLayout(self)
+        lay = winflags.scroll_layout(self)
         intro = QLabel("Находит одинаковые и почти одинаковые картинки (например, соседние кадры видео). Лишние копии "
                        "раздувают датасет и дают завышенные метрики: одна копия попадает в обучение, другая - в проверку.")
         intro.setWordWrap(True)

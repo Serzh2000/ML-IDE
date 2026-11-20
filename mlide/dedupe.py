@@ -37,7 +37,9 @@ def _hash_file(path) -> int | None:
             g = cv2.imdecode(data, cv2.IMREAD_GRAYSCALE)
         if g is None:
             return None
-        return dhash(g)
+        h = dhash(g)
+        pc = bin(h).count("1")
+        return None if (pc <= 4 or pc >= 60) else h      # плоские и градиентные кадры дают почти одинаковый хэш: по содержимому не группируем
     except Exception:
         return None
 

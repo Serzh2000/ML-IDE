@@ -1,6 +1,8 @@
 """Окно «Экспорт модели»: .pt -> ONNX / TorchScript / OpenVINO / TensorRT / NCNN / TFLite / CoreML."""
 from __future__ import annotations
 
+from . import winflags
+
 import re
 import shutil
 from pathlib import Path
@@ -11,7 +13,7 @@ from PySide6.QtWidgets import (QCheckBox, QComboBox, QDialog, QFileDialog, QForm
                                QLineEdit, QMessageBox, QPlainTextEdit, QPushButton, QSpinBox, QTextBrowser,
                                QVBoxLayout)
 
-from .. import paths
+from .. import paths, textio
 from .. import modelexport as ME
 from .dialogs import add_tips
 from .learn import cards_html
@@ -27,7 +29,7 @@ class ModelExportDialog(QDialog):
         self.result_path: Path | None = None
         self._log = ""
 
-        lay = QVBoxLayout(self)
+        lay = winflags.scroll_layout(self)
         intro = QLabel("Преобразует обученную модель <code>best.pt</code> в формат для вашего устройства или "
                        "приложения. Нужны Python с пакетом <code>ultralytics</code> (см. окно «Обучение»).")
         intro.setWordWrap(True)
@@ -183,7 +185,7 @@ class ModelExportDialog(QDialog):
         self.status.setText("идёт экспорт… (первый раз может докачать нужные пакеты)")
 
     def _on_out(self):
-        text = bytes(self.proc.readAllStandardOutput()).decode("utf-8", "replace")
+        text = textio.decode_stream(self.proc, self.proc.readAllStandardOutput())
         text = re.sub(r"\x1b\[[0-9;]*[A-Za-z]", "", text)
         self._log += text
         for ln in re.split(r"[\r\n]+", text):

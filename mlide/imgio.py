@@ -17,7 +17,10 @@ def is_image(p) -> bool:
 
 def imread(path):
     data = np.fromfile(str(path), dtype=np.uint8)
-    img = cv2.imdecode(data, cv2.IMREAD_COLOR)  # applies EXIF orientation
+    try:
+        img = cv2.imdecode(data, cv2.IMREAD_COLOR)  # applies EXIF orientation
+    except cv2.error:                                # пустой или битый файл: cv2.error вместо None
+        img = None
     if img is None:
         raise IOError(f"Cannot read image: {path}")
     return img
@@ -47,7 +50,7 @@ def size_of(path) -> tuple[int, int]:
     with Image.open(path) as im:
         w, h = im.size
         try:
-            if int(im.getexif().get(274, 1)) in (5, 6, 7, 8):
+            if im.format != "TIFF" and int(im.getexif().get(274, 1)) in (5, 6, 7, 8):      # TIFF: Pillow уже поменял размер местами
                 w, h = h, w
         except Exception:
             pass

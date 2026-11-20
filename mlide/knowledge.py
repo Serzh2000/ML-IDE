@@ -335,7 +335,8 @@ def analyze(project):
         imgsz = min(imgsz, 960)
     preset = "Сильная" if n < 150 else ("Средняя (по умолчанию YOLO)" if n < 1000 else "Лёгкая")
     settings = {
-        "preset": preset, "epochs": epochs, "imgsz": imgsz, "size": size, "batch": 16,
+        "preset": preset, "epochs": epochs, "imgsz": imgsz, "size": size,
+        "batch": (-1 if (gpu and (imgsz >= 960 or size in ("m", "l", "x"))) else 16),        # большие кадры/модели: автоподбор под видеопамять
         "bake_aug": n < 100,
         "train_pct": 80 if n < 300 else 70, "val_pct": 20, "test_pct": 0 if n < 300 else 10,
         "online_aug": True,
@@ -425,8 +426,8 @@ def explain_training(S, total_epochs, finished=False):
         v = m50[-1]
         band = ("слабо" if v < 0.3 else "средне" if v < 0.6 else "хорошо" if v < 0.85 else "отлично")
         lvl = "warn" if v < 0.3 and ep > 15 else "ok" if v >= 0.6 else "info"
-        txt = (f"mAP50 = {v:.2f} - это «{band}». Простыми словами: модель находит и правильно называет примерно "
-               f"{100 * v:.0f}% объектов на проверочных картинках (грубая оценка).")
+        txt = (f"mAP50 = {v:.2f} - это «{band}». Простыми словами: чем ближе к 1, тем лучше модель находит объекты и точнее "
+               f"ставит рамки на проверочных картинках. Это не «процент найденных объектов», а сводная оценка по всем порогам.")
         if v < 0.3 and ep > 15:
             txt += (" Для такой стадии низко: проверьте, что размечены ВСЕ объекты, достаточно ли примеров на "
                     "класс (Инструменты → Статистика) и нет ли ошибочных классов.")
@@ -434,7 +435,8 @@ def explain_training(S, total_epochs, finished=False):
         best_i = int(np.argmax(m50))
         since = len(m50) - 1 - best_i
         out.append(("info", "Лучшая эпоха", f"Максимум mAP50 = {m50[best_i]:.3f} на эпохе {int(S['epoch'][best_i])}. "
-                    "Именно эта версия сохраняется как best.pt - её и берите для работы."))
+                    "Файл best.pt выбирается по сочетанию mAP50 и mAP50-95 (в основном по mAP50-95), поэтому может быть от соседней эпохи - "
+                    "берите именно его для работы."))
         if len(m50) >= 10 and m50[-1] < 0.7 * m50[best_i] and best_i < len(m50) - 5:
             out.append(("warn", "Качество упало относительно лучшей эпохи",
                         f"Сейчас mAP50 = {m50[-1]:.2f}, а лучшая была {m50[best_i]:.2f} (эпоха "

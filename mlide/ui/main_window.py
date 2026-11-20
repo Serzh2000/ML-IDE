@@ -10,7 +10,7 @@ from PySide6.QtGui import (QAction, QActionGroup, QColor, QIcon, QImage, QImageR
                            QPixmap, QShortcut)
 from PySide6.QtWidgets import (QApplication, QColorDialog, QComboBox, QDockWidget, QFileDialog, QHBoxLayout,
                                QInputDialog, QLabel, QListView, QListWidget, QListWidgetItem, QMainWindow, QMessageBox, QStackedWidget,
-                               QPushButton, QToolBar, QVBoxLayout, QWidget)
+                               QFrame, QPushButton, QScrollArea, QToolBar, QVBoxLayout, QWidget)
 
 from .. import __version__, settings, autolabel, classtools, formats, imgio, importers, sam as sam_mod
 from ..augment import get_all_presets
@@ -65,7 +65,8 @@ def color_icon(hexcol, size=14):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.resize(1400, 860)
+        scr = QApplication.primaryScreen().availableGeometry() if QApplication.primaryScreen() else None
+        self.resize(min(1400, int(scr.width() * 0.94)) if scr else 1400, min(860, int(scr.height() * 0.92)) if scr else 860)
         self.project = Project()
         self.idx = -1
         self.undo_stack: dict[str, list] = {}
@@ -75,7 +76,11 @@ class MainWindow(QMainWindow):
         self.canvas = Canvas(lambda: self.project)
         self.welcome = WelcomePage()
         self.stack = QStackedWidget()
-        self.stack.addWidget(self.welcome)
+        wsc = QScrollArea()                                  # приветствие прокручивается: окно можно сузить до маленького экрана
+        wsc.setWidgetResizable(True)
+        wsc.setFrameShape(QFrame.NoFrame)
+        wsc.setWidget(self.welcome)
+        self.stack.addWidget(wsc)
         self.stack.addWidget(self.canvas)
         self.setCentralWidget(self.stack)
         self.welcome.importImages.connect(self.import_images)
@@ -264,6 +269,7 @@ class MainWindow(QMainWindow):
         self.a_gpu = A("Видеокарта и ускорение (CUDA)…", self.gpu_help)
         self.a_code = A("Примеры кода для запуска модели…", self.code_examples)
         self.a_update = A("Проверить обновления…", self.check_updates)
+        self.a_logs = A("Открыть папку журнала ошибок", lambda: __import__("mlide.applog", fromlist=["x"]).open_log_folder())
         self.a_kpts = A("Настроить ключевые точки…", self.configure_keypoints)
         self.a_tour = A("Тур по приложению", self.start_tour)
         self.a_exit = A("Выход", self.close, "Ctrl+Q")
@@ -345,6 +351,7 @@ class MainWindow(QMainWindow):
         hm = mb.addMenu("&Справка")
         hm.addAction(self.a_tour)
         hm.addAction(self.a_update)
+        hm.addAction(self.a_logs)
         hm.addAction(self.a_ref)
         hm.addAction(self.a_help)
 
@@ -762,14 +769,38 @@ class MainWindow(QMainWindow):
         return out
 
     def _add_paths(self, paths):
-        files = self._collect(paths)
-        before = {i.path for i in self.project.images}
-        QApplication.setOverrideCursor(Qt.WaitCursor)
-        try:
-            n = self.project.add_images(files)
-        finally:
-            QApplication.restoreOverrideCursor()
-        new = [e for e in self.project.images if e.path not in before]
+        """Сбор файлов и чтение размеров идёт в потоке (папка на 50 тысяч файлов или сетевой диск не подвешивают окно), с отменой."""
+        from PySide6.QtCore import QThread
+        from PySide6.QtWidgets import QProgressDialog
+
+        class _Worker(QThread):
+            def __init__(w, owner):
+                super().__init__()
+                w.owner, w.entries, w.cancel = owner, [], False
+                w.n_files = 0
+
+            def run(w):
+                files = w.owner._collect(paths)
+                w.n_files = len(files)
+                w.entries = w.owner.project.prepare_images(files, lambda i, n: not w.cancel)
+
+        worker = _Worker(self)
+        dlg = QProgressDialog("Добавляю изображения…", "Отмена", 0, 0, self)
+        dlg.setWindowModality(Qt.WindowModal)
+        dlg.setMinimumDuration(500)
+        dlg.canceled.connect(lambda: setattr(worker, "cancel", True))
+        worker.finished.connect(dlg.close)
+        worker.start()
+        loop_done = {"v": False}
+        worker.finished.connect(lambda: loop_done.__setitem__("v", True))
+        while not loop_done["v"]:
+            QApplication.processEvents()
+            worker.wait(30)
+        dlg.close()
+        n = self.project.add_prepared(worker.entries)
+        new = list(worker.entries)
+        if worker.n_files and not n and not worker.cancel:
+            self.statusBar().showMessage("Новых изображений не добавлено: файлы уже в проекте или не читаются", 6000)
         self.undo_stack.clear()
         self.redo_stack.clear()
         self._offer_label_import(new, paths)
@@ -867,6 +898,7 @@ class MainWindow(QMainWindow):
             return False
         pr.path = None                  # still unsaved: the user picks a real location on Ctrl+S
         pr.dirty = True
+        self._close_unique()
         self.project = pr
         self.idx = -1
         self.undo_stack.clear()
@@ -886,6 +918,7 @@ class MainWindow(QMainWindow):
     def new_project(self):
         if not self._maybe_save():
             return
+        self._close_unique()
         self.project = Project()
         self.idx = -1
         self.undo_stack.clear()
@@ -902,10 +935,12 @@ class MainWindow(QMainWindow):
 
     def _open_path(self, p):
         try:
-            self.project = Project.load(p)
+            newp = Project.load(p)
         except Exception as ex:  # noqa
             QMessageBox.critical(self, "Открыть проект", f"{type(ex).__name__}: {ex}")
-            return
+            return False
+        self._close_unique()
+        self.project = newp
         if getattr(self.project, "recovered_from_backup", False):
             QMessageBox.warning(self, "Проект восстановлен", "Файл проекта был повреждён: открыта его резервная копия (.bak). "
                                 "Последние изменения могли не сохраниться.")
@@ -1014,7 +1049,7 @@ class MainWindow(QMainWindow):
         self.canvas.update()
 
     def stats(self):
-        StatsDialog(self.project, self).exec()
+        self._show_unique("stats", lambda: StatsDialog(self.project, self), refresh=True)
 
     # ================================================================ тур
     def _tb(self, *actions):
@@ -1089,10 +1124,10 @@ class MainWindow(QMainWindow):
         self._tour = TourOverlay(self, self.tour_steps(), on_finish=done)
 
     def results(self):
-        ResultsDialog(self.project, self).exec()
+        self._show_unique("results", lambda: ResultsDialog(self.project, self))
 
     def export_model(self):
-        ModelExportDialog(self.project, self).exec()
+        self._show_unique("modelexport", lambda: ModelExportDialog(self.project, self))
 
     def view_model(self):
         w = self.project.export.get("auto_model", "")
@@ -1168,20 +1203,20 @@ class MainWindow(QMainWindow):
         self._review.show()
 
     def compare_runs(self):
-        CompareDialog(self.project, self).exec()
+        self._show_unique("compare", lambda: CompareDialog(self.project, self))
 
     def live_test(self):
-        LiveTestDialog(self.project, self).exec()
+        self._show_unique("livetest", lambda: LiveTestDialog(self.project, self))
 
     def check_updates(self):
-        UpdateDialog(self).exec()
+        self._show_unique("update", lambda: UpdateDialog(self))
 
     def gpu_help(self):
-        GpuHelpDialog(self).exec()
+        self._show_unique("gpu", lambda: GpuHelpDialog(self))
 
     def code_examples(self):
         names = self.project.class_names() or ["class0"]
-        CodeSnippetsDialog("best.onnx", names, 640, self).exec()
+        self._show_unique("code", lambda: CodeSnippetsDialog("best.onnx", names, 640, self), refresh=True)
 
     # ---- классы: объединение, порядок
     def _class_menu(self, pos):
@@ -1234,10 +1269,11 @@ class MainWindow(QMainWindow):
         elif self.project.dirty:
             self.save_project()
         import datetime
-        d = self.project.path.parent / f"{self.project.name}_snapshots"
-        d.mkdir(exist_ok=True)
-        target = d / f"{self.project.name}_{datetime.datetime.now():%Y%m%d_%H%M%S}.mlide.json"
+        nm = formats._safe_dir(self.project.name)
+        d = self.project.path.parent / f"{nm}_snapshots"
+        target = d / f"{nm}_{datetime.datetime.now():%Y%m%d_%H%M%S}.mlide.json"
         try:
+            d.mkdir(exist_ok=True)
             self.project.write_to(target)
         except Exception as ex:  # noqa
             QMessageBox.warning(self, "Снимок", f"{type(ex).__name__}: {ex}")
@@ -1245,7 +1281,7 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(f"Снимок сохранён: {target}", 8000)
 
     def open_snapshot(self):
-        start = str(self.project.path.parent / f"{self.project.name}_snapshots") if self.project.path else ""
+        start = str(self.project.path.parent / f"{formats._safe_dir(self.project.name)}_snapshots") if self.project.path else ""
         p, _ = QFileDialog.getOpenFileName(self, "Открыть снимок разметки", start, "Проект ML IDE (*.mlide.json)")
         if p and self._maybe_save():
             self._open_path(p)
@@ -1274,8 +1310,14 @@ class MainWindow(QMainWindow):
         self.welcome.set_recent(items)
 
     def _open_recent(self, p):
-        if self._maybe_save():
-            self._open_path(p)
+        if not self._maybe_save():
+            return
+        ok = self._open_path(p)
+        if ok is False:
+            if QMessageBox.question(self, "Недавние проекты", "Этот проект не открылся. Убрать его из списка недавних?") == QMessageBox.Yes:
+                s = settings.get()
+                s.setValue("recent", [x for x in self._recent() if os.path.normcase(x) != os.path.normcase(str(p))])
+                self._fill_recent()
 
     def _restart_app(self):
         if self._maybe_save():
@@ -1305,10 +1347,47 @@ class MainWindow(QMainWindow):
             self._restart_app()
 
     def show_reference(self, start=None):
-        HelpDialog(SHORTCUTS_HTML, self, start if isinstance(start, str) else None).exec()
+        st = start if isinstance(start, str) else None
+        self._show_unique("help", lambda: HelpDialog(SHORTCUTS_HTML, self, st), refresh=bool(st))
 
     def advisor(self):
-        AdvisorDialog(self.project, self, can_apply=False).exec()
+        self._show_unique("advisor", lambda: AdvisorDialog(self.project, self, can_apply=False), refresh=True)
+
+    def _show_unique(self, key, factory, refresh=False):
+        """Одно окно на тип: если оно уже открыто - поднимаем и фокусируем его (refresh=True: открываем заново с актуальными данными)."""
+        if not hasattr(self, "_unique"):
+            self._unique = {}
+        d = self._unique.get(key)
+        if d is not None:
+            try:
+                alive = d.isVisible()
+            except RuntimeError:                  # окно уже уничтожено Qt
+                alive = False
+            if alive and not refresh:
+                d.setWindowState(d.windowState() & ~Qt.WindowMinimized)
+                d.raise_()
+                d.activateWindow()
+                return d
+            if alive:
+                d.close()
+        d = factory()
+        d.setAttribute(Qt.WA_DeleteOnClose, True)
+        d.setModal(False)
+        d.destroyed.connect(lambda *_a, k=key, w=d: self._unique.pop(k, None) if self._unique.get(k) is w else None)
+        self._unique[key] = d
+        d.show()
+        d.raise_()
+        d.activateWindow()
+        return d
+
+    def _close_unique(self):
+        """Окна, привязанные к проекту, закрываются при смене проекта."""
+        for d in list(getattr(self, "_unique", {}).values()):
+            try:
+                d.close()
+            except RuntimeError:
+                pass
+        self._unique = {}
 
     def train(self):
         if getattr(self, "train_dlg", None) is None:
@@ -1325,7 +1404,10 @@ class MainWindow(QMainWindow):
 def install_translations(app):
     """Русские стандартные кнопки Qt (Сохранить, Отмена, Закрыть…)."""
     from PySide6.QtCore import QLibraryInfo, QTranslator
+    from .. import i18n
     app._tr = []
+    if i18n.lang() != "ru":
+        return
     for name in ("qtbase_ru", "qt_ru"):
         t = QTranslator(app)
         if t.load(name, QLibraryInfo.path(QLibraryInfo.TranslationsPath)):
@@ -1412,6 +1494,25 @@ def selftest_child(out_path, py):
     return 0 if ok else 1
 
 
+def selftest_onnx(out_path, model_path, image_path):
+    """Проверка разбора ONNX в собранном приложении: python-пакетов ultralytics/torch там нет, модель читается через onnxruntime.
+    Запуск: ML IDE.exe --selftest-onnx файл.txt модель.onnx картинка.jpg"""
+    lines = []
+    ok = True
+    try:
+        m = autolabel.load_model(model_path, 640)
+        img = imgio.imread(image_path)
+        dets = m.predict(img, 0.25, 0.45)
+        lines.append(f"task={getattr(m, 'task', None)} names={getattr(m, 'names', None)} detections={len(dets)} "
+                     f"with_masks={sum(1 for d in dets if d.poly)} with_keypoints={sum(1 for d in dets if d.kps)}")
+        ok = len(dets) < 300
+    except Exception as e:  # noqa
+        lines.append(f"FAIL {type(e).__name__}: {e}")
+        ok = False
+    Path(out_path).write_text("\n".join(lines), encoding="utf-8")
+    return 0 if ok else 1
+
+
 def selftest_sam(out_path):
     """Проверка «Клика (SAM)» в собранном приложении: скачивание моделей, кодировщик, декодер, маска.
     Запуск: ML IDE.exe --selftest-sam файл.txt   (модели кладутся в папку из MLIDE_MODELS, если она задана)."""
@@ -1450,14 +1551,21 @@ def selftest_sam(out_path):
 def run(argv):
     if argv and argv[0] == "--selftest-child":
         return selftest_child(argv[1], argv[2])
+    if argv and argv[0] == "--selftest-onnx":
+        return selftest_onnx(argv[1], argv[2], argv[3])
     if argv and argv[0] == "--selftest-sam":
         return selftest_sam(argv[1] if len(argv) > 1 else "selftest_sam.txt")
     if argv and argv[0] == "--selftest":
         return selftest(argv[1] if len(argv) > 1 else "selftest.txt")
     from .. import i18n
     i18n.set_language(i18n.detect_language())
+    from .. import applog
+    applog.install()
+    from . import winflags
+    winflags.install()
     app = QApplication(sys.argv[:1])
     app.setApplicationName("ML IDE")
+    app.aboutToQuit.connect(winflags.wait_threads)
     if i18n.lang() == "ru":
         install_translations(app)
     from .style import apply_theme, detect_theme
@@ -1475,4 +1583,6 @@ def run(argv):
     restored = w.offer_recovery()
     if not restored and argv and Path(argv[0]).exists() and argv[0].lower().endswith(".mlide.json"):
         w._open_path(argv[0])
+    if os.environ.get("MLIDE_EXIT_AFTER_MS"):                  # для проверки запуска (тесты, CI): окно открывается и закрывается само
+        QTimer.singleShot(int(os.environ["MLIDE_EXIT_AFTER_MS"]), app.quit)
     return app.exec()

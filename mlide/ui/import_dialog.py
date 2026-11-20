@@ -2,11 +2,13 @@
 показывает, сколько картинок найдено, даёт поправить столбцы таблицы и сопоставить классы, затем записывает разметку в проект."""
 from __future__ import annotations
 
+from . import winflags
+
 import html
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QThread, QTimer, Signal
-from PySide6.QtWidgets import (QCheckBox, QComboBox, QDialog, QFileDialog, QFormLayout, QGroupBox, QHBoxLayout, QHeaderView, QLabel,
+from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QDialog, QFileDialog, QFormLayout, QGroupBox, QHBoxLayout, QHeaderView, QLabel,
                                QLineEdit, QMessageBox, QProgressBar, QPushButton, QRadioButton, QTableWidget, QTableWidgetItem,
                                QTextBrowser, QVBoxLayout)
 
@@ -60,11 +62,12 @@ class _Apply(QThread):
     def __init__(self, project, ctx, det, opt, parsed):
         super().__init__()
         self.project, self.ctx, self.det, self.opt, self.parsed = project, ctx, det, opt, parsed
+        self.cancelled = False
 
     def run(self):
         try:
             rep = AI.run_import(self.project, self.ctx, self.det, self.opt,
-                                lambda i, n, _r: (self.progress.emit(i, n), True)[1], parsed=self.parsed)
+                                lambda i, n, _r: (self.progress.emit(i, n), not self.cancelled)[1], parsed=self.parsed)
             self.done.emit(rep)
         except Exception as e:  # noqa
             self.failed.emit(f"{type(e).__name__}: {e}")
@@ -88,7 +91,7 @@ class ImportDialog(QDialog):
         self._table_header: list[str] = []
         self._lang = i18n.lang()
 
-        lay = QVBoxLayout(self)
+        lay = winflags.scroll_layout(self)
         intro = QLabel("Выберите папку или файлы с разметкой - формат определится сам: YOLO, COCO, Pascal VOC, LabelMe, CVAT, VIA, Label Studio, "
                        "CreateML, CSV / JSON-таблицы, список «картинка → файл разметки». Картинки находятся по именам и путям из файлов разметки.")
         intro.setWordWrap(True)
@@ -488,6 +491,13 @@ class ImportDialog(QDialog):
         self.accept()
 
     def reject(self):
-        if self._thread is not None and self._thread.isRunning():
-            self._thread.wait(3000)
+        th = self._thread
+        if th is not None and th.isRunning():
+            if isinstance(th, _Apply):
+                th.cancelled = True                                  # запись останавливается между картинками
+            QApplication.setOverrideCursor(Qt.WaitCursor)
+            th.wait(8000)
+            QApplication.restoreOverrideCursor()
+            if th.isRunning():
+                return                                               # ещё работает: окно не закрываем, чтобы не оборвать запись
         super().reject()

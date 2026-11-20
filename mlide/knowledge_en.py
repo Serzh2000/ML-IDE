@@ -432,8 +432,8 @@ def explain_training(S, total_epochs, finished=False):
         v = m50[-1]
         band = ("weak" if v < 0.3 else "average" if v < 0.6 else "good" if v < 0.85 else "excellent")
         lvl = "warn" if v < 0.3 and ep > 15 else "ok" if v >= 0.6 else "info"
-        txt = (f"mAP50 = {v:.2f} - that is \"{band}\". In simple terms: the model finds and correctly names about "
-               f"{100 * v:.0f}% of the objects in the validation images (a rough estimate).")
+        txt = (f"mAP50 = {v:.2f} - that is \"{band}\". In simple terms: the closer to 1, the better the model finds objects and the "
+               f"more precisely it draws boxes on the validation images. It is not the \"percentage of objects found\", but a summary score over all thresholds.")
         if v < 0.3 and ep > 15:
             txt += (" That is low for this stage: check that ALL objects are labeled, that there are enough examples per "
                     "class (Tools → Statistics) and that there are no wrong classes.")
@@ -441,7 +441,8 @@ def explain_training(S, total_epochs, finished=False):
         best_i = int(np.argmax(m50))
         since = len(m50) - 1 - best_i
         out.append(("info", "Best epoch", f"Maximum mAP50 = {m50[best_i]:.3f} at epoch {int(S['epoch'][best_i])}. "
-                    "This is the version saved as best.pt - use it for your work."))
+                    "The best.pt file is chosen by a mix of mAP50 and mAP50-95 (mostly mAP50-95), so it may come from a neighbouring epoch - "
+                    "use that file for your work."))
         if len(m50) >= 10 and m50[-1] < 0.7 * m50[best_i] and best_i < len(m50) - 5:
             out.append(("warn", "Quality dropped compared to the best epoch",
                         f"Now mAP50 = {m50[-1]:.2f}, while the best was {m50[best_i]:.2f} (epoch "

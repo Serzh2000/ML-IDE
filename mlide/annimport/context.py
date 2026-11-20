@@ -74,16 +74,9 @@ class SourceContext:
         key = (str(p), limit)
         if key in self._text:
             return self._text[key]
-        raw = Path(p).read_bytes() if limit is None else open(p, "rb").read(limit)
-        for enc in ("utf-8-sig", "utf-16", "cp1251", "latin-1"):
-            try:
-                txt = raw.decode(enc)
-                break
-            except (UnicodeDecodeError, UnicodeError):
-                continue
-        else:
-            txt = raw.decode("utf-8", "replace")
-        if len(self._text) < 256:
+        from .. import textio
+        txt = textio.read_text(p, limit)
+        if len(self._text) < 256 and len(txt) < 200_000:            # в кэше только небольшие тексты
             self._text[key] = txt
         return txt
 

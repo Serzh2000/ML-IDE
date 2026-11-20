@@ -1,6 +1,8 @@
 """Окно «Результаты обучения»: метрики, графики, картинки Ultralytics, проверка модели на фото."""
 from __future__ import annotations
 
+from . import winflags
+
 import csv
 import re
 from pathlib import Path
@@ -45,7 +47,7 @@ class ResultsDialog(QDialog):
         self._pix = None
         self._test_pix = None
 
-        lay = QVBoxLayout(self)
+        lay = winflags.scroll_layout(self)
         row = QHBoxLayout()
         self.folder = QLineEdit(project.export.get("out_dir", ""))
         b = QPushButton("Обзор…")
@@ -263,14 +265,22 @@ class ResultsDialog(QDialog):
     def _compare(self):
         from .compare_dialog import CompareDialog
         self.project.export["out_dir"] = self.folder.text().strip() or self.project.export.get("out_dir", "")
-        CompareDialog(self.project, self).exec()
+        main = self.parent()
+        if hasattr(main, "_show_unique"):
+            main._show_unique("compare", lambda: CompareDialog(self.project, main))
+        else:
+            CompareDialog(self.project, self).exec()
 
     def _live(self):
         from .live_test import LiveTestDialog
         w = self._find_model()
         if w:
             self.project.export["auto_model"] = str(w)
-        LiveTestDialog(self.project, self).exec()
+        main = self.parent()
+        if hasattr(main, "_show_unique"):
+            main._show_unique("livetest", lambda: LiveTestDialog(self.project, main))
+        else:
+            LiveTestDialog(self.project, self).exec()
 
     def _view_model(self):
         from .model_viewer import show_in_netron
@@ -280,7 +290,12 @@ class ResultsDialog(QDialog):
     def _export_model(self):
         from .model_export import ModelExportDialog
         w = (self.run_dir / "weights" / "best.pt") if self.run_dir else None
-        ModelExportDialog(self.project, self, str(w) if w and w.exists() else "").exec()
+        main = self.parent()
+        wp = str(w) if w and w.exists() else ""
+        if hasattr(main, "_show_unique"):
+            main._show_unique("modelexport", lambda: ModelExportDialog(self.project, main, wp))
+        else:
+            ModelExportDialog(self.project, self, wp).exec()
 
     # ---------------------------------------------------------------- проверка модели
     def _find_model(self):

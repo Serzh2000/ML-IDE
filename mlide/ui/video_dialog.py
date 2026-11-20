@@ -1,6 +1,8 @@
 """Нарезка видео на кадры для разметки."""
 from __future__ import annotations
 
+from . import winflags
+
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QThread, Signal
@@ -40,7 +42,8 @@ class VideoDialog(QDialog):
         self.result_paths: list[str] = []
         self.add_to_project = True
         self.worker: _Worker | None = None
-        lay = QVBoxLayout(self)
+        lay = winflags.scroll_layout(self)
+        self._root = lay
         intro = QLabel("Нарезает видео на отдельные кадры для разметки. Совет: берите не все кадры, а один в 0.5-2 секунды "
                        "или только при смене сцены: соседние кадры почти одинаковы и не добавляют знаний модели.")
         intro.setWordWrap(True)
@@ -119,7 +122,7 @@ class VideoDialog(QDialog):
         i = self.mode.currentIndex()
         for k, w in enumerate((self.val_sec, self.val_n, self.val_scene)):
             w.setVisible(k == i)
-            lab = self.layout().itemAt(1).layout().labelForField(w)
+            lab = self._root.itemAt(1).layout().labelForField(w)
             if lab:
                 lab.setVisible(k == i)
 

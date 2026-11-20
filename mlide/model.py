@@ -9,7 +9,7 @@ import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from . import imgio
+from . import imgio, textio
 
 PALETTE = [
     "#ff595e", "#ffca3a", "#8ac926", "#1982c4", "#6a4c93", "#ff924c",
@@ -104,15 +104,33 @@ class Project:
         miss = self.missing_images()
         if not miss:
             return 0, 0
-        index: dict[str, str] = {}
+        index: dict[str, list[str]] = {}
         for root, _dirs, files in os.walk(folder):
             for f in files:
-                index.setdefault(f.lower(), os.path.join(root, f))
+                if imgio.is_image(f):
+                    index.setdefault(f.lower(), []).append(os.path.join(root, f))
         fixed = 0
         for e in miss:
-            p = index.get(Path(e.path).name.lower())
-            if p:
-                e.path = str(Path(p).resolve())
+            cands = index.get(Path(e.path).name.lower()) or []
+            want = Path(e.path).parts[::-1]
+
+            def score(c):
+                n = 0
+                for a, b in zip(want, Path(c).parts[::-1]):
+                    if a.lower() != b.lower():
+                        break
+                    n += 1
+                return n
+
+            ok = []
+            for c in sorted(cands, key=score, reverse=True):
+                try:
+                    if imgio.size_of(c) == (e.w, e.h):             # другой размер - это другая картинка с тем же именем
+                        ok.append(c)
+                except Exception:  # noqa
+                    continue
+            if ok:
+                e.path = str(Path(ok[0]).resolve())
                 fixed += 1
         if fixed:
             self.dirty = True
@@ -143,24 +161,36 @@ class Project:
         self.dirty = True
 
     # ---- images
-    def add_images(self, paths) -> int:
+    def prepare_images(self, paths, progress=None) -> list:
+        """Записи для новых картинок (читает размеры файлов, проект не меняет - можно вызывать из потока).
+        progress(i, n) -> False прерывает."""
         known = {os.path.normcase(i.path) for i in self.images}
-        added = 0
-        for p in paths:
+        out = []
+        paths = list(paths)
+        for i, p in enumerate(paths):
+            if progress is not None and i % 50 == 0 and progress(i, len(paths)) is False:
+                break
             p = str(Path(p).resolve())
-            if os.path.normcase(p) in known or not imgio.is_image(p):
+            k = os.path.normcase(p)
+            if k in known or not imgio.is_image(p):
                 continue
             try:
                 w, h = imgio.size_of(p)
             except Exception:
                 continue
-            self.images.append(ImageEntry(p, w, h))
-            known.add(os.path.normcase(p))
-            added += 1
-        if added:
+            out.append(ImageEntry(p, w, h))
+            known.add(k)
+        return out
+
+    def add_prepared(self, entries) -> int:
+        if entries:
+            self.images.extend(entries)
             self.images.sort(key=lambda i: i.path.lower())
             self.dirty = True
-        return added
+        return len(entries)
+
+    def add_images(self, paths, progress=None) -> int:
+        return self.add_prepared(self.prepare_images(paths, progress))
 
     # ---- persistence
     def write_to(self, target):
@@ -175,7 +205,7 @@ class Project:
             "export": self.export,
             "keypoints": self.keypoints, "skeleton": self.skeleton, "flip_pairs": self.flip_pairs,
             "images": [{
-                "path": imgio.rel_or_abs(Path(i.path), base), "w": i.w, "h": i.h,
+                "path": imgio.rel_or_abs(Path(i.path), base).replace("\\", "/"), "w": i.w, "h": i.h,
                 "reviewed": i.reviewed, "anns": [a.to_dict() for a in i.anns],
                 **({"tag": i.tag} if i.tag is not None else {}),
             } for i in self.images],
@@ -196,8 +226,9 @@ class Project:
         assert target, "no path"
         if target.exists():                         # предыдущая версия сохраняется как резервная копия
             try:
+                json.loads(textio.read_text(target))
                 shutil.copy2(target, target.with_name(target.name + ".bak"))
-            except OSError:
+            except (OSError, ValueError):               # файл не читается: хорошую .bak не затираем
                 pass
         self.write_to(target)
         self.path = target          # only after a successful write
@@ -208,12 +239,14 @@ class Project:
         path = Path(path)
         recovered = False
         try:
-            data = json.loads(path.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, UnicodeDecodeError):
+            data = json.loads(textio.read_text(path))
+            if not isinstance(data, dict) or not isinstance(data.get("images", []), list):
+                raise ValueError("не проект ML IDE")
+        except (ValueError, UnicodeDecodeError):
             bak = path.with_name(path.name + ".bak")
             if not bak.exists():
                 raise
-            data = json.loads(bak.read_text(encoding="utf-8"))      # файл повреждён - берём резервную копию
+            data = json.loads(textio.read_text(bak))      # файл повреждён - берём резервную копию
             recovered = True
         pr = Project(data.get("name", path.stem))
         pr.recovered_from_backup = recovered
@@ -225,9 +258,9 @@ class Project:
         pr.skeleton = data.get("skeleton", [])
         pr.flip_pairs = data.get("flip_pairs", [])
         for d in data.get("images", []):
-            p = Path(d["path"])
+            p = Path(str(d["path"]).replace("\\", "/") if not Path(d["path"]).is_absolute() else d["path"])
             if not p.is_absolute():
-                p = (path.parent / p).resolve()
+                p = Path(os.path.normpath(os.path.join(path.parent.resolve(), p)))
             pr.images.append(ImageEntry(str(p), d["w"], d["h"],
                                         [Annotation.from_dict(a) for a in d.get("anns", [])],
                                         d.get("reviewed", False), d.get("tag")))

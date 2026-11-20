@@ -97,7 +97,8 @@ class WelcomePage(QWidget):
 
     def _card(self, ico, title, desc, sig, primary):
         f = QFrame()
-        f.setFixedSize(330, 92)
+        f.setMinimumSize(330, 92)
+        f.setMaximumWidth(330)
         bg = style.CARD_PRIMARY if primary else style.CARD
         f.setStyleSheet(f"QFrame{{background:{bg};border:1px solid {style.ACCENT if primary else style.BORDER};border-radius:12px;}}"
                         f"QFrame:hover{{border-color:{style.ACCENT_HI};}} QLabel{{background:transparent;border:none;}}")

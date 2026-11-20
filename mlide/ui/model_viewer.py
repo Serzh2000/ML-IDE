@@ -1,6 +1,8 @@
 """Просмотр модели: схема графа ONNX, список слоёв, сводка и пояснения простым языком."""
 from __future__ import annotations
 
+from . import winflags
+
 from collections import Counter
 from pathlib import Path
 
@@ -74,7 +76,7 @@ class ModelViewerDialog(QDialog):
         self._matches: list = []
         self._mi = 0
 
-        lay = QVBoxLayout(self)
+        lay = winflags.scroll_layout(self)
         top = QHBoxLayout()
         self.path = QLineEdit(path)
         self.path.setPlaceholderText("Файл модели .onnx")

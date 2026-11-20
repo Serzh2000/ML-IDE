@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import math
 import random
 import shutil
 from dataclasses import dataclass, field
@@ -14,6 +15,7 @@ import yaml
 
 from . import imgio
 from .augment import AugParams, augment_sample
+from . import textio
 from .model import Annotation, ImageEntry, Project
 
 FORMATS = {
@@ -132,6 +134,25 @@ def _clean_previous(project: Project, out: Path, fmt):
             (out / n).unlink(missing_ok=True)
 
 
+def _finite_ann(a) -> bool:
+    try:
+        vals = [v for p in a.pts for v in p] + [v for k in (a.kps or []) for v in k[:2]]
+        return all(math.isfinite(float(v)) for v in vals)
+    except (TypeError, ValueError):
+        return False
+
+
+def _clip_area(pts, w, h) -> float:
+    """Площадь многоугольника после обрезки координат по кадру (в пикселях); вырожденные фигуры дают ~0."""
+    c = [(min(max(x, 0.0), w), min(max(y, 0.0), h)) for x, y in pts]
+    s = 0.0
+    for i in range(len(c)):
+        x1, y1 = c[i]
+        x2, y2 = c[(i + 1) % len(c)]
+        s += x1 * y2 - x2 * y1
+    return abs(s) / 2
+
+
 def yolo_lines(fmt, anns, w, h, nkpt=0):
     out = []
     for a in anns:
@@ -161,10 +182,17 @@ def yolo_lines(fmt, anns, w, h, nkpt=0):
             out.append(f"{a.cls} {cx:.6f} {cy:.6f} {bw:.6f} {bh:.6f}")
         elif fmt == "ultra_seg":
             pts = a.polygon()
+            if len(pts) < 3 or _clip_area(pts, w, h) < 1:      # 2 точки превратились бы в «рамку» внутри сегментационного набора
+                continue
             flat = " ".join(f"{min(max(x / w, 0), 1):.6f} {min(max(y / h, 0), 1):.6f}" for x, y in pts)
             out.append(f"{a.cls} {flat}")
         elif fmt == "ultra_obb":
-            pts = _obb_points(a)
+            try:
+                pts = _obb_points(a)
+            except (cv2.error, ValueError, IndexError):          # пустой полигон
+                continue
+            if len(pts) < 4 or _clip_area(pts, w, h) < 1:
+                continue
             flat = " ".join(f"{min(max(x / w, 0), 1):.6f} {min(max(y / h, 0), 1):.6f}" for x, y in pts)
             out.append(f"{a.cls} {flat}")
     return "\n".join(out) + ("\n" if out else "")
@@ -234,7 +262,22 @@ def _unique(name, used):
 
 
 def _safe_dir(name: str) -> str:
-    return "".join(c if c not in '<>:"/\\|?*' else "_" for c in str(name)).strip() or "class"
+    s = "".join(c if (c not in '<>:"/\\|?*' and ord(c) >= 32) else "_" for c in str(name)).strip().rstrip(". ")
+    return s or "class"
+
+
+def _class_dirs(names) -> list[str]:
+    """Папки классов: безопасные для Windows и различающиеся без учёта регистра («Cat» и «cat» - разные классы, а не одна папка)."""
+    out, seen = [], set()
+    for n in names:
+        d = base = _safe_dir(n)
+        k = 1
+        while d.lower() in seen:
+            k += 1
+            d = f"{base}_{k}"
+        seen.add(d.lower())
+        out.append(d)
+    return out
 
 
 def _flip_idx(project: Project):
@@ -243,9 +286,11 @@ def _flip_idx(project: Project):
     if not project.flip_pairs or n == 0:
         return None
     idx = list(range(n))
+    used: set = set()
     for a, b in project.flip_pairs:
-        if 0 <= a < n and 0 <= b < n:
+        if 0 <= a < n and 0 <= b < n and a != b and a not in used and b not in used:      # пересекающиеся пары пропускаем
             idx[a], idx[b] = b, a
+            used.update((a, b))
     return idx
 
 
@@ -263,6 +308,7 @@ def export_dataset(project: Project, o: ExportOptions, progress=lambda i, n, m: 
     out = Path(o.out_dir)
     out.mkdir(parents=True, exist_ok=True)
     names = project.class_names()
+    cdirs = _class_dirs(names)
     if not names:
         raise ValueError("В проекте нет классов.")
 
@@ -322,7 +368,7 @@ def export_dataset(project: Project, o: ExportOptions, progress=lambda i, n, m: 
         nonlocal coco_ann_id
         idir, ldir = dirs(split)
         if o.fmt == "ultra_cls":
-            idir = idir / _safe_dir(names[entry.tag])
+            idir = idir / cdirs[entry.tag]
         idir.mkdir(parents=True, exist_ok=True)
         if ldir:
             ldir.mkdir(parents=True, exist_ok=True)
@@ -338,7 +384,7 @@ def export_dataset(project: Project, o: ExportOptions, progress=lambda i, n, m: 
         if o.fmt == "ultra_cls":
             stats["labels"] = stats["labels"] - len(anns) + 1
         elif o.fmt in ("ultra_det", "ultra_seg", "ultra_obb", "ultra_pose", "yolov7", "darknet"):
-            (ldir / f"{stem}.txt").write_text(yolo_lines(o.fmt, anns, w, h, len(project.keypoints)), encoding="utf-8")
+            (ldir / f"{stem}.txt").write_text(yolo_lines(o.fmt, anns, w, h, len(project.keypoints)), encoding="utf-8", newline="\n")
             if o.fmt == "darknet":
                 darknet_lists[split].append(f"data/obj/{img_name}")
         elif o.fmt == "coco":
@@ -377,7 +423,7 @@ def export_dataset(project: Project, o: ExportOptions, progress=lambda i, n, m: 
             xml = (f"<annotation><folder>JPEGImages</folder><filename>{escape(img_name)}</filename>"
                    f"<size><width>{w}</width><height>{h}</height><depth>3</depth></size>"
                    f"<segmented>0</segmented>{''.join(objs)}</annotation>")
-            (ldir / f"{stem}.xml").write_text(xml, encoding="utf-8")
+            (ldir / f"{stem}.xml").write_text(xml, encoding="utf-8", newline="\n")
             (out / "ImageSets" / "Main").mkdir(parents=True, exist_ok=True)
             with open(out / "ImageSets" / "Main" / f"{split}.txt", "a", encoding="utf-8") as f:
                 f.write(stem + "\n")
@@ -387,10 +433,11 @@ def export_dataset(project: Project, o: ExportOptions, progress=lambda i, n, m: 
             if not progress(done, total, e.name):
                 raise Cancelled()
             done += 1
-            anns = [(a.cls, a.kind, a.pts, a.kps) if a.kind == "pose" else (a.cls, a.kind, a.pts) for a in _items(e, o.skip_suggested)]
+            anns = [(a.cls, a.kind, a.pts, a.kps) if a.kind == "pose" else (a.cls, a.kind, a.pts)
+                    for a in _items(e, o.skip_suggested) if 0 <= a.cls < len(names) and _finite_ann(a)]
             if o.fmt == "ultra_cls":
                 anns = []
-            names_used = used.setdefault(str(dirs(split)[0] / (_safe_dir(names[e.tag]) if o.fmt == "ultra_cls" else "")), set())
+            names_used = used.setdefault(str(dirs(split)[0] / (cdirs[e.tag] if o.fmt == "ultra_cls" else "")), set())
             name = _unique(e.name, names_used)
             emit(split, e, name, anns, image_src=e.path, w=e.w, h=e.h)
             if o.bake_aug and split == "train" and o.aug.copies > 0 and (anns or o.fmt == "ultra_cls"):
@@ -407,9 +454,9 @@ def export_dataset(project: Project, o: ExportOptions, progress=lambda i, n, m: 
     # ---- dataset descriptor files
     if o.fmt == "ultra_cls":
         for s in splits:                     # у каждой части выборки есть папки всех классов (одинаковая нумерация классов)
-            for n in names:
-                (out / s / _safe_dir(n)).mkdir(parents=True, exist_ok=True)
-        (out / "classes.txt").write_text("\n".join(names) + "\n", encoding="utf-8")
+            for d_ in cdirs:
+                (out / s / d_).mkdir(parents=True, exist_ok=True)
+        (out / "classes.txt").write_text("\n".join(names) + "\n", encoding="utf-8", newline="\n")
     elif o.fmt in ("ultra_det", "ultra_seg", "ultra_obb", "ultra_pose", "yolov7"):
         # no absolute "path": it is resolved relative to data.yaml, so the folder can be moved / uploaded
         cfg = {}
@@ -426,11 +473,11 @@ def export_dataset(project: Project, o: ExportOptions, progress=lambda i, n, m: 
             fi = _flip_idx(project)
             if fi:
                 cfg["flip_idx"] = fi
-        (out / "data.yaml").write_text(yaml.safe_dump(cfg, sort_keys=False, allow_unicode=True), encoding="utf-8")
+        (out / "data.yaml").write_text(yaml.safe_dump(cfg, sort_keys=False, allow_unicode=True), encoding="utf-8", newline="\n")
     elif o.fmt == "darknet":
-        (out / "obj.names").write_text("\n".join(names) + "\n", encoding="utf-8")
+        (out / "obj.names").write_text("\n".join(names) + "\n", encoding="utf-8", newline="\n")
         for s, lst in darknet_lists.items():
-            (out / f"{'valid' if s == 'val' else s}.txt").write_text("\n".join(lst) + "\n", encoding="utf-8")
+            (out / f"{'valid' if s == 'val' else s}.txt").write_text("\n".join(lst) + "\n", encoding="utf-8", newline="\n")
         valid = "valid.txt" if "val" in splits else "train.txt"
         (out / "obj.data").write_text(
             f"classes = {len(names)}\ntrain = train.txt\nvalid = {valid}\nnames = obj.names\nbackup = backup/\n",
@@ -439,9 +486,9 @@ def export_dataset(project: Project, o: ExportOptions, progress=lambda i, n, m: 
     elif o.fmt == "coco":
         (out / "annotations").mkdir(exist_ok=True)
         for s, d in coco.items():
-            (out / "annotations" / f"instances_{s}.json").write_text(json.dumps(d), encoding="utf-8")
+            (out / "annotations" / f"instances_{s}.json").write_text(json.dumps(d), encoding="utf-8", newline="\n")
     elif o.fmt == "voc":
-        (out / "labels.txt").write_text("\n".join(names) + "\n", encoding="utf-8")
+        (out / "labels.txt").write_text("\n".join(names) + "\n", encoding="utf-8", newline="\n")
 
     if o.write_train_script and o.fmt in TASK_OF:
         write_train_script(out, o)
@@ -504,17 +551,17 @@ def main():
 if __name__ == "__main__":      # required on Windows: data-loader workers re-import this file
     main()
 '''
-    (out / "train.py").write_text(code, encoding="utf-8")
+    (out / "train.py").write_text(code, encoding="utf-8", newline="\n")
 
 
 # ----------------------------------------------------------------------------- YOLO label import
 def read_class_names(path):
     p = Path(path)
     if p.suffix.lower() in (".yaml", ".yml"):
-        d = yaml.safe_load(p.read_text(encoding="utf-8"))
+        d = yaml.safe_load(textio.read_text(p))
         n = d.get("names", [])
         return [n[k] for k in sorted(n)] if isinstance(n, dict) else list(n)
-    return [ln.strip() for ln in p.read_text(encoding="utf-8").splitlines() if ln.strip()]
+    return [ln.strip() for ln in textio.read_text(p).splitlines() if ln.strip()]
 
 
 def find_label_file(img_path: str):
@@ -534,13 +581,13 @@ def import_yolo_labels(entry: ImageEntry, n_classes: int, n_kpts: int = 0, kpt_d
     if not lf:
         return 0
     n = 0
-    for line in lf.read_text(encoding="utf-8").splitlines():
+    for line in textio.read_text(lf).splitlines():
         t = line.split()
         try:
             cls, v = int(float(t[0])), [float(x) for x in t[1:]]
         except (ValueError, IndexError):
             continue
-        if cls >= n_classes:
+        if cls < 0 or cls >= n_classes or not all(math.isfinite(x) for x in v):
             continue
         if n_kpts and len(v) == 4 + kpt_dim * n_kpts:     # pose: рамка + (x, y[, видимость]) для каждой точки
             cx, cy, bw, bh = v[:4]

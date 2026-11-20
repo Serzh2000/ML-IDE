@@ -1,0 +1,35 @@
+ML IDE - third-party components / Сторонние компоненты
+=======================================================
+
+ML IDE itself is released under the MIT License (see LICENSE).
+Сама программа ML IDE распространяется по лицензии MIT (файл LICENSE).
+
+The program bundles or uses the following open-source components. Each keeps its own license.
+Программа включает или использует следующие компоненты с открытым кодом; у каждого своя лицензия.
+
+Qt 6 / PySide6 (Qt for Python)  - LGPL-3.0 (with GPL/commercial options)   https://www.qt.io , https://pypi.org/project/PySide6/
+    The Qt libraries are shipped as separate DLL files in the application folder ("onedir" layout), so you may replace them
+    with your own build of the same Qt version. Source code of Qt and PySide6: https://code.qt.io , https://pypi.org/project/PySide6/#files
+    Библиотеки Qt лежат отдельными DLL-файлами в папке программы; их можно заменить своей сборкой той же версии Qt.
+    Полный текст LGPL-3.0: https://www.gnu.org/licenses/lgpl-3.0.html
+
+OpenCV (opencv-python-headless)  - Apache-2.0                              https://opencv.org
+    The wheel also contains FFmpeg libraries (LGPL-2.1+): https://ffmpeg.org/legal.html
+NumPy                            - BSD-3-Clause                             https://numpy.org
+Pillow                           - HPND (MIT-CMU)                           https://python-pillow.org
+PyYAML                           - MIT                                      https://pyyaml.org
+ONNX Runtime                     - MIT                                      https://onnxruntime.ai
+Python                           - PSF License                              https://www.python.org
+PyInstaller (build tool)         - GPL-2.0 with the bootloader exception    https://pyinstaller.org
+    The exception permits distributing the built application under any license.
+
+Netron (bundled in assets/netron)- MIT, Copyright (c) Lutz Roeder           https://github.com/lutzroeder/netron
+    Full text: assets/netron/LICENSE-netron.txt
+Lucide icons (assets/icons)      - ISC, Copyright (c) Lucide Contributors   https://lucide.dev
+    Full text: assets/icons/LICENSE-lucide.txt
+
+Optional, NOT included and downloaded only when you ask for it / Не входит в программу, скачивается только по вашей просьбе:
+Ultralytics YOLO (pip install ultralytics) - AGPL-3.0                       https://github.com/ultralytics/ultralytics
+MobileSAM ONNX export (Acly/MobileSAM)     - Apache-2.0                     https://huggingface.co/Acly/MobileSAM
+Learning datasets (Ultralytics, Roboflow 100 on Hugging Face and others) - each under its own license, shown in the
+    "Examples" window. / Учебные наборы данных - каждый по своей лицензии, она показана в окне «Примеры».

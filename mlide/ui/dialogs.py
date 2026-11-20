@@ -1,6 +1,8 @@
 """Dialogs: augmentation presets, export, auto-annotate, stats."""
 from __future__ import annotations
 
+from . import winflags
+
 import copy
 from pathlib import Path
 
@@ -84,7 +86,7 @@ class PresetDialog(QDialog):
             except Exception:
                 pass
 
-        lay = QHBoxLayout(self)
+        lay = winflags.scroll_layout(self, QHBoxLayout)
         left = QVBoxLayout()
         self.lst = QListWidget()
         self.lst.setMaximumWidth(210)
@@ -126,7 +128,7 @@ class PresetDialog(QDialog):
         right.addWidget(QLabel("Предпросмотр (текущее изображение, случайный результат)"))
         self.preview = QLabel("Сначала откройте изображение" if self.base_img is None else "")
         self.preview.setAlignment(Qt.AlignCenter)
-        self.preview.setMinimumSize(380, 380)
+        self.preview.setMinimumSize(240, 240)
         self.preview.setStyleSheet(f"background:{style.CHART};border-radius:6px")
         right.addWidget(self.preview, 1)
         nb = QPushButton("Другой вариант")
@@ -542,7 +544,11 @@ class AutoWorker(QThread):
                 if self._cancel:
                     break
                 self.progress.emit(i, n)
-                img = imgio.imread(e.path)
+                try:
+                    img = imgio.imread(e.path)
+                except (OSError, ValueError):               # битый или пропавший файл: пропускаем, остальные обрабатываем
+                    self.skipped = getattr(self, "skipped", 0) + 1
+                    continue
                 dets = model.predict(img, self.conf, self.iou)
                 if self.replace:
                     e.anns = [a for a in e.anns if not a.suggested]
@@ -550,7 +556,12 @@ class AutoWorker(QThread):
                     cls = self._map(d, model)
                     if cls is None:
                         continue
-                    if d.poly:
+                    if d.obb and d.poly:
+                        e.anns.append(Annotation(cls, "obb", d.poly, suggested=True, conf=d.conf))
+                    elif d.kps and len(self.project.keypoints) == len(d.kps):
+                        x1, y1, x2, y2 = d.box
+                        e.anns.append(Annotation(cls, "pose", [[x1, y1], [x2, y2]], suggested=True, conf=d.conf, kps=d.kps))
+                    elif d.poly:
                         e.anns.append(Annotation(cls, "poly", d.poly, suggested=True, conf=d.conf))
                     else:
                         x1, y1, x2, y2 = d.box
@@ -582,7 +593,7 @@ class AutoLabelDialog(QDialog):
         self.resize(560, 470)
         self.project, self.current = project, current_entry
         self.worker = None
-        lay = QVBoxLayout(self)
+        lay = winflags.scroll_layout(self)
         info = QLabel("Загрузите свою обученную (или любую YOLO) модель, и она предложит рамки. Они появятся "
                       "пунктиром как <b>подсказки</b> - проверьте их, затем примите (Y) или удалите.<br>"
                       "<b>.onnx</b>: работает сразу (детекция YOLOv5/v7/v8/v9/v10/v11/v12/26). "
@@ -751,7 +762,7 @@ class StatsDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("Статистика и проверка датасета")
         self.resize(640, 460)
-        lay = QVBoxLayout(self)
+        lay = winflags.scroll_layout(self)
         t = QPlainTextEdit(dataset_report(project))
         t.setReadOnly(True)
         t.setStyleSheet("font-family: Consolas, monospace;")

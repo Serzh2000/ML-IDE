@@ -142,7 +142,11 @@ def augment_sample(img, anns, p: AugParams, rng: np.random.Generator, flip_idx=N
     M = T @ S @ R @ F @ C
 
     identity = np.allclose(M, np.eye(3))
-    out = img if identity else cv2.warpAffine(img, M[:2], (w, h), flags=cv2.INTER_LINEAR,
+    # разметка живёт в непрерывных координатах (кадр от 0 до w), а warpAffine работает по индексам пикселей (центр пикселя = целое):
+    # без поправки в полпикселя метка после отражения смещалась на 1 px относительно картинки
+    D = np.array([[1, 0, 0.5], [0, 1, 0.5], [0, 0, 1]], dtype=np.float64)
+    Mi = np.linalg.inv(D) @ M @ D
+    out = img if identity else cv2.warpAffine(img, Mi[:2], (w, h), flags=cv2.INTER_LINEAR,
                                               borderValue=(114, 114, 114))
 
     new_anns = []

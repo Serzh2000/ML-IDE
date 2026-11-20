@@ -10,7 +10,7 @@ from PySide6.QtGui import QDesktopServices, QGuiApplication
 from PySide6.QtWidgets import (QDialog, QHBoxLayout, QLabel, QLineEdit, QMessageBox, QPlainTextEdit, QPushButton, QTabWidget,
                                QTextBrowser, QVBoxLayout, QWidget)
 
-from .. import paths
+from .. import paths, textio
 
 from .learn import cards_html
 
@@ -122,7 +122,7 @@ class GpuHelpDialog(QDialog):
             self.proc.waitForStarted(8000)
 
     def _on_out(self):
-        text = bytes(self.proc.readAllStandardOutput()).decode("utf-8", "replace")
+        text = textio.decode_stream(self.proc, self.proc.readAllStandardOutput())
         self._raw += text
         self.log.appendPlainText(text.rstrip())
 

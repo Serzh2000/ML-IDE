@@ -1,6 +1,8 @@
 """Проверка разметки обученной моделью: поиск возможных ошибок и «что размечать дальше»."""
 from __future__ import annotations
 
+from . import winflags
+
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QThread, Signal
@@ -116,7 +118,7 @@ class ReviewDialog(QDialog):
         self.setWindowTitle("Проверка разметки моделью")
         self.resize(980, 620)
         self.project, self.worker = project, None
-        lay = QVBoxLayout(self)
+        lay = winflags.scroll_layout(self)
         intro = QLabel("Обученная модель просматривает изображения и подсказывает, куда смотреть в первую очередь. "
                        "Это <b>подсказки, а не приговор</b>: модель тоже ошибается, решение за вами.")
         intro.setWordWrap(True)

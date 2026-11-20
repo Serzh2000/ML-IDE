@@ -7,7 +7,7 @@ import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from . import imgio
+from . import imgio, textio
 from .model import Annotation, ImageEntry, Project
 
 
@@ -95,7 +95,7 @@ def _register_image(project: Project, path, report: ImportReport):
 def import_coco(project: Project, json_path, images_dir=None, progress=None) -> ImportReport:
     rep = ImportReport()
     jp = Path(json_path)
-    data = json.loads(jp.read_text(encoding="utf-8"))
+    data = json.loads(textio.read_text(jp))
     base = jp.parent
     search_roots = []
     if images_dir:

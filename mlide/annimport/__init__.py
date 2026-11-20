@@ -64,7 +64,7 @@ def build_resolver(ctx: SourceContext, project=None, widen: bool = False) -> Ima
     res = ImageResolver(ctx.image_roots(), project)
     if widen:
         for r in ctx.parent_roots():
-            res.add_root(r)
+            res.add_root(r, max_files=100_000)
     return res
 
 

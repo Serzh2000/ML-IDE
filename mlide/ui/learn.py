@@ -1,6 +1,8 @@
 """Справочник, советник по настройкам, запуск и «живое» объяснение обучения."""
 from __future__ import annotations
 
+from . import winflags
+
 import csv
 import html
 import re
@@ -15,7 +17,7 @@ from PySide6.QtWidgets import (QDialog, QDialogButtonBox, QFileDialog, QFormLayo
                                QListWidget, QListWidgetItem, QMessageBox, QPlainTextEdit, QPushButton, QSplitter,
                                QTextBrowser, QVBoxLayout, QWidget)
 
-from .. import paths
+from .. import paths, textio
 from .. import knowledge as K
 from ..i18n import T
 from . import icons, style
@@ -277,7 +279,7 @@ class TrainDialog(QDialog):
         self.started_mtime = 0.0
         self._last_csv = None
 
-        lay = QVBoxLayout(self)
+        lay = winflags.scroll_layout(self)
         intro = QLabel("Запускает <code>train.py</code> из папки экспорта (формат Ultralytics), рисует графики и "
                        "<b>объясняет простым языком</b>, что сейчас происходит и что делать. Нужны Python с пакетом "
                        "<code>ultralytics</code> (кнопка «Установить» сделает это) - желательно с видеокартой Nvidia.")
@@ -422,7 +424,7 @@ class TrainDialog(QDialog):
         env.insert("PYTHONIOENCODING", "utf-8")
         pr.setProcessEnvironment(env)
         pr.setProcessChannelMode(QProcess.MergedChannels)
-        pr.finished.connect(lambda *_: (self._append(bytes(pr.readAllStandardOutput()).decode("utf-8", "replace")),
+        pr.finished.connect(lambda *_: (self._append(textio.decode_stream(pr, pr.readAllStandardOutput())),
                                         self.status.setText("")))
 
         def failed(err):
@@ -450,7 +452,7 @@ class TrainDialog(QDialog):
         self._inst = self._run_quick(["-m", "pip", "install", "ultralytics"], "Установка")
         if self._inst:
             self._inst.readyReadStandardOutput.connect(
-                lambda: self._append(bytes(self._inst.readAllStandardOutput()).decode("utf-8", "replace").rstrip()))
+                lambda: self._append(textio.decode_stream(self._inst, self._inst.readAllStandardOutput()).rstrip()))
 
     # ---- start / stop
     def start(self):
@@ -554,7 +556,7 @@ class TrainDialog(QDialog):
         self.explain.setHtml(cards_html([("warn", "Обучение не запустилось", html.escape(msg))]))
 
     def _on_out(self):
-        text = bytes(self.proc.readAllStandardOutput()).decode("utf-8", "replace")
+        text = textio.decode_stream(self.proc, self.proc.readAllStandardOutput())
         text = re.sub(r"\x1b\[[0-9;]*[A-Za-z]", "", text)
         for ln in re.split(r"[\r\n]+", text):
             if ln.strip():

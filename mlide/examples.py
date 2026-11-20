@@ -1,6 +1,7 @@
 """Готовые учебные примеры: скачиваются по кнопке, превращаются в проект ML IDE с разметкой."""
 from __future__ import annotations
 
+import os
 import random
 import shutil
 import time
@@ -75,14 +76,31 @@ class DownloadError(Exception):
     pass
 
 
+MAX_UNPACKED = 12 * 1024 ** 3          # защита от «архивных бомб»: больше 12 ГБ распаковывать не будем
+MAX_ENTRIES = 500_000
+
+
+def check_free_space(folder: Path, need: int):
+    """Перед загрузкой и распаковкой проверяем свободное место (с запасом), чтобы не оставить диск забитым недокачанным."""
+    if need <= 0:
+        return
+    folder.mkdir(parents=True, exist_ok=True)
+    free = shutil.disk_usage(folder).free
+    if free < need * 1.1:
+        raise DownloadError(f"Недостаточно места на диске: нужно около {need / 1048576:.0f} МБ, свободно {free / 1048576:.0f} МБ")
+
+
 def _download(url: str, dest: Path, progress):
+    from . import netsafe
     dest.parent.mkdir(parents=True, exist_ok=True)
+    part = dest.with_name(dest.name + ".part")             # недокачанный файл никогда не остаётся под настоящим именем
     last = None
     for attempt in range(3):
         try:
             req = urllib.request.Request(url, headers={"User-Agent": "mlide-example-downloader"})
-            with urllib.request.urlopen(req, timeout=60) as r, open(dest, "wb") as f:
+            with netsafe.urlopen(req, timeout=60) as r, open(part, "wb") as f:
                 total = int(r.headers.get("Content-Length") or 0)
+                check_free_space(dest.parent, total * 3)         # сам архив + распакованные файлы
                 done = 0
                 while True:
                     chunk = r.read(256 * 1024)
@@ -92,21 +110,28 @@ def _download(url: str, dest: Path, progress):
                     done += len(chunk)
                     if not progress("Загрузка", done, total):
                         raise DownloadError("Отменено")
-            if zipfile.is_zipfile(dest):
+            if (not total or part.stat().st_size == total) and zipfile.is_zipfile(part):
+                os.replace(part, dest)
                 return
-            last = DownloadError("Скачанный файл повреждён")
+            last = DownloadError("Скачанный файл повреждён или получен не полностью")
         except DownloadError:
+            part.unlink(missing_ok=True)
             raise
         except Exception as e:  # noqa
             last = e
         time.sleep(2 * (attempt + 1))
-    raise DownloadError(f"Не удалось скачать ({last}). Проверьте интернет и повторите.")
+    part.unlink(missing_ok=True)
+    raise DownloadError(f"Не удалось скачать: {netsafe.explain(last)}.")
 
 
 def _safe_extract(zip_path: Path, dest: Path):
     dest = dest.resolve()
     with zipfile.ZipFile(zip_path) as z:
-        for m in z.infolist():
+        infos = z.infolist()
+        if len(infos) > MAX_ENTRIES or sum(m.file_size for m in infos) > MAX_UNPACKED:
+            raise DownloadError("Архив слишком большой или подозрительный (возможна «архивная бомба»): распаковка отменена")
+        check_free_space(dest.parent, sum(m.file_size for m in infos))
+        for m in infos:
             target = (dest / m.filename).resolve()
             if dest not in target.parents and target != dest:
                 raise DownloadError("Архив содержит недопустимые пути")
@@ -122,12 +147,18 @@ def build_example(ex: dict, progress=lambda stage, done, total: True) -> Path:
     raw = root / "raw"
     if not raw.exists():
         zp = root / "download.zip"
+        if zp.exists() and not zipfile.is_zipfile(zp):         # остаток прерванной загрузки прежних версий
+            zp.unlink()
         if not zp.exists():
             _download(ex["url"], zp, progress)
         progress("Распаковка", 0, 0)
         tmp = root / "raw.tmp"
         shutil.rmtree(tmp, ignore_errors=True)
-        _safe_extract(zp, tmp)
+        try:
+            _safe_extract(zp, tmp)
+        except BaseException:
+            shutil.rmtree(tmp, ignore_errors=True)
+            raise
         tmp.rename(raw)
         zp.unlink(missing_ok=True)
 

@@ -6,6 +6,7 @@
 """
 from __future__ import annotations
 
+import math
 import os
 import re
 from pathlib import Path
@@ -146,6 +147,29 @@ def _ref_for(txt: Path) -> str:
     return "/".join(parts[-5:])
 
 
+def _quads_are_rects(files, ctx, sample: int = 60) -> bool:
+    """Все 8-числовые строки выборки - параллелограммы? Прямоугольник остаётся параллелограммом при любом масштабе осей
+    (координаты нормированы, размер кадра неизвестен), а произвольный четырёхугольник сегментации - нет."""
+    checked = good = 0
+    for f in files[:sample]:
+        try:
+            lines = ctx.read_text(f, limit=100_000).splitlines()
+        except OSError:
+            continue
+        for ln in lines:
+            t = ln.split()
+            v = _numbers(t[1:]) if len(t) == 9 else None
+            if not v:
+                continue
+            p = [(v[i], v[i + 1]) for i in range(0, 8, 2)]
+            checked += 1
+            side = max(math.hypot(p[i][0] - p[(i + 1) % 4][0], p[i][1] - p[(i + 1) % 4][1]) for i in range(4))
+            dx, dy = p[0][0] + p[2][0] - p[1][0] - p[3][0], p[0][1] + p[2][1] - p[1][1] - p[3][1]
+            if math.hypot(dx, dy) <= 0.12 * side + 2e-4:                  # почти параллелограмм (метки DOTA не идеальны)
+                good += 1
+    return checked > 0 and good >= 0.8 * checked            # часть углов может быть обрезана краем кадра
+
+
 def parse(ctx, det, opt) -> Parsed:
     names, kpt, ypath = _read_cfg(ctx)
     files = det.files
@@ -155,6 +179,8 @@ def parse(ctx, det, opt) -> Parsed:
     obb_mode = opt.params.get("obb") if opt and opt.params else None
     if obb_mode is None:
         obb_mode = bool(kinds.get("obb")) and not kinds.get("poly") and not kinds.get("box")
+        if obb_mode and not _quads_are_rects(files, ctx):             # четырёхугольники произвольной формы - это сегментация, не OBB
+            obb_mode = False
     pd = Parsed("yolo", class_names=names)
     if kpt:
         pd.keypoints = [f"p{i + 1}" for i in range(kpt[0])]

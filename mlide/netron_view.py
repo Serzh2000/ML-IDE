@@ -8,6 +8,7 @@ from __future__ import annotations
 import http.server
 import mimetypes
 import re
+import secrets
 import threading
 import urllib.parse
 import webbrowser
@@ -20,6 +21,9 @@ _MIME = {".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=u
          ".json": "application/json", ".png": "image/png", ".ico": "image/x-icon", ".svg": "image/svg+xml"}
 
 _state: dict = {"server": None, "files": {}, "lock": threading.Lock()}
+# Netron не должен обращаться ни к каким сайтам: CSP запрещает всё, кроме этого же локального сервера (cookie согласия - вторая линия защиты)
+CSP = ("default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; "
+       "connect-src 'self'; worker-src 'self' blob:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'none'")
 
 
 def root() -> Path:
@@ -32,6 +36,7 @@ def available() -> bool:
 
 def _index_html() -> bytes:
     s = (root() / "index.html").read_text(encoding="utf-8")
+    s = re.sub(r'<meta http-equiv="Content-Security-Policy" content="[^"]*">', f'<meta http-equiv="Content-Security-Policy" content="{CSP}">', s)
     s = re.sub(r'(<meta name="version" content=")[^"]*(")', r"\g<1>0.0.0\g<2>", s)            # без статистики и проверки версии
     s = re.sub(r'(<meta name="date" content=")[^"]*(")', r"\g<1>" + datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S") + r"\g<2>", s)
     return s.encode("utf-8")
@@ -46,6 +51,9 @@ class _Handler(http.server.BaseHTTPRequestHandler):
         self.send_header("Content-Type", ctype)
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Cache-Control", "no-store")
+        self.send_header("Content-Security-Policy", CSP)
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("Referrer-Policy", "no-referrer")
         for k, v in (extra or {}).items():
             self.send_header(k, v)
         self.end_headers()
@@ -55,13 +63,21 @@ class _Handler(http.server.BaseHTTPRequestHandler):
     def do_HEAD(self):
         self.do_GET()
 
+    def _host_allowed(self) -> bool:
+        """Только обращения вида 127.0.0.1:порт / localhost:порт: чужая страница в браузере не сможет прочитать модель через DNS-rebinding."""
+        port = self.server.server_address[1]
+        return (self.headers.get("Host") or "").lower() in (f"127.0.0.1:{port}", f"localhost:{port}")
+
     def do_GET(self):
+        if not self._host_allowed():
+            return self._send(403, b"forbidden")
         path = urllib.parse.unquote(urllib.parse.urlparse(self.path).path)
         if path in ("/", "/index.html"):
             cookie = "consent=1; Path=/; Max-Age=31536000; SameSite=Strict"
             return self._send(200, _index_html(), _MIME[".html"], {"Set-Cookie": cookie})
         if path.startswith("/model/"):
-            f = _state["files"].get(path[len("/model/"):])
+            parts = path[len("/model/"):].split("/", 1)                  # /model/<токен>/<имя>
+            f = _state["files"].get(parts[0]) if len(parts) == 2 else None
             if f is None or not Path(f).is_file():
                 return self._send(404, b"not found")
             return self._send(200, Path(f).read_bytes(), "application/octet-stream")
@@ -88,9 +104,10 @@ def url_for(model_path: str) -> str:
     p = Path(model_path)
     srv = _ensure_server()
     name = re.sub(r"[^\w.\-]+", "_", p.name, flags=re.A) or "model"
-    _state["files"][name] = str(p)
+    token = secrets.token_urlsafe(9)                                # у каждой открытой модели свой адрес: одинаковые best.onnx не путаются
+    _state["files"][token] = str(p)
     port = srv.server_address[1]
-    return f"http://127.0.0.1:{port}/?url={urllib.parse.quote('/model/' + name)}"
+    return f"http://127.0.0.1:{port}/?url={urllib.parse.quote('/model/' + token + '/' + name)}"
 
 
 def open_in_browser(model_path: str) -> str:

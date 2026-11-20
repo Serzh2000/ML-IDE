@@ -76,12 +76,12 @@ def test_coco():
     ctx, det = top(tmp, "coco")
     assert det.score >= 0.9
     ps = parse(ctx, det, Options())
-    recs = {r.ref: r for r in ps.records}
+    recs = {r.ref.split("/")[-1]: r for r in ps.records}          # имя файла может получить подсказку папки (instances_train.json -> train/)
     assert set(recs) == {"a.jpg", "b.jpg", "c.jpg"}
     a = recs["a.jpg"]
     assert [o.kind for o in a.objs] == ["box", "poly", "poly"] and a.objs[0].cls == "cat"
     assert a.objs[0].pts == [[10, 20], [40, 60]] and a.width == W
-    assert "1" in a.extra_refs
+    assert "1" not in a.extra_refs          # id картинки не используется как имя файла
     b = recs["b.jpg"]
     assert [o.kind for o in b.objs] == ["pose"] and b.objs[0].kps[0] == [20, 20, 2]
     assert ps.keypoints == ["nose", "eye"] and ps.skeleton == [[0, 1]]

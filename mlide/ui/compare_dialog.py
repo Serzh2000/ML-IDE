@@ -1,6 +1,8 @@
 """Сравнение запусков обучения: таблица метрик, наложенные кривые и вывод простым языком."""
 from __future__ import annotations
 
+from . import winflags
+
 import csv
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -69,7 +71,7 @@ class CompareDialog(QDialog):
         self.resize(1200, 780)
         self.project = project
         self.runs: list[RunInfo] = []
-        lay = QVBoxLayout(self)
+        lay = winflags.scroll_layout(self)
         row = QHBoxLayout()
         self.folder = QLineEdit(project.export.get("out_dir", ""))
         b = QPushButton("Обзор…")

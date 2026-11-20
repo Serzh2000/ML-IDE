@@ -28,3 +28,14 @@ runs/
 .vscode/
 .claude/
 Thumbs.db
+
+# локальные данные и временные файлы
+/data/
+/logs/
+*.log
+*.ini
+*.part
+*.zip
+Output/
+st*.txt
+.env

@@ -1,6 +1,8 @@
 """Проверка модели на видео / веб-камере и замер скорости (FPS)."""
 from __future__ import annotations
 
+from . import winflags
+
 import statistics
 import sys
 import time
@@ -42,7 +44,18 @@ def draw_dets(img, dets, names):
         col = pal[d.cls % len(pal)]
         nm = names[d.cls] if d.cls < len(names) else (d.name or str(d.cls))
         x1, y1, x2, y2 = map(int, d.box)
-        cv2.rectangle(out, (x1, y1), (x2, y2), col, th)
+        if d.poly and len(d.poly) >= 3:                       # сегментация / повёрнутая рамка: контур с полупрозрачной заливкой
+            poly = np.array(d.poly, np.int32).reshape(-1, 1, 2)
+            if not d.obb:
+                ov = out.copy()
+                cv2.fillPoly(ov, [poly], col)
+                cv2.addWeighted(ov, 0.35, out, 0.65, 0, out)
+            cv2.polylines(out, [poly], True, col, th)
+        else:
+            cv2.rectangle(out, (x1, y1), (x2, y2), col, th)
+        for kp in d.kps or []:                                # ключевые точки (pose)
+            if len(kp) > 2 and kp[2] > 0:
+                cv2.circle(out, (int(kp[0]), int(kp[1])), max(2, th + 1), col, -1)
         cv2.putText(out, f"{nm} {d.conf:.2f}", (x1, max(14, y1 - 5)), cv2.FONT_HERSHEY_SIMPLEX, max(0.5, th / 3), col,
                     max(1, th - 1), cv2.LINE_AA)
     return out
@@ -100,10 +113,18 @@ class _Runner(QThread):
 
     def run(self):
         try:
+            self._run()
+        except Exception as e:  # noqa
+            self.ended.emit(f"Ошибка во время проверки: {type(e).__name__}: {e}")
+
+    def _run(self):
+        try:
             model = autolabel.load_model(self.model_path, self.imgsz)
         except Exception as e:  # noqa
             self.ended.emit(f"Не удалось загрузить модель: {e}")
             return
+        if getattr(model, "names", None):                        # названия классов, записанные в самой модели, надёжнее файла рядом
+            self.names = list(model.names.values()) if isinstance(model.names, dict) else list(model.names)
         if imgio.is_image(self.src):                      # одиночное фото: одна проверка и показ результата
             img = imgio.imread(self.src)
             if img is None:
@@ -124,7 +145,14 @@ class _Runner(QThread):
             self.ended.emit("Не удалось открыть источник видео (проверьте файл или номер камеры).")
             return
         t_prev, ema = time.perf_counter(), None
-        while not self._stop:
+        try:
+            self._loop(cap, model, t_prev, ema)
+        finally:
+            cap.release()                                    # камера освобождается и при ошибке
+        self.ended.emit("")
+
+    def _loop(self, cap, model, t_prev, ema):
+        while not self._stop and not self.isInterruptionRequested():
             ok, img = cap.read()
             if not ok:
                 if str(self.src).isdigit():
@@ -142,8 +170,6 @@ class _Runner(QThread):
             rgb = cv2.cvtColor(vis, cv2.COLOR_BGR2RGB)
             h, w = rgb.shape[:2]
             self.frame.emit(QImage(rgb.data, w, h, 3 * w, QImage.Format_RGB888).copy(), ms, ema)
-        cap.release()
-        self.ended.emit("")
 
 
 class _Bench(QThread):
@@ -178,7 +204,7 @@ class LiveTestDialog(QDialog):
         self.setWindowTitle("Проверка модели на видео и камере")
         self.resize(1000, 780)
         self.project, self.runner, self.bench, self._last = project, None, None, None
-        lay = QVBoxLayout(self)
+        lay = winflags.scroll_layout(self)
         row = QHBoxLayout()
         self.model = QLineEdit(project.export.get("auto_model", ""))
         self.model.setPlaceholderText("Модель .onnx / .pt")

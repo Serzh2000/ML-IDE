@@ -74,7 +74,7 @@ def test_labels_on_existing_images_and_separate_trees():
     rep3 = ai.run_import(pr, ctx, best(ctx), Options(existing="replace"))
     assert rep3.objects_added == 2 and all(len(e.anns) == 1 for e in pr.images), rep3
     rep4 = ai.run_import(pr, ctx, best(ctx), Options(existing="append"))
-    assert all(len(e.anns) == 2 for e in pr.images), rep4
+    assert all(len(e.anns) == 1 for e in pr.images) and rep4.objects_added == 0, rep4          # повторный импорт не удваивает разметку
     print("ok existing images / modes")
 
 

@@ -11,7 +11,7 @@ from .. import imgio
 
 def norm_ref(ref) -> str:
     """Ссылка -> путь с «/», без кавычек, параметров URL и ./ в начале."""
-    s = str(ref).strip().strip("'\"")
+    s = str(ref).strip("\r\n\t").strip("'\"")                      # пробел в конце имени файла - часть имени, не убираем
     if re.match(r"^[a-z][a-z0-9+.-]*://", s, re.I):
         s = urllib.parse.unquote(urllib.parse.urlparse(s).path)
     s = s.replace("\\", "/")
@@ -27,6 +27,7 @@ class ImageResolver:
     def __init__(self, roots=(), project=None):
         self.by_name: dict[str, list[str]] = {}
         self.by_stem: dict[str, list[str]] = {}
+        self.by_num: dict[str, list[str]] = {}
         self._seen: set[str] = set()
         for r in roots:
             self.add_root(r)
@@ -41,10 +42,14 @@ class ImageResolver:
         self._seen.add(k)
         base = os.path.basename(path).lower()
         self.by_name.setdefault(base, []).append(path)
-        self.by_stem.setdefault(_stem(base), []).append(path)
+        st = _stem(base)
+        self.by_stem.setdefault(st, []).append(path)
+        if st.isdigit():
+            self.by_num.setdefault(str(int(st)), []).append(path)
 
-    def add_root(self, root):
+    def add_root(self, root, max_files: int | None = None):
         r = Path(root)
+        budget = [max_files if max_files is not None else 10 ** 9]
         if r.is_file() and imgio.is_image(r):
             self._add(str(r))
             return
@@ -55,6 +60,9 @@ class ImageResolver:
             for fn in fns:
                 if imgio.is_image(fn):
                     self._add(os.path.join(dp, fn))
+                    budget[0] -= 1
+            if budget[0] <= 0:                                  # расширенный поиск в родительской папке не должен обходить весь диск
+                break
 
     @property
     def count(self) -> int:
@@ -106,8 +114,7 @@ class ImageResolver:
             if c:
                 return self._pick(c, parts[:-1] + [st])
             if st.isdigit():                               # «12» ~ «000012.jpg»
-                key = str(int(st))
-                hits = [p for k, v in self.by_stem.items() if k.isdigit() and str(int(k)) == key for p in v]
+                hits = self.by_num.get(str(int(st)))
                 if hits:
                     return self._pick(hits, parts)
         return None, "missing"

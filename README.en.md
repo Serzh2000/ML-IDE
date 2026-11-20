@@ -53,7 +53,7 @@ a ready-made `train.py`, the right dataset format and augmentation presets are c
 | **Language and theme** | interface in **Russian and English**, **dark and light** theme, one vector icon set (View → Language / Theme) |
 | **Tasks** | **detection**, **segmentation**, **rotated boxes (OBB)**, **keypoints (pose)**, **image classification** - with YOLO export |
 | **Updates and GPU** | new-version check on GitHub (only on a button press), PyTorch with CUDA installed for your graphics card |
-| **Examples and tour** | a catalog of 130+ learning datasets (no registration, with search and filters) and an interactive tour of the interface |
+| **Examples and tour** | a catalog of 130 learning datasets (no registration, with search and filters) and an interactive tour of the interface |
 
 ## Screenshots
 
@@ -192,7 +192,7 @@ train small datasets on CPU, or upload the export folder to Google Colab / Kaggl
   neighbouring frames of one video out of both train and val (otherwise metrics look better than they are).
 - **Tools → Check annotations with a model** - the model finds likely mistakes (missed object, wrong class, loose box) or tells you
   **which frames to label next** (where it is unsure).
-- **File → Import COCO / Pascal VOC labels**; right-click a class to rename, merge or move it.
+- **File → Import annotations (any format)...** (`Ctrl+Shift+L`); right-click a class to rename, merge or move it.
 - **Tools → Compare training runs** and **Test the model on video and camera** (with frames-per-second measurement).
 
 ## Model export and graph viewer
@@ -211,8 +211,8 @@ it shows where it is used and suggests the right settings (FP16, INT8, dynamic s
 | CoreML | iPhone / Mac |
 | **ESP32-S3 / P4** | prepares a 320 px ONNX + calibration images for ESP-PPQ quantization |
 
-**Tools → Model viewer** (`Ctrl+Shift+G`) opens an `.onnx` without installing extra packages: a summary (number of layers and
-parameters, input size, decoding of the output), an interactive diagram (search, click a layer for an explanation) and a layer table.
+**Tools → View model (like Netron)** (`Ctrl+Shift+G`) opens the model in [Netron](https://github.com/lutzroeder/netron) in your default browser (works locally; needs a browser). **Tools → Model summary: layers in plain words** is a built-in window: a summary (number of layers and
+parameters, input size, decoding of the output), a diagram (search, click a layer for an explanation) and a layer table.
 
 <table>
 <tr>
@@ -230,7 +230,7 @@ after quantization. Espressif documentation: [How to deploy YOLO11n](https://doc
 
 ## Examples (learning datasets)
 
-The catalog has **130+ datasets** (detection, segmentation, rotated boxes, keypoints, classification) with search and filters by task and topic. Everything downloads **without registration or keys** and is not part of the repository:
+The catalog has **130 datasets** (detection, segmentation, rotated boxes, keypoints, classification) with search and filters by task and topic. Everything downloads **without registration or keys** and is not part of the repository:
 
 - **Ultralytics** (GitHub): COCO8/32/128, KITTI, construction, home objects, car parts, hands, dogs, tigers, DOTA, MNIST, CIFAR, Imagenette and more;
 - **Roboflow 100** on Hugging Face: 96 varied datasets (medicine, aerial, documents, video games, microscopy, industry);
@@ -303,12 +303,16 @@ mlide/
   augment.py      presets and offline augmentation with box recalculation
   autolabel.py    ONNX/PT models, Smart outline (GrabCut)
   knowledge.py    reference, advisor, "translator" of training results
-  examples.py     learning datasets (download and project assembly)
+  annimport/      universal annotation import (format detection, image lookup, parsers: YOLO, COCO, VOC, CVAT, LabelMe, VIA, Label Studio, tables...)
+  catalog.py      learning dataset catalog (download by sample, no registration)
+  examples.py     first learning datasets (download and project assembly)
+  netron_view.py  local server for viewing a model in Netron
+  i18n.py         runtime Russian -> English translation;  applog.py - error log;  netsafe.py - safe downloads
   modelexport.py  export of trained models (ONNX, OpenVINO, ESP32…)
   onnxparse.py    dependency-free ONNX parsing (graph, shapes, parameters)
   ui/             windows: main, canvas, dialogs, training, results, tour, welcome screen
 tools/            icon and screenshot generation
-tests/smoke.py    quick headless test
+tests/            headless tests (run by CI): formats, import, catalog, windows, ONNX decoding, startup
 ```
 
 ## Development
@@ -339,4 +343,4 @@ run `train.py` in Google Colab / Kaggle.
 **Low mAP, what to do?** Open **Reference → "What to do if quality is low"** and "Training results" — the breakdown
 will tell you whether it is overfitting, lack of data or labeling problems.
 
-**Is internet required?** Only for downloading examples, installing `ultralytics` and the pretrained weights on the first training.
+**Is internet required?** No for annotating, training and viewing results. The program connects to the internet only when you ask it to, and only to GitHub, Hugging Face and download.pytorch.org: downloading learning datasets and the catalog update, the SAM click-to-label model (about 43 MB), the update check (a single request), installing `ultralytics` / PyTorch with CUDA (several GB) and the pretrained weights on the first training. No statistics are sent and no personal data is included in requests.

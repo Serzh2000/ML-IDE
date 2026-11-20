@@ -120,7 +120,10 @@ def export_calibration(image_paths, out_dir, size: int = 320, n: int = 100, seed
     random.Random(seed).shuffle(paths)
     done = 0
     for p in paths[:n]:
-        img = imgio.imread(p)
+        try:
+            img = imgio.imread(p)
+        except (OSError, ValueError):
+            continue                                        # битую картинку для калибровки пропускаем
         h, w = img.shape[:2]
         k = size / max(h, w)
         if k < 1:
