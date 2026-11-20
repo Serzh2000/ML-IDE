@@ -168,8 +168,7 @@ def test_short_windows_paths():
     d = Path(tempfile.mkdtemp()) / "a_rather_long_directory_name_for_testing"
     img(d / "images/train/some_long_image_name.jpg")
     (d / "labels/train").mkdir(parents=True)
-    (d / "labels/train/some_long_image_name.txt").write_text("0 0.5 0.5 0.4 0.4
-")
+    (d / "labels/train/some_long_image_name.txt").write_text("0 0.5 0.5 0.4 0.4\n")
     buf = ctypes.create_unicode_buffer(1024)
     ctypes.windll.kernel32.GetShortPathNameW(str(d), buf, 1024)
     short = Path(buf.value)
