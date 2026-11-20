@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 
 from ..model import Annotation, Project
 from .resolve import ImageResolver
@@ -66,7 +67,7 @@ def apply_parsed(project: Project, parsed: Parsed, resolver: ImageResolver, opt:
             continue
         if st == "ambiguous":
             rep.ambiguous.append(rec.ref)
-        key = os.path.normcase(path)
+        key = os.path.normcase(str(Path(path).resolve()))      # как хранит проект: полный путь (короткие имена 8.3 на Windows раскрываются)
         existing = next((e for e in project.images if os.path.normcase(e.path) == key), None)
         if existing is None:
             if not opt.add_missing_images or not project.add_images([path]):

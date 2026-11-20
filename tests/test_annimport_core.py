@@ -160,6 +160,24 @@ def test_dotted_names():
     print("ok dotted names")
 
 
+def test_short_windows_paths():
+    """Каталоги с короткими именами 8.3 (C:\Users\RUNNER~1, так на CI): путь картинки должен совпасть с тем, что хранит проект."""
+    if sys.platform != "win32":
+        return
+    import ctypes
+    d = Path(tempfile.mkdtemp()) / "a_rather_long_directory_name_for_testing"
+    img(d / "images/train/some_long_image_name.jpg")
+    (d / "labels/train").mkdir(parents=True)
+    (d / "labels/train/some_long_image_name.txt").write_text("0 0.5 0.5 0.4 0.4
+")
+    buf = ctypes.create_unicode_buffer(1024)
+    ctypes.windll.kernel32.GetShortPathNameW(str(d), buf, 1024)
+    short = Path(buf.value)
+    det, pr, rep = run([short])
+    assert rep.images_added == 1 and rep.objects_added == 1, (short, rep)
+    print("ok short paths")
+
+
 def test_folders_and_nothing():
     d = Path(tempfile.mkdtemp())
     for c in ("cat", "dog"):
@@ -178,5 +196,6 @@ if __name__ == "__main__":
     test_table_variants()
     test_pairs_file()
     test_dotted_names()
+    test_short_windows_paths()
     test_folders_and_nothing()
     print("ALL OK")
