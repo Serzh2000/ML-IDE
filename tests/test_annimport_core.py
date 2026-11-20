@@ -161,7 +161,7 @@ def test_dotted_names():
 
 
 def test_short_windows_paths():
-    """Каталоги с короткими именами 8.3 (C:\Users\RUNNER~1, так на CI): путь картинки должен совпасть с тем, что хранит проект."""
+    """Каталоги с короткими именами 8.3 (Users/RUNNER~1, так на CI): путь картинки должен совпасть с тем, что хранит проект."""
     if sys.platform != "win32":
         return
     import ctypes
